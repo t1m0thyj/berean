@@ -1,0 +1,7 @@
+#!/usr/bin/env python
+"""
+berean - command line launcher for Berean
+Copyright (C) 2013 Timothy Johnson <timothysw@objectmail.com>
+"""
+
+__import__("berean").main()
