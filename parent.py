@@ -83,9 +83,7 @@ class MainFrame(wx.Frame):
 		self.zoombar.AddLabelTool(wx.ID_ZOOM_IN, "", self.Bitmap("zoom-in"), shortHelp=_("Zoom In (Ctrl++)"))
 		self.zoombar.EnableTool(wx.ID_ZOOM_IN, self.zoom < 7)
 		self.zoombar.Realize()
-		self.zoombarwidth = self.zoombar.GetToolSize()[0] * 2 + self.zoomctrl.GetSize()[0]
-		if wx.Platform == "__WXGTK__":
-			self.zoombarwidth += 20
+		self.zoombarwidth = (self.zoombar.GetToolSize()[0] + self.zoombar.GetToolSeparation()) * 2 + self.zoomctrl.GetSize()[0]
 		self.statusbar.SetStatusWidths([-2, -1, -1, self.zoombarwidth - 7])
 		
 		self.notebook = aui.AuiNotebook(self, -1, agwStyle=(aui.AUI_NB_DEFAULT_STYLE ^ aui.AUI_NB_TAB_MOVE ^ aui.AUI_NB_CLOSE_ON_ACTIVE_TAB ^ aui.AUI_NB_MIDDLE_CLICK_CLOSE) | aui.AUI_NB_HIDE_ON_SINGLE_TAB)
@@ -191,8 +189,10 @@ class MainFrame(wx.Frame):
 		if self.search.rangechoice.GetSelection() == len(self.search.ranges):
 			self.search.start.SetSelection(book - 1)
 			self.search.stop.SetSelection(book - 1)
-		self.notes.SaveText()
-		self.notes.LoadText(book, chapter)
+		for i in range(self.notes.GetPageCount()):
+			page = self.notes.GetPage(i)
+			page.SaveText()
+			page.LoadText(book, chapter)
 		self.statusbar.SetStatusText("%s %d (%s)" % (self.books[book - 1], chapter, version), 0)
 		if tab < len(self.versions):
 			self.statusbar.SetStatusText(_("%d verses") % (len(browser.Bible[book][chapter]) - 1), 2)
@@ -313,10 +313,7 @@ class MainFrame(wx.Frame):
 	
 	def OnSize(self, event):
 		x, y, width, height = self.statusbar.GetFieldRect(3)
-		if wx.Platform != "__WXGTK__":
-			self.zoombar.SetRect(wx.Rect(x, (y + height - 20) / 2, self.zoombarwidth, -1))
-		else:
-			self.zoombar.SetRect(wx.Rect(x, -5, self.zoombarwidth, -1))
+		self.zoombar.SetRect(wx.Rect(x, (y + height - 19) / 2 - self.zoombar.GetToolSeparation(), self.zoombarwidth, -1))
 		if self.aui.GetPane("notespane").IsShown():	# Adjust overflow state of notes pane toolbar if visible
 			wx.CallAfter(self.notes.GetSizer().Layout)
 		if self.HasCapture():
@@ -329,7 +326,8 @@ class MainFrame(wx.Frame):
 		event.Skip()
 	
 	def OnClose(self, event):
-		self.notes.SaveNotes()
+		for i in range(self.notes.GetPageCount()):
+			self.notes.GetPage(i).SaveNotes()
 		self.addons.UnInit()
 		self._app.UnInit()
 		perspective = open(os.path.join(self._app.userdatadir, "berean.aui"), 'w')

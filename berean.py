@@ -16,6 +16,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+import argparse
 import ConfigParser
 import os
 import sys
@@ -24,7 +25,7 @@ import wx
 import debug
 import parent
 
-_version = debug._version = "1.4.5"
+_version = debug._version = "1.4.6"
 ConfigParser.str = lambda value: value.encode("utf_8")	# Make ConfigParser work with Unicode
 
 class FileConfig(ConfigParser.RawConfigParser):
@@ -45,17 +46,14 @@ class FileConfig(ConfigParser.RawConfigParser):
 		best = (int(display[0] * 0.8), int(display[1] * 0.8))
 		settings = {"WindowPos":wx.DefaultPosition, "WindowSize":best, "MaximizeState":False,
 					"MinimizeToTray":False, "SelectedBook":1, "SelectedChapter":1, "ZoomLevel":3,
-					"ActiveVerse":-1, "ActiveTab":0, "LastReference":"", "HebrewBookOrder":False,
+					"ActiveVerse":-1, "ActiveTab":0, "LastReference":"",
+					"HebrewBookOrder":False, "ActiveNotes":0,
 					"VersionList":["KJV", "YLT"], "ParallelVersions":["KJV", "YLT"],
 					"FavoritesList":[], "ReferenceHistory":[], "ChapterHistory":[],
 					"AddonList":[], "AddonsEnabled":[],
 					"AbbrevSearchResults":False, "LastSearch":"", "GeneralOptions":True,
 					"AllWords":True, "CaseSensitive":False, "ExactMatch":False, "Phrase":False, "RegularExpression":False,
-					"AdvancedOptions":False, "SearchHistory":[], "LastVerses":"",
-					"ActiveNotes":0,
-					"LastForeColor":wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOWTEXT).GetAsString(wx.C2S_HTML_SYNTAX),
-					"LastBackColor":wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOW).GetAsString(wx.C2S_HTML_SYNTAX),
-					"NotesList":[]}
+					"AdvancedOptions":False, "SearchHistory":[], "LastVerses":""}
 		if self.has_option("Main", "WindowPos"):
 			settings["WindowPos"] = map(int, self.getunicode("Main", "WindowPos").split(","))
 		if self.has_option("Main", "WindowSize"):
@@ -63,7 +61,7 @@ class FileConfig(ConfigParser.RawConfigParser):
 		if not (0 - settings["WindowSize"][0] < settings["WindowPos"][0] < display[0] and 0 - settings["WindowSize"][1] < settings["WindowPos"][1] < display[1]):
 			settings["WindowPos"] = wx.DefaultPosition
 			settings["WindowSize"] = best
-		for option in ("MaximizeState", "MinimizeToTray", "HebrewBookOrder"):
+		for option in ("MaximizeState", "MinimizeToTray", "HebrewBookOrder", "ActiveNotes"):
 			if self.has_option("Main", option):
 				settings[option] = self.getboolean("Main", option)
 		for option in ("SelectedBook", "SelectedChapter", "ZoomLevel", "ActiveVerse", "ActiveTab"):
@@ -101,14 +99,6 @@ class FileConfig(ConfigParser.RawConfigParser):
 			settings["LastVerses"] = self.getunicode("Search", "LastVerses")
 		if self.has_section("Search\\SearchHistory"):
 			settings["SearchHistory"] = self.getlist("Search", "SearchHistory")
-		if self.has_option("Notes", "ActiveNotes"):
-			settings["ActiveNotes"] = self.getint("Notes", "ActiveNotes")
-		if self.has_option("Notes", "LastForeColor"):
-			settings["LastForeColor"] = self.getunicode("Notes", "LastForeColor")
-		if self.has_option("Notes", "LastBackColor"):
-			settings["LastBackColor"] = self.getunicode("Notes", "LastBackColor")
-		if self.has_section("Notes\\NotesList"):
-			settings["NotesList"] = self.getlist("Notes", "NotesList")
 		return settings
 	
 	def getunicode(self, section, option):
@@ -140,6 +130,7 @@ class FileConfig(ConfigParser.RawConfigParser):
 		self.set("Main", "ActiveTab", str(frame.notebook.GetSelection()))
 		self.set("Main", "LastReference", frame.toolbar.reference.GetValue())
 		self.set("Main", "HebrewBookOrder", str(self._app.settings["HebrewBookOrder"]))
+		self.set("Main", "ActiveNotes", str(frame.notes.GetSelection()))
 		self.setlist("VersionList", None, frame.versions)
 		parallel = []
 		if hasattr(frame, "parallel") and len(frame.versions) > 1:
@@ -167,12 +158,6 @@ class FileConfig(ConfigParser.RawConfigParser):
 			self.set("Search", option, str(state))
 		self.set("Search", "AdvancedOptions", str(frame.search.advanced.IsExpanded()))
 		self.set("Search", "LastVerses", self._app.settings["LastVerses"])
-		if not self.has_section("Notes"):
-			self.add_section("Notes")
-		self.setlist("Notes", "NotesList", frame.notes.notes.GetStrings())
-		self.set("Notes", "ActiveNotes", str(frame.notes.notes.GetSelection()))
-		self.set("Notes", "LastForeColor", frame.notes.foreground)
-		self.set("Notes", "LastBackColor", frame.notes.background)
 		config = open(self.filename, 'w')
 		self.write(config)
 		config.close()
@@ -195,26 +180,21 @@ class Berean(wx.App):
 			self.cwd = os.path.dirname(__file__)
 		else:
 			self.cwd = os.path.dirname(sys.argv[0])
-		filename = os.path.join(self.cwd, "portable.pth")
-		if not os.path.isfile(filename):
-			self.userdatadir = os.path.join(wx.StandardPaths.Get().GetUserDataDir(), "Berean")
-		if os.path.isfile(filename):
-			fileobj = open(filename, 'r')
-			path = fileobj.read().rstrip()
-			if len(path):
-				self.userdatadir = os.path.join(self.cwd, path)
+		if args.datadir:
+			self.userdatadir = args.datadir
+			if not os.path.isabs(self.userdatadir):	# Check if path is relative
+				self.userdatadir = os.path.join(self.cwd, self.userdatadir)
+		elif not os.path.isfile(os.path.join(self.cwd, "portable.ini")):
+			if wx.Platform != "__WXGTK__":
+				self.userdatadir = os.path.join(wx.StandardPaths.Get().GetUserDataDir(), "Berean")
 			else:
-				self.userdatadir = self.cwd
-			fileobj.close()
-		elif wx.Platform != "__WXGTK__":
-			self.userdatadir = os.path.join(wx.StandardPaths.Get().GetUserDataDir(), "Berean")
+				self.userdatadir = os.path.join(wx.StandardPaths.Get().GetUserDataDir(), ".berean")
 		else:
-			self.userdatadir = os.path.join(wx.StandardPaths.Get().GetUserDataDir(), ".berean")
+			self.userdatadir = self.cwd
 		if not os.path.isdir(self.userdatadir):
 			os.mkdir(self.userdatadir)
 		
-		systemtray = "-systemtray" in sys.argv
-		if not systemtray:
+		if not args.systemtray:
 			splash = wx.SplashScreen(wx.Bitmap(os.path.join(self.cwd, "images", "splash.png"), wx.BITMAP_TYPE_PNG), wx.SPLASH_CENTRE_ON_SCREEN | wx.SPLASH_NO_TIMEOUT, 1000, None, -1, style=wx.NO_BORDER | wx.FRAME_NO_TASKBAR)
 			self.Yield()
 		
@@ -231,11 +211,11 @@ class Berean(wx.App):
 		self.frame = parent.MainFrame(self)
 		self.SetTopWindow(self.frame)
 		self.frame.Show()
-		if not systemtray:
+		if not args.systemtray:
 			splash.Destroy()
 		else:
 			self.frame.Iconize()
-
+		
 		return True
 	
 	def Restart(self):
@@ -253,6 +233,14 @@ class Berean(wx.App):
 
 def main(restart=False):
 	sys.excepthook = debug.OnError
+	global args
+	if not restart:
+		parser = argparse.ArgumentParser()
+		parser.add_argument("--datadir")
+		parser.add_argument("--systemtray", action='store_true')
+		args = parser.parse_args()
+	else:
+		args.systemtray = False
 	app = Berean()
 	if restart:
 		app.frames[0].Addons()

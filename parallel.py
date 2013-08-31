@@ -31,7 +31,7 @@ class ParallelWindow(HtmlWindow):
 			selection = self._parent.choices[i].GetSelection()
 			if i > 0:
 				selection -= 1
-			if selection > 0:
+			if selection > 0 or i == 0:
 				Bibles.append(self._frame.notebook.GetPage(selection).Bible)
 				versions.append(self._frame.versions[selection])
 		items = []
@@ -65,7 +65,7 @@ class ParallelWindow(HtmlWindow):
 	def LoadChapter(self, book, chapter, verse=-1):
 		self.SetPage(self.GetPage(book, chapter, verse))
 		self._frame.statusbar.SetStatusText(self.description, 1)
-		if verse > 1 and self._parent.choices[0].GetSelection() > 0:
+		if verse > 1:
 			wx.CallAfter(self.ScrollToAnchor, str(verse))
 			self.verse = -1
 
