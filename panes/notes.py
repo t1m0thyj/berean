@@ -5,7 +5,7 @@ Copyright (C) 2013 Timothy Johnson <timothysw@objectmail.com>
 
 import cPickle
 import cStringIO
-import os
+import os.path
 import wx
 from wx import richtext
 
@@ -13,15 +13,14 @@ import aui
 
 _ = wx.GetTranslation
 
-class NotesPane(wx.Panel):
-	def __init__(self, parent):
+class NotesPanel(wx.Panel):
+	def __init__(self, parent, name):
 		wx.Panel.__init__(self, parent, -1)
-		self._parent = parent
+		self._frame = parent._parent
 		
-		self.background = parent._app.settings["LastBackColor"]
-		self.foreground = parent._app.settings["LastForeColor"]
-		self.path = os.path.join(parent._app.userdatadir, "notes")
-		self.selection = parent._app.settings["ActiveNotes"]
+		self.background = wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOW).GetAsString(wx.C2S_HTML_SYNTAX)
+		self.foreground = wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOWTEXT).GetAsString(wx.C2S_HTML_SYNTAX)
+		self.name = name
 		self.text = {}
 		
 		self.SetAcceleratorTable(wx.AcceleratorTable([(wx.ACCEL_CTRL, ord("X"), wx.ID_CUT),
@@ -33,37 +32,23 @@ class NotesPane(wx.Panel):
 													  (wx.ACCEL_CTRL, ord("L"), wx.ID_JUSTIFY_LEFT),
 													  (wx.ACCEL_CTRL, ord("E"), wx.ID_JUSTIFY_CENTER),
 													  (wx.ACCEL_CTRL, ord("R"), wx.ID_JUSTIFY_RIGHT)]))
-		if not os.path.isdir(self.path):
-			os.mkdir(self.path)
-		name = os.path.join(self.path, _("Study Notes.nts"))
-		if not os.path.isfile(name):
-			new = open(name, 'wb')
+		filename = os.path.join(self._frame._app.userdatadir, _("%s.dat") % name)
+		if not os.path.isfile(filename):
+			new = open(filename, 'wb')
 			cPickle.dump({}, new, -1)
 			new.close()
-		if not len(parent._app.settings["NotesList"]):
-			parent._app.settings["NotesList"] = [_("Study Notes")]
-		for name in parent._app.settings["NotesList"]:
-			if not os.path.isfile(os.path.join(self.path, "%s.nts" % name)):
-				parent._app.settings["NotesList"].remove(name)
 		
 		self.toolbar = aui.AuiToolBar(self, -1, agwStyle=aui.AUI_TB_DEFAULT_STYLE | aui.AUI_TB_OVERFLOW)
-		self.notes = wx.Choice(self.toolbar, -1, choices=parent._app.settings["NotesList"])
-		self.notes.SetSelection(self.selection)
-		self.toolbar.AddControl(self.notes)
-		self.notes.Bind(wx.EVT_CHOICE, self.OnNotes)
-		self.ID_MANAGE = wx.NewId()
-		self.toolbar.AddSimpleTool(self.ID_MANAGE, "", parent.Bitmap("notes"), _("Manage Notes"))
-		self.Bind(wx.EVT_MENU, self.OnManage, id=self.ID_MANAGE)
-		self.toolbar.AddSimpleTool(wx.ID_UNDO, "", parent.Bitmap("undo"), _("Undo (Ctrl+Z)"))
-		self.toolbar.Bind(wx.EVT_MENU, self.OnUndo, id=wx.ID_UNDO)
-		self.toolbar.AddSimpleTool(wx.ID_REDO, "", parent.Bitmap("redo"), _("Redo (Ctrl+Y)"))
-		self.toolbar.Bind(wx.EVT_MENU, self.OnRedo, id=wx.ID_REDO)
+		self.toolbar.AddSimpleTool(wx.ID_SAVE, "", self._frame.Bitmap("save"), _("Save (Ctrl+S)"))
+		self.toolbar.Bind(wx.EVT_MENU, self.OnSave, id=wx.ID_SAVE)
+		self.toolbar.AddSimpleTool(wx.ID_PRINT, "", self._frame.Bitmap("print"), _("Print (Ctrl+P)"))
+		self.toolbar.Bind(wx.EVT_MENU, self.OnPrint, id=wx.ID_PRINT)
 		self.toolbar.AddSeparator()
-		self.toolbar.AddSimpleTool(wx.ID_CUT, "", parent.Bitmap("cut"), _("Cut (Ctrl+X)"))
+		self.toolbar.AddSimpleTool(wx.ID_CUT, "", self._frame.Bitmap("cut"), _("Cut (Ctrl+X)"))
 		self.toolbar.Bind(wx.EVT_MENU, self.OnCut, id=wx.ID_CUT)
-		self.toolbar.AddSimpleTool(wx.ID_COPY, "", parent.Bitmap("copy"), _("Copy (Ctrl+C)"))
+		self.toolbar.AddSimpleTool(wx.ID_COPY, "", self._frame.Bitmap("copy"), _("Copy (Ctrl+C)"))
 		self.toolbar.Bind(wx.EVT_MENU, self.OnCopy, id=wx.ID_COPY)
-		self.toolbar.AddSimpleTool(wx.ID_PASTE, "", parent.Bitmap("paste"), _("Paste (Ctrl+V)"))
+		self.toolbar.AddSimpleTool(wx.ID_PASTE, "", self._frame.Bitmap("paste"), _("Paste (Ctrl+V)"))
 		self.toolbar.Bind(wx.EVT_MENU, self.OnPaste, id=wx.ID_PASTE)
 		self.toolbar.AddSeparator()
 		self.fonts = sorted(wx.FontEnumerator.GetFacenames())
@@ -78,38 +63,38 @@ class NotesPane(wx.Panel):
 		self.toolbar.AddControl(self.size)
 		self.size.Bind(wx.EVT_TEXT_ENTER, self.OnSize)
 		self.size.Bind(wx.EVT_COMBOBOX, self.OnSize)
-		self.toolbar.AddCheckTool(wx.ID_BOLD, "", parent.Bitmap("bold"), wx.NullBitmap, _("Bold (Ctrl+B)"))
+		self.toolbar.AddCheckTool(wx.ID_BOLD, "", self._frame.Bitmap("bold"), wx.NullBitmap, _("Bold (Ctrl+B)"))
 		self.Bind(wx.EVT_MENU, self.OnBold, id=wx.ID_BOLD)
-		self.toolbar.AddCheckTool(wx.ID_ITALIC, "", parent.Bitmap("italic"), wx.NullBitmap, _("Italic (Ctrl+I)"))
+		self.toolbar.AddCheckTool(wx.ID_ITALIC, "", self._frame.Bitmap("italic"), wx.NullBitmap, _("Italic (Ctrl+I)"))
 		self.Bind(wx.EVT_MENU, self.OnItalic, id=wx.ID_ITALIC)
-		self.toolbar.AddCheckTool(wx.ID_UNDERLINE, "", parent.Bitmap("underline"), wx.NullBitmap, _("Underline (Ctrl+U)"))
+		self.toolbar.AddCheckTool(wx.ID_UNDERLINE, "", self._frame.Bitmap("underline"), wx.NullBitmap, _("Underline (Ctrl+U)"))
 		self.Bind(wx.EVT_MENU, self.OnUnderline, id=wx.ID_UNDERLINE)
 		self.toolbar.AddSeparator()
-		self.toolbar.AddRadioTool(wx.ID_JUSTIFY_LEFT, "", parent.Bitmap("left"), wx.NullBitmap, _("Align Left (Ctrl+L)"))
+		self.toolbar.AddRadioTool(wx.ID_JUSTIFY_LEFT, "", self._frame.Bitmap("left"), wx.NullBitmap, _("Align Left (Ctrl+L)"))
 		self.Bind(wx.EVT_MENU, self.OnAlignLeft, id=wx.ID_JUSTIFY_LEFT)
-		self.toolbar.AddRadioTool(wx.ID_JUSTIFY_CENTER, "", parent.Bitmap("center"), wx.NullBitmap, _("Align Center (Ctrl+E)"))
+		self.toolbar.AddRadioTool(wx.ID_JUSTIFY_CENTER, "", self._frame.Bitmap("center"), wx.NullBitmap, _("Align Center (Ctrl+E)"))
 		self.Bind(wx.EVT_MENU, self.OnAlignCenter, id=wx.ID_JUSTIFY_CENTER)
-		self.toolbar.AddRadioTool(wx.ID_JUSTIFY_RIGHT, "", parent.Bitmap("right"), wx.NullBitmap, _("Align Right (Ctrl+R)"))
+		self.toolbar.AddRadioTool(wx.ID_JUSTIFY_RIGHT, "", self._frame.Bitmap("right"), wx.NullBitmap, _("Align Right (Ctrl+R)"))
 		self.Bind(wx.EVT_MENU, self.OnAlignRight, id=wx.ID_JUSTIFY_RIGHT)
 		self.toolbar.AddSeparator()
-		self.ID_BULLETS = wx.NewId()
-		self.toolbar.AddSimpleTool(self.ID_BULLETS, "", parent.Bitmap("bullets"), _("Bullets"))
-		self.Bind(wx.EVT_MENU, self.OnBullets, id=self.ID_BULLETS)
 		self.ID_NUMBERING = wx.NewId()
-		self.toolbar.AddSimpleTool(self.ID_NUMBERING, "", parent.Bitmap("numbering"), _("Numbering"))
+		self.toolbar.AddSimpleTool(self.ID_NUMBERING, "", self._frame.Bitmap("numbering"), _("Numbering"))
 		self.Bind(wx.EVT_MENU, self.OnNumbering, id=self.ID_NUMBERING)
+		self.ID_BULLETS = wx.NewId()
+		self.toolbar.AddSimpleTool(self.ID_BULLETS, "", self._frame.Bitmap("bullets"), _("Bullets"))
+		self.Bind(wx.EVT_MENU, self.OnBullets, id=self.ID_BULLETS)
 		self.ID_DEDENT = wx.NewId()
-		self.toolbar.AddSimpleTool(self.ID_DEDENT, "", parent.Bitmap("dedent"), _("Decrease Indent"))
+		self.toolbar.AddSimpleTool(self.ID_DEDENT, "", self._frame.Bitmap("dedent"), _("Decrease Indent"))
 		self.Bind(wx.EVT_MENU, self.OnDecreaseIndent, id=self.ID_DEDENT)
 		self.ID_INDENT = wx.NewId()
-		self.toolbar.AddSimpleTool(self.ID_INDENT, "", parent.Bitmap("indent"), _("Increase Indent"))
+		self.toolbar.AddSimpleTool(self.ID_INDENT, "", self._frame.Bitmap("indent"), _("Increase Indent"))
 		self.Bind(wx.EVT_MENU, self.OnIncreaseIndent, id=self.ID_INDENT)
 		self.toolbar.AddSeparator()
 		self.ID_COLOR = wx.NewId()
-		self.toolbar.AddSimpleTool(self.ID_COLOR, "", parent.Bitmap("font-color"), _("Font Color"))
+		self.toolbar.AddSimpleTool(self.ID_COLOR, "", self._frame.Bitmap("font-color"), _("Font Color"))
 		self.Bind(wx.EVT_MENU, self.OnColor, id=self.ID_COLOR)
 		self.ID_HIGHLIGHT = wx.NewId()
-		self.toolbar.AddSimpleTool(self.ID_HIGHLIGHT, "", parent.Bitmap("highlighting"), _("Highlighting"))
+		self.toolbar.AddSimpleTool(self.ID_HIGHLIGHT, "", self._frame.Bitmap("highlighting"), _("Highlighting"))
 		self.Bind(wx.EVT_MENU, self.OnHighlighting, id=self.ID_HIGHLIGHT)
 		self.toolbar.Realize()
 		
@@ -124,31 +109,27 @@ class NotesPane(wx.Panel):
 		sizer.Add(self.editor, 1, wx.EXPAND)
 		self.SetSizer(sizer)
 		
-		self.LoadNotes(self.notes.GetStringSelection())
+		notes = open(os.path.join(self._frame._app.userdatadir, "%s.dat" % name), 'rb')
+		self.text = cPickle.load(notes)
+		notes.close()
+		self.LoadText(self._frame.reference[0], self._frame.reference[1])
 		self.UpdateUI()
 		
 		self.editor.Bind(wx.EVT_CHAR, self.OnChar)
 		self.editor.Bind(wx.EVT_KEY_UP, self.OnKeyUp)
 		self.editor.Bind(wx.EVT_LEFT_UP, self.OnKeyUp)
 	
-	def LoadNotes(self, name):
-		if name != self.notes.GetStringSelection():
-			self.selection = self.notes.GetStrings().index(name)
-			self.notes.SetSelection(self.selection)
-		notes = open(os.path.join(self.path, "%s.nts" % name), 'rb')
-		self.text = cPickle.load(notes)
-		notes.close()
-		self.LoadText(self._parent.reference[0], self._parent.reference[1])
-	
 	def LoadText(self, book, chapter):
 		key = "%d.%d" % (book, chapter)
 		if key in self.text:
 			stream = cStringIO.StringIO(self.text[key])
 			richtext.RichTextXMLHandler().LoadStream(self.editor.GetBuffer(), stream)
+			self.editor.Refresh()
+		else:
+			self.editor.SetValue("")
+		self.UpdateUI()
 	
 	def UpdateUI(self):
-		self.toolbar.EnableTool(wx.ID_UNDO, self.editor.CanUndo())
-		self.toolbar.EnableTool(wx.ID_REDO, self.editor.CanRedo())
 		self.toolbar.EnableTool(wx.ID_CUT, self.editor.CanCut())
 		self.toolbar.EnableTool(wx.ID_COPY, self.editor.CanCopy())
 		style = richtext.RichTextAttr()
@@ -167,7 +148,7 @@ class NotesPane(wx.Panel):
 		self.toolbar.Refresh(False)
 	
 	def SaveText(self):
-		key = "%d.%d" % (self._parent.reference[0], self._parent.reference[1])
+		key = "%d.%d" % (self._frame.reference[0], self._frame.reference[1])
 		if self.editor.GetLastPosition() > 0:
 			stream = cStringIO.StringIO()
 			richtext.RichTextXMLHandler().SaveStream(self.editor.GetBuffer(), stream)
@@ -175,82 +156,19 @@ class NotesPane(wx.Panel):
 		elif key in self.text:
 			self.text.pop(key)
 	
-	def SaveNotes(self, name=None):
-		if not name:
-			name = self.notes.GetStringSelection()
+	def SaveNotes(self):
 		self.SaveText()
-		notes = open(os.path.join(self.path, "%s.nts" % name), 'wb')
+		notes = open(os.path.join(self._frame._app.userdatadir, "%s.dat" % self.name), 'wb')
 		cPickle.dump(self.text, notes, -1)
 		notes.close()
 	
-	def OnNotes(self, event):
-		self.SaveNotes(self.notes.GetString(self.selection))
-		self.LoadNotes(event.GetString())
-		self.selection = event.GetSelection()
+	def OnSave(self, event):
+		self.SaveNotes()
 	
-	def OnManage(self, event):
-		self.toolbar.SetToolSticky(self.ID_MANAGE, True)
-		menu = wx.Menu()
-		menu.Append(wx.ID_NEW, _("New..."))
-		self._parent.Bind(wx.EVT_MENU, self.OnNew, id=wx.ID_NEW)
-		menu.Append(wx.ID_DELETE, _("Delete"))
-		self._parent.Bind(wx.EVT_MENU, self.OnDelete, id=wx.ID_DELETE)
-		ID_RENAME = wx.NewId()
-		menu.Append(ID_RENAME, _("Rename..."))
-		self._parent.Bind(wx.EVT_MENU, self.OnRename, id=ID_RENAME)
-		editable = self.notes.GetStringSelection() != _("Study Notes")
-		menu.Enable(wx.ID_DELETE, editable)
-		menu.Enable(ID_RENAME, editable)
-		self.toolbar.PopupMenu(menu, self._parent.toolbar.GetPopupPos(self.toolbar, self.ID_MANAGE))
-		self.toolbar.SetToolSticky(self.ID_MANAGE, False)
-	
-	def OnNew(self, event):
-		name = wx.GetTextFromUser(_("Enter a name for the new note set:"), _("New Note Set"), "", self._parent)
-		while name in self.notes.GetItems():
-			wx.MessageBox(_("The name '%s' already exists.\nPlease choose a different name for the note set.") % name, _("New Note Set"), wx.ICON_EXCLAMATION | wx.OK)
-			name = wx.GetTextFromUser(_("Enter a name for the new note set:"), _("New Note Set"), "", self._parent)
-		if len(name):
-			new = open(os.path.join(self.path, "%s.nts" % name), 'wb')
-			cPickle.dump({}, new, -1)
-			new.close()
-			notes = self.notes.GetItems()
-			notes.append(name)
-			notes.sort()
-			self.notes.SetItems(notes)
-			self.LoadNotes(name)
-	
-	def OnDelete(self, event):
-		selection = self.notes.GetSelection()
-		name = self.notes.GetStringSelection()
-		delete = wx.MessageBox(_("Are you sure that you want to permanently delete the note set '%s'?") % name, _("Delete Note Set"), wx.ICON_EXCLAMATION | wx.YES_NO | wx.NO_DEFAULT)
-		if delete == wx.YES:
-			os.remove(os.path.join(self.path, "%s.nts" % name))
-			notes = self.notes.GetItems()
-			notes.remove(name)
-			self.notes.SetItems(notes)
-			self.LoadNotes(self.notes.GetString(selection - 1))
-	
-	def OnRename(self, event):
-		old = self.notes.GetStringSelection()
-		new = wx.GetTextFromUser(_("Enter a new name for the note set '%s':") % old, _("Rename Note Set"), old, self._parent)
-		if new != old:
-			while new in self.notes.GetItems():
-				wx.MessageBox(_("The name '%s' already exists.\nPlease choose a different name for the note set.") % new, _("Rename Note Set"), wx.ICON_EXCLAMATION | wx.OK)
-				new = wx.GetTextFromUser(_("Enter a new name for the note set '%s':") % old, _("Rename Note Set"), old, self._parent)
-			if len(new):
-				os.rename(os.path.join(self.path, "%s.nts" % old), os.path.join(self.path, "%s.nts" % new))
-				notes = self.notes.GetItems()
-				notes.remove(old)
-				notes.append(new)
-				notes.sort()
-				self.notes.SetItems(notes)
-				self.LoadNotes(new)
-	
-	def OnUndo(self, event):
-		self.editor.Undo()
-	
-	def OnRedo(self, event):
-		self.editor.Redo()
+	def OnPrint(self, event):
+		stream = cStringIO.StringIO()
+		richtext.RichTextXMLHandler().SaveStream(self.editor.GetBuffer(), stream)
+		self._frame.printer.PrintText(stream.getvalue())
 	
 	def OnCut(self, event):
 		self.editor.Cut()
@@ -317,23 +235,6 @@ class NotesPane(wx.Panel):
 			self.toolbar.Refresh(False)
 		self.editor.ApplyAlignmentToSelection(wx.TEXT_ALIGNMENT_RIGHT)
 	
-	def OnBullets(self, event):
-		if self.editor.HasSelection():
-			selection = self.editor.GetSelectionRange()
-		else:
-			start = self.editor.XYToPosition(0, self.editor.PositionToXY(self.editor.GetInsertionPoint())[1])
-			selection = (start, start + 1)
-		style = richtext.RichTextAttr()
-		style.SetFlags(wx.TEXT_ATTR_LEFT_INDENT | wx.TEXT_ATTR_BULLET_STYLE | wx.TEXT_ATTR_BULLET_NAME)
-		if (not self.editor.GetStyle(selection[0], style)) or style.GetBulletStyle() != wx.TEXT_ATTR_BULLET_STYLE_STANDARD:
-			style.SetLeftIndent(10, 40)
-			style.SetBulletStyle(wx.TEXT_ATTR_BULLET_STYLE_STANDARD)
-			style.SetBulletName("standard/circle")
-		else:
-			style.SetLeftIndent(0, 0)
-			style.SetBulletStyle(wx.TEXT_ATTR_BULLET_STYLE_NONE)
-		self.editor.SetStyle(selection, style)
-	
 	def OnNumbering(self, event):
 		style = richtext.RichTextAttr()
 		style.SetFlags(wx.TEXT_ATTR_LEFT_INDENT | wx.TEXT_ATTR_BULLET_STYLE | wx.TEXT_ATTR_BULLET_NUMBER)
@@ -367,6 +268,23 @@ class NotesPane(wx.Panel):
 				self.editor.SetStyle((pos, pos + 1), style)
 				pos += self.editor.GetLineLength(line) + 1
 				number += 1
+	
+	def OnBullets(self, event):
+		if self.editor.HasSelection():
+			selection = self.editor.GetSelectionRange()
+		else:
+			start = self.editor.XYToPosition(0, self.editor.PositionToXY(self.editor.GetInsertionPoint())[1])
+			selection = (start, start + 1)
+		style = richtext.RichTextAttr()
+		style.SetFlags(wx.TEXT_ATTR_LEFT_INDENT | wx.TEXT_ATTR_BULLET_STYLE | wx.TEXT_ATTR_BULLET_NAME)
+		if (not self.editor.GetStyle(selection[0], style)) or style.GetBulletStyle() != wx.TEXT_ATTR_BULLET_STYLE_STANDARD:
+			style.SetLeftIndent(10, 40)
+			style.SetBulletStyle(wx.TEXT_ATTR_BULLET_STYLE_STANDARD)
+			style.SetBulletName("standard/circle")
+		else:
+			style.SetLeftIndent(0, 0)
+			style.SetBulletStyle(wx.TEXT_ATTR_BULLET_STYLE_NONE)
+		self.editor.SetStyle(selection, style)
 	
 	def OnDecreaseIndent(self, event):
 		style = richtext.RichTextAttr()
@@ -405,8 +323,8 @@ class NotesPane(wx.Panel):
 			color = wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOWTEXT)
 		data.SetColour(color)
 		data.SetCustomColour(0, self.foreground)
-		dialog = wx.ColourDialog(self._parent, data)
-		pos = list(self.toolbar.ClientToScreen(self._parent.toolbar.GetPopupPos(self.toolbar, self.ID_COLOR)))
+		dialog = wx.ColourDialog(self._frame, data)
+		pos = list(self.toolbar.ClientToScreen(self._frame.toolbar.GetPopupPos(self.toolbar, self.ID_COLOR)))
 		width, height = dialog.GetSize()
 		display = wx.GetDisplaySize()
 		if pos[0] + width > display[0]:
@@ -439,8 +357,8 @@ class NotesPane(wx.Panel):
 			color = wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOW)
 		data.SetColour(color)
 		data.SetCustomColour(0, self.background)
-		dialog = wx.ColourDialog(self._parent, data)
-		pos = list(self.toolbar.ClientToScreen(self._parent.toolbar.GetPopupPos(self.toolbar, self.ID_HIGHLIGHT)))
+		dialog = wx.ColourDialog(self._frame, data)
+		pos = list(self.toolbar.ClientToScreen(self._frame.toolbar.GetPopupPos(self.toolbar, self.ID_HIGHLIGHT)))
 		width, height = dialog.GetSize()
 		display = wx.GetDisplaySize()
 		if pos[0] + width > display[0]:
@@ -491,5 +409,19 @@ class NotesPane(wx.Panel):
 	def OnKeyUp(self, event):
 		self.UpdateUI()
 		event.Skip()
+
+class NotesPane(aui.AuiNotebook):
+	def __init__(self, parent):
+		aui.AuiNotebook.__init__(self, parent, -1, agwStyle=(aui.AUI_NB_DEFAULT_STYLE ^ aui.AUI_NB_CLOSE_ON_ACTIVE_TAB ^ aui.AUI_NB_MIDDLE_CLICK_CLOSE) | aui.AUI_NB_SUB_NOTEBOOK | aui.AUI_NB_TAB_FLOAT)
+		self._parent = parent
+		
+		self.AddPage(NotesPanel(self, _("Study Notes")), _("Study Notes"))
+		self.AddPage(NotesPanel(self, _("Topic Notes")), _("Topic Notes"))
+		self.SetSelection(parent._app.settings["ActiveNotes"])
+		
+		self.Bind(aui.EVT_AUINOTEBOOK_PAGE_CHANGED, self.OnAuiNotebookPageChanged)
+	
+	def OnAuiNotebookPageChanged(self, event):
+		wx.CallAfter(self.GetCurrentPage().editor.SetFocus)
 
 sizes = ["8", "9", "10", "11", "12", "14", "16", "18", "20", "22", "24", "26", "28", "36", "48", "72"]

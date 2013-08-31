@@ -7,7 +7,7 @@ import os
 import shutil
 from cx_Freeze import setup, Executable
 
-_version = "1.4.5"
+_version = "1.4.6"
 os.chdir(os.path.dirname(__file__))
 
 includes = []
