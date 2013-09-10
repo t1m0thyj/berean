@@ -4,7 +4,7 @@ Copyright (C) 2013 Timothy Johnson <timothysw@objectmail.com>
 """
 
 import cPickle
-import os
+import os.path
 import re
 import wx
 
@@ -32,10 +32,7 @@ def index(app, Bible, version):
 	for word in index:
 		index[word] = "".join(index[word])
 	dialog.Update(68)
-	indexdir = os.path.join(app.userdatadir, "indexes")
-	if not os.path.isdir(indexdir):
-		os.mkdir(indexdir)
-	fileobj = open(os.path.join(indexdir, "%s.idx" % version), 'wb')
+	fileobj = open(os.path.join(app.userdatadir, "indexes", "%s.idx" % version), 'wb')
 	cPickle.dump(index, fileobj, -1)
 	fileobj.close()
 	dialog.Destroy()

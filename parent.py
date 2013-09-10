@@ -18,7 +18,9 @@ import toolbar
 
 _ = wx.GetTranslation
 if wx.VERSION_STRING < "2.9.0.0":
-	aui.auibar.MakeDisabledBitmap = lambda bitmap: wx.BitmapFromImage(wx.ImageFromBitmap(bitmap).AdjustChannels(1.1, 1.1, 1.1, 0.5))
+	##from wx.aui import AuiDefaultToolBarArt
+	##aui.auibar.MakeDisabledBitmap = AuiDefaultToolBarArt.MakeDisabledBitmap
+	aui.framemanager.sc.SizedParent = aui.framemanager.sc.SizedPanel
 aui.auibook.AuiTabCtrl.ShowTooltip = lambda self: None
 
 class MainFrame(wx.Frame):
