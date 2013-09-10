@@ -44,8 +44,8 @@ setup(version=_version,
 
 shutil.copytree("images", "build\\exe.win32-2.7\\images")
 shutil.copytree("locale", "build\\exe.win32-2.7\\locale")
+shutil.copy2("build\\berean.manifest", "build\\exe.win32-2.7")
 os.mkdir("build\\exe.win32-2.7\\versions")
 shutil.copy2("versions\\KJV.bbl", "build\\exe.win32-2.7\\versions")
 shutil.copy2("versions\\YLT.bbl", "build\\exe.win32-2.7\\versions")
 shutil.copy2("license.txt", "build\\exe.win32-2.7")
-shutil.copy2("build\\berean.manifest", "build\\exe.win32-2.7")

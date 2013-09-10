@@ -13,7 +13,7 @@
 # Python Code By:
 #
 # Andrea Gavana, @ 23 Dec 2005
-# Latest Revision: 25 Apr 2012, 21.00 GMT
+# Latest Revision: 17 Feb 2013, 21.00 GMT
 #
 # For All Kind Of Problems, Requests Of Enhancements And Bug Reports, Please
 # Write To Me At:
@@ -94,6 +94,8 @@ __date__ = "31 March 2009"
 
 
 import wx
+# just for isinstance
+import wx.lib.sized_controls as sc
 import time
 import types
 import warnings
@@ -4457,6 +4459,8 @@ class AuiManager(wx.EvtHandler):
 
         if not managed_window:
             raise Exception("Specified managed window must be non-null. ")
+        if isinstance(managed_window, sc.SizedParent):
+            raise Exception("Do not use wx.lib.sized_control for managed window. ")
 
         self.UnInit()
 

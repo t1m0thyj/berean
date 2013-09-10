@@ -4,7 +4,7 @@ Copyright (C) 2013 Timothy Johnson <timothysw@objectmail.com>
 """
 
 import cPickle
-import os.path
+import os
 import re
 import wx
 from wx.html import EVT_HTML_LINK_CLICKED
@@ -161,8 +161,11 @@ class SearchPane(wx.Panel):
 		self.states = {}
 		self.verses = 0
 		
+		indexdir = os.path.join(parent._app.userdatadir, "indexes")
+		if not os.path.isdir(indexdir):
+			os.mkdir(indexdir)
 		for i in range(len(parent.versions)):
-			filename = os.path.join(parent._app.userdatadir, "indexes", "%s.idx" % parent.versions[i])
+			filename = os.path.join(indexdir, "%s.idx" % parent.versions[i])
 			if os.path.isfile(filename):
 				index = open(filename, 'rb')
 				self.indexes.append(cPickle.load(index))
@@ -281,9 +284,9 @@ class SearchPane(wx.Panel):
 		millis = wx.GetLocalTimeMillis()
 		results, number = self.FindText(text)
 		if len(results):
-			results.insert(0, _("<font color=gray>%d verses (%d&nbsp;msec)</font>") % (number, max(1, wx.GetLocalTimeMillis() - millis)))
+			results.insert(0, _("<font color=gray>%d verses in the %s (%d&nbsp;msec)</font>") % (number, self.lastversion, max(1, wx.GetLocalTimeMillis() - millis)))
 		else:
-			results.append(_("<font color=gray>0 verses (%d&nbsp;msec)</font><p></p><b>Suggestions:</b><ul><li> Make your search less specific.<li> Edit the search options.<li> Search in a different version.</ul>") % max(1, wx.GetLocalTimeMillis() - millis))
+			results.append(_("<font color=gray>0 verses in the %s (%d&nbsp;msec)</font><p></p><b>Suggestions:</b><ul><li> Make your search less specific.<li> Edit the search options.<li> Search in a different version.</ul>") % (self.lastversion, max(1, wx.GetLocalTimeMillis() - millis)))
 		self.html = "<html><body><font size=%d>%s</font></body></html>" % (self._parent.zoom, "".join(results))
 		self.results.SetPage(self.html)
 		wx.EndBusyCursor()
