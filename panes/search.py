@@ -371,7 +371,7 @@ class SearchPane(wx.Panel):
 				verses = []
 				while i < len(matches):
 					if matches[i] == [b, c, v + len(verses)]:
-						verse = browser.Bible[matches[i][0]][matches[i][1]][matches[i][2]].replace("[", "<i>").replace("]", "</i>")
+						verse = browser.Bible[matches[i][0]][matches[i][1]][matches[i][2]]
 						if "<div" in verse:
 							verse = verse[:verse.index("<div")]
 						offset = 0
@@ -379,7 +379,7 @@ class SearchPane(wx.Panel):
 							start, end = match.span(0)
 							verse = verse[:start + offset] + "<b>" + verse[start + offset:end + offset] + "</b>" + verse[end + offset:]
 							offset += 7
-						verses.append(verse)
+						verses.append(verse.replace("[", "<i>").replace("]", "</i>"))
 						i += 1
 					else:
 						break
@@ -475,7 +475,7 @@ class SearchPane(wx.Panel):
 		if len(selection):
 			menu.Append(wx.ID_COPY, _("&Copy\tCtrl+C"))
 		menu.Append(wx.ID_SELECTALL, _("Select &All\tCtrl+A"))
-		self.Bind(wx.EVT_MENU, self.OnSelectAll, id=wx.ID_SELECTALL)
+		self.Bind(wx.EVT_MENU, self.results.OnSelectAll, id=wx.ID_SELECTALL)
 		menu.AppendSeparator()
 		menu.Append(wx.ID_PRINT, _("&Print...\tCtrl+P"))
 		menu.Append(wx.ID_PREVIEW, _("P&rint Preview...\tCtrl+Alt+P"))

@@ -149,7 +149,7 @@ class MultiverseDialog(wx.Dialog):
 		if len(selection):
 			menu.Append(wx.ID_COPY, _("&Copy\tCtrl+C"))
 		menu.Append(wx.ID_SELECTALL, _("Select &All\tCtrl+A"))
-		self.Bind(wx.EVT_MENU, self.OnSelectAll, id=wx.ID_SELECTALL)
+		self.Bind(wx.EVT_MENU, self.results.OnSelectAll, id=wx.ID_SELECTALL)
 		menu.AppendSeparator()
 		menu.Append(wx.ID_PRINT, _("&Print...\tCtrl+P"))
 		menu.Append(wx.ID_PREVIEW, _("P&rint Preview...\tCtrl+Alt+P"))
