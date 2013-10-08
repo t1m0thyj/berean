@@ -16,7 +16,6 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import argparse
 import ConfigParser
 import os
 import sys
@@ -180,21 +179,17 @@ class Berean(wx.App):
 			self.cwd = os.path.dirname(__file__)
 		else:
 			self.cwd = os.path.dirname(sys.argv[0])
-		if args.datadir:
-			self.userdatadir = args.datadir
-			if not os.path.isabs(self.userdatadir):	# Check if path is relative
-				self.userdatadir = os.path.join(self.cwd, self.userdatadir)
-		elif not os.path.isfile(os.path.join(self.cwd, "portable.ini")):
-			if wx.Platform != "__WXGTK__":
-				self.userdatadir = os.path.join(wx.StandardPaths.Get().GetUserDataDir(), "Berean")
-			else:
-				self.userdatadir = os.path.join(wx.StandardPaths.Get().GetUserDataDir(), ".berean")
-		else:
+		if os.path.isfile(os.path.join(self.cwd, "portable.ini")):
 			self.userdatadir = self.cwd
+		elif wx.Platform != "__WXGTK__":
+			self.userdatadir = os.path.join(wx.StandardPaths.Get().GetUserDataDir(), "Berean")
+		else:
+			self.userdatadir = os.path.join(wx.StandardPaths.Get().GetUserDataDir(), ".berean")
 		if not os.path.isdir(self.userdatadir):
 			os.mkdir(self.userdatadir)
 		
-		if not args.systemtray:
+		systemtray = "--systemtray" in sys.argv[1:]
+		if not systemtray:
 			splash = wx.SplashScreen(wx.Bitmap(os.path.join(self.cwd, "images", "splash.png"), wx.BITMAP_TYPE_PNG), wx.SPLASH_CENTRE_ON_SCREEN | wx.SPLASH_NO_TIMEOUT, 1000, None, -1, style=wx.NO_BORDER | wx.FRAME_NO_TASKBAR)
 			self.Yield()
 		
@@ -211,7 +206,7 @@ class Berean(wx.App):
 		self.frame = parent.MainFrame(self)
 		self.SetTopWindow(self.frame)
 		self.frame.Show()
-		if not args.systemtray:
+		if not systemtray:
 			splash.Destroy()
 		else:
 			self.frame.Iconize()
@@ -233,19 +228,12 @@ class Berean(wx.App):
 
 def main(restart=False):
 	sys.excepthook = debug.OnError
-	global args
-	if not restart:
-		parser = argparse.ArgumentParser()
-		parser.add_argument("--datadir")
-		parser.add_argument("--systemtray", action='store_true')
-		args = parser.parse_args()
-	else:
-		args.systemtray = False
 	app = Berean()
 	if restart:
 		app.frames[0].Addons()
 	app.MainLoop()
 	if app.restart:
+		sys.argv = sys.argv[:1]
 		main(True)
 
 if __name__ == "__main__":

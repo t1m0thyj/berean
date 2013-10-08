@@ -164,12 +164,11 @@ class TaskBarIcon(wx.TaskBarIcon):
 		self._frame.Show()
 		self._frame.Raise()
 		self._frame.Iconize(False)
+		self.RemoveIcon()
 		wx.CallAfter(self._frame.GetBrowser().SetFocus)
-		wx.CallAfter(delattr, self._frame, "trayicon")
-		self.Destroy()
+		del self._frame.trayicon
 	
 	def OnExit(self, event):
-		wx.CallAfter(self.RemoveIcon)
 		wx.CallAfter(self._frame.Close)
 		self.OnRestore(event)
 
