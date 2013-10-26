@@ -57,7 +57,7 @@ class FavoritesMenu(wx.Menu):
 			self.Enable(id, False)
 	
 	def OnAdd(self, event):
-		if self._frame.verse == -1:
+		if self._frame.reference[2] == -1:
 			favorite = "%s %s" % (self._frame.books[self._frame.reference[0] - 1], self._frame.reference[1])
 		else:
 			favorite = "%s %s:%s" % (self._frame.books[self._frame.reference[0] - 1], self._frame.reference[1], self._frame.reference[2])

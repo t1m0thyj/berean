@@ -47,7 +47,6 @@ class ToolBar(aui.AuiToolBar):
 		self.AddSimpleTool(parent.menubar.Favorites.ID_ADD, "", parent.Bitmap("add-favorite"), _("Add to Favorites (Ctrl+D)"))
 		self.AddSimpleTool(parent.menubar.Favorites.ID_MANAGE, "", parent.Bitmap("favorites"), _("Manage Favorites"))
 		
-		
 		self.Realize()
 	
 	def SetCurrent(self, current):
@@ -127,10 +126,10 @@ class ToolBar(aui.AuiToolBar):
 	
 	def OnBook(self, event):
 		book = self.books.GetSelection() + 1
-		if self._parent.chapter > self._parent.chapters[book - 1]:
+		if self._parent.reference[1] > self._parent.chapters[book - 1]:
 			chapter = self._parent.chapters[book - 1]
 		else:
-			chapter = self._parent.chapter
+			chapter = self._parent.reference[1]
 		self.chapter.SetRange(1, self._parent.chapters[book - 1])
 		self.chapter.SetValue(chapter)
 		self._parent.LoadChapter(book, chapter)

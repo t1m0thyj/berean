@@ -73,10 +73,6 @@ class MenuBar(wx.MenuBar):
 		self.ID_MULTIVERSE = wx.NewId()
 		self.Tools.Append(self.ID_MULTIVERSE, _("&Multiple Verse Search...\tCtrl+M"))
 		frame.Bind(wx.EVT_MENU, self.OnMultiverse, id=self.ID_MULTIVERSE)
-		self.Tools.AppendSeparator()
-		self.ID_ADDONS = wx.NewId()
-		self.Tools.Append(self.ID_ADDONS, _("&Add-ons..."), _("Manages add-ons"))
-		frame.Bind(wx.EVT_MENU, self.OnAddons, id=self.ID_ADDONS)
 		self.Tools.Append(wx.ID_PREFERENCES, _("&Preferences..."), _("Configures program settings"))
 		frame.Bind(wx.EVT_MENU, self.OnPreferences, id=wx.ID_PREFERENCES)
 		self.Append(self.Tools, _("&Tools"))
@@ -138,9 +134,6 @@ class MenuBar(wx.MenuBar):
 	
 	def OnMultiverse(self, event):
 		self._frame.MultiverseSearch()
-	
-	def OnAddons(self, event):
-		self._frame.Addons()
 	
 	def OnPreferences(self, event):
 		self._frame.Preferences()

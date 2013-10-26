@@ -6,7 +6,6 @@ Copyright (C) 2013 Timothy Johnson <timothysw@objectmail.com>
 import os
 import wx
 
-import addons
 import aui
 import helper
 import htmlwin
@@ -114,8 +113,6 @@ class MainFrame(wx.Frame):
 		self.notes = panes.NotesPane(self)
 		self.aui.AddPane(self.notes, aui.AuiPaneInfo().Name("notespane").Caption(_("Notes")).Bottom().Layer(0).BestSize((-1, display[1] / 4)))
 		
-		self.addons = addons.AddonManager(self)
-		
 		filename = os.path.join(app.userdatadir, "berean.aui")
 		if os.path.isfile(filename):
 			perspective = open(filename, 'r')
@@ -135,7 +132,6 @@ class MainFrame(wx.Frame):
 		if app.settings["MaximizeState"]:
 			self.Maximize()
 			self.Layout()
-		self.addons.PostInit()
 		
 		tabctrl = self.notebook.GetActiveTabCtrl()
 		tabctrl.Bind(wx.EVT_MOTION, self.OnTabCtrlMotion)
@@ -254,10 +250,6 @@ class MainFrame(wx.Frame):
 		dialog = multiverse.MultiverseDialog(self, references)
 		dialog.Show()
 	
-	def Addons(self):
-		dialog = addons.AddonDialog(self)
-		dialog.Show()
-	
 	def Preferences(self):
 		from dialogs import preferences
 		dialog = preferences.PreferenceDialog(self)
@@ -330,7 +322,6 @@ class MainFrame(wx.Frame):
 	def OnClose(self, event):
 		for i in range(self.notes.GetPageCount()):
 			self.notes.GetPage(i).SaveNotes()
-		self.addons.UnInit()
 		self._app.UnInit()
 		perspective = open(os.path.join(self._app.userdatadir, "berean.aui"), 'w')
 		perspective.write(self.aui.SavePerspective())
