@@ -49,7 +49,6 @@ class FileConfig(ConfigParser.RawConfigParser):
 					"HebrewBookOrder":False, "ActiveNotes":0,
 					"VersionList":["KJV", "YLT"], "ParallelVersions":["KJV", "YLT"],
 					"FavoritesList":[], "ReferenceHistory":[], "ChapterHistory":[],
-					"AddonList":[], "AddonsEnabled":[],
 					"AbbrevSearchResults":False, "LastSearch":"", "GeneralOptions":True,
 					"AllWords":True, "CaseSensitive":False, "ExactMatch":False, "Phrase":False, "RegularExpression":False,
 					"AdvancedOptions":False, "SearchHistory":[], "LastVerses":""}
@@ -78,11 +77,6 @@ class FileConfig(ConfigParser.RawConfigParser):
 			settings["ReferenceHistory"] = self.getlist("ReferenceHistory")
 		if self.has_section("ChapterHistory"):
 			settings["ChapterHistory"] = self.getlist("ChapterHistory")
-		if self.has_section("Addons"):
-			addons = [item.split(", ") for item in self.getlist("Addons")]
-			for name, enabled in addons:
-				settings["AddonList"].append(name)
-				settings["AddonsEnabled"].append(enabled.lower() == "true")
 		if self.has_option("Search", "AbbrevSearchResults"):
 			settings["AbbrevSearchResults"] = self.getboolean("Search", "AbbrevSearchResults")
 		if self.has_option("Search", "LastSearch"):
@@ -140,10 +134,6 @@ class FileConfig(ConfigParser.RawConfigParser):
 		self.setlist("FavoritesList", None, frame.menubar.Favorites.favorites)
 		self.setlist("ReferenceHistory", None, frame.toolbar.reference.GetStrings())
 		self.setlist("ChapterHistory", None, frame.toolbar.history)
-		addons = []
-		for i in range(len(frame.addons.names)):
-			addons.append("%s, %s" % (frame.addons.names[i], frame.addons.enabled[i]))
-		self.setlist("Addons", None, addons)
 		if not self.has_section("Search"):
 			self.add_section("Search")
 		self.set("Search", "AbbrevSearchResults", str(self._app.settings["AbbrevSearchResults"]))
@@ -179,8 +169,15 @@ class Berean(wx.App):
 			self.cwd = os.path.dirname(__file__)
 		else:
 			self.cwd = os.path.dirname(sys.argv[0])
-		if os.path.isfile(os.path.join(self.cwd, "portable.ini")):
-			self.userdatadir = self.cwd
+		path = os.path.join(self.cwd, "portable.pth")
+		if os.path.isfile(path):
+			fileobj = open(path, 'r')
+			path = fileobj.read().rstrip()
+			if len(path):
+				self.userdatadir = os.path.join(self.cwd, path)
+			else:
+				self.userdatadir = self.cwd
+			fileobj.close()
 		elif wx.Platform != "__WXGTK__":
 			self.userdatadir = os.path.join(wx.StandardPaths.Get().GetUserDataDir(), "Berean")
 		else:
@@ -213,28 +210,18 @@ class Berean(wx.App):
 		
 		return True
 	
-	def Restart(self):
-		self.frame.Close()
-		self.restart = True
-	
 	def UnInit(self):
 		self.config.Save(self.frame)
 		del self.locale
 	
 	def CloseFrame(self):
 		self.frame.Destroy()
-		self.restart = False
 		self.ExitMainLoop()
 
-def main(restart=False):
+def main():
 	sys.excepthook = debug.OnError
 	app = Berean()
-	if restart:
-		app.frames[0].Addons()
 	app.MainLoop()
-	if app.restart:
-		sys.argv = sys.argv[:1]
-		main(True)
 
 if __name__ == "__main__":
 	main()
