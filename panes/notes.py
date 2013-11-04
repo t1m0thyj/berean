@@ -8,8 +8,7 @@ import cStringIO
 import os.path
 import wx
 from wx import richtext
-
-import aui
+from wx.lib.agw import aui
 
 _ = wx.GetTranslation
 

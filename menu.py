@@ -154,9 +154,9 @@ class TaskBarIcon(wx.TaskBarIcon):
 		self.Bind(wx.EVT_TASKBAR_LEFT_DOWN, self.OnRestore)
 
 	def OnRestore(self, event):
+		self._frame.Iconize(False)
 		self._frame.Show()
 		self._frame.Raise()
-		self._frame.Iconize(False)
 		self.RemoveIcon()
 		wx.CallAfter(self._frame.GetBrowser().SetFocus)
 		del self._frame.trayicon

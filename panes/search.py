@@ -8,8 +8,8 @@ import os
 import re
 import wx
 from wx.html import EVT_HTML_LINK_CLICKED
+from wx.lib.agw import aui
 
-import aui
 import dialogs.index as indexer
 from htmlwin import BaseHtmlWindow
 
