@@ -6,8 +6,8 @@ Copyright (C) 2013 Timothy Johnson <timothysw@objectmail.com>
 import re
 import wx
 from wx.html import EVT_HTML_LINK_CLICKED
+from wx.lib.agw import aui
 
-import aui
 from htmlwin import BaseHtmlWindow
 from panes.search import refalize2
 

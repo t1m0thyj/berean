@@ -5,8 +5,8 @@ Copyright (C) 2013 Timothy Johnson <timothysw@objectmail.com>
 
 import os
 import wx
+from wx.lib.agw import aui
 
-import aui
 import helper
 import htmlwin
 import menu
@@ -16,11 +16,7 @@ import printing
 import toolbar
 
 _ = wx.GetTranslation
-if wx.VERSION_STRING < "2.9.0.0":
-	##from wx.aui import AuiDefaultToolBarArt
-	##aui.auibar.MakeDisabledBitmap = AuiDefaultToolBarArt.MakeDisabledBitmap
-	aui.framemanager.sc.SizedParent = aui.framemanager.sc.SizedPanel
-aui.auibook.AuiTabCtrl.ShowTooltip = lambda self: None
+aui.auibar.MakeDisabledBitmap = lambda bitmap: wx.BitmapFromImage(bitmap.ConvertToImage().ConvertToGreyscale())
 
 class MainFrame(wx.Frame):
 	def __init__(self, app):
@@ -85,7 +81,7 @@ class MainFrame(wx.Frame):
 		self.zoombar.EnableTool(wx.ID_ZOOM_IN, self.zoom < 7)
 		self.zoombar.Realize()
 		self.zoombarwidth = (self.zoombar.GetToolSize()[0] + self.zoombar.GetToolSeparation()) * 2 + self.zoomctrl.GetSize()[0]
-		self.statusbar.SetStatusWidths([-2, -1, -1, self.zoombarwidth - 7])
+		self.statusbar.SetStatusWidths([-2, -1, -1, self.zoombarwidth + 1])
 		
 		self.notebook = aui.AuiNotebook(self, -1, agwStyle=(aui.AUI_NB_DEFAULT_STYLE ^ aui.AUI_NB_TAB_MOVE ^ aui.AUI_NB_CLOSE_ON_ACTIVE_TAB ^ aui.AUI_NB_MIDDLE_CLICK_CLOSE) | aui.AUI_NB_HIDE_ON_SINGLE_TAB)
 		self.notebook.SetSashDClickUnsplit(True)
