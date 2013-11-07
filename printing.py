@@ -20,7 +20,7 @@ class Printer(html.HtmlEasyPrinting):
 	def GetChapter(self):
 		browser = self._frame.GetBrowser()
 		text = browser.GetPage(self._frame.reference[0], self._frame.reference[1])
-		if self._frame.notebook.GetSelection() != len(self._frame.versions):
+		if self._frame.notebook.GetSelection() < len(self._frame.versions):
 			pos = text.index("</b>")
 			text = text[:pos] + " (%s)" % browser.version + text[pos:]
 		return text
@@ -35,17 +35,17 @@ class Printer(html.HtmlEasyPrinting):
 		dialog.Destroy()
 	
 	def Print(self):
-		if wx.VERSION_STRING >= "2.9.0.0":
+		if wx.VERSION_STRING >= "2.9.0":
 			self.SetName("%s %d (%s)" % (self._frame.books[self._frame.reference[0] - 1], self._frame.reference[1], self._frame.notebook.GetPageText(self._frame.notebook.GetSelection())))
 		self.PrintText(self.GetChapter())
 	
 	def Preview(self):
-		if wx.VERSION_STRING >= "2.9.0.0":
+		if wx.VERSION_STRING >= "2.9.0":
 			self.SetName("%s %d (%s)" % (self._frame.books[self._frame.reference[0] - 1], self._frame.reference[1], self._frame.notebook.GetPageText(self._frame.notebook.GetSelection())))
 		self.PreviewText(self.GetChapter())
 
 head = """<html>
 <head>
-	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
 	<title>%s</title>
 </head>"""

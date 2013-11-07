@@ -17,6 +17,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import ConfigParser
+import getopt
 import os
 import sys
 import wx
@@ -164,28 +165,27 @@ class Berean(wx.App):
 		wx.App.__init__(self)
 		
 		self.SetAppName("Berean")
+		options, args = getopt.getopt(sys.argv[1:], "", ["datadir=", "systemtray"])
+		options = dict(options)
 		
 		if not hasattr(sys, "frozen"):
 			self.cwd = os.path.dirname(__file__)
 		else:
 			self.cwd = os.path.dirname(sys.argv[0])
-		path = os.path.join(self.cwd, "portable.pth")
-		if os.path.isfile(path):
-			fileobj = open(path, 'r')
-			path = fileobj.read().rstrip()
-			if len(path):
-				self.userdatadir = os.path.join(self.cwd, path)
-			else:
-				self.userdatadir = self.cwd
-			fileobj.close()
+		if "--datadir" in options:
+			self.userdatadir = options["--datadir"]
+			if not os.path.isabs(self.userdatadir):
+				self.userdatadir = os.path.join(self.cwd, self.userdatadir)
+		elif os.path.isfile(os.path.join(self.cwd, "portable.ini")):
+			self.userdatadir = self.cwd
 		elif wx.Platform != "__WXGTK__":
 			self.userdatadir = os.path.join(wx.StandardPaths.Get().GetUserDataDir(), "Berean")
 		else:
 			self.userdatadir = os.path.join(wx.StandardPaths.Get().GetUserDataDir(), ".berean")
 		if not os.path.isdir(self.userdatadir):
-			os.mkdir(self.userdatadir)
+			os.makedirs(self.userdatadir)
 		
-		systemtray = "--systemtray" in sys.argv[1:]
+		systemtray = "--systemtray" in options
 		if not systemtray:
 			splash = wx.SplashScreen(wx.Bitmap(os.path.join(self.cwd, "images", "splash.png"), wx.BITMAP_TYPE_PNG), wx.SPLASH_CENTRE_ON_SCREEN | wx.SPLASH_NO_TIMEOUT, 1000, None, -1, style=wx.NO_BORDER | wx.FRAME_NO_TASKBAR)
 			self.Yield()

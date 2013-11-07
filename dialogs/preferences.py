@@ -10,7 +10,7 @@ _ = wx.GetTranslation
 
 class PreferenceDialog(wx.Dialog):
 	def __init__(self, parent):
-		wx.Dialog.__init__(self, parent, title=_("Preferences"), size=(400, 500))
+		wx.Dialog.__init__(self, parent, title=_("Preferences"), size=(600, 440))
 		self._parent = parent
 		
 		self.abbrevs = ("ASV", "KJV", "WBS", "WEB", "WNT", "YLT", "DSV", "LSG", "RVA")
@@ -20,11 +20,13 @@ class PreferenceDialog(wx.Dialog):
 					   "Dutch Statenvertaling [Dutch]", "Louis Segond [French]",
 					   "Reina-Valera Antigua [Spanish]")
 		
-		self.notebook = wx.Notebook(self, -1, style=wx.NB_MULTILINE)
-		if wx.Platform == "__WXMSW__":
-			wx.CallAfter(self.notebook.Refresh)	# Avoid black square on first notebook page
+		self.listbook = wx.Listbook(self, -1)
+		images = wx.ImageList(24, 24)
+		for name in ("general", "versions"):
+			images.Add(parent.Bitmap(name))
+		self.listbook.AssignImageList(images)
 		
-		self.general = wx.Panel(self.notebook, -1)
+		self.general = wx.Panel(self.listbook, -1)
 		self.MinimizeToTray = wx.CheckBox(self.general, -1, _("Minimize to system tray"))
 		self.MinimizeToTray.SetValue(parent._app.settings["MinimizeToTray"])
 		self.HebrewBookOrder = wx.CheckBox(self.general, -1, _("Use Hebrew Old Testament book order in tree pane*"))
@@ -36,9 +38,9 @@ class PreferenceDialog(wx.Dialog):
 		sizer.Add(self.HebrewBookOrder, 0, wx.ALL, 2)
 		sizer.Add(self.AbbrevSearchResults, 0, wx.ALL, 2)
 		self.general.SetSizer(sizer)
-		self.notebook.AddPage(self.general, _("General"))
+		self.listbook.AddPage(self.general, _("General"), imageId=0)
 		
-		self.versions = wx.Panel(self.notebook, -1)
+		self.versions = wx.Panel(self.listbook, -1)
 		self.VersionList = wx.CheckListBox(self.versions, -1)
 		for i in range(len(self.abbrevs)):
 			self.VersionList.Append("%s (%s)" % (self.titles[i], self.abbrevs[i]))
@@ -48,10 +50,10 @@ class PreferenceDialog(wx.Dialog):
 		sizer = wx.BoxSizer()
 		sizer.Add(self.VersionList, 1, wx.EXPAND)
 		self.versions.SetSizer(sizer)
-		self.notebook.AddPage(self.versions, _("Versions*"))
+		self.listbook.AddPage(self.versions, _("Versions*"), imageId=1)
 		
 		sizer = wx.BoxSizer(wx.VERTICAL)
-		sizer.Add(self.notebook, 1, wx.ALL | wx.EXPAND, 2)
+		sizer.Add(self.listbook, 1, wx.ALL | wx.EXPAND, 2)
 		statictext = wx.StaticText(self, -1, _("*Takes effect after you restart Berean"))
 		statictext.SetForegroundColour("#808080")
 		sizer.Add(statictext, 0, wx.LEFT | wx.RIGHT | wx.EXPAND, 5)

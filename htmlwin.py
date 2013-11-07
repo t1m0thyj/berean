@@ -40,7 +40,10 @@ class HtmlWindow(BaseHtmlWindow):
 		
 		self.verse = -1
 		
-		self.Bind(wx.EVT_CONTEXT_MENU, self.OnContextMenu)
+		if wx.Platform == "__WXMSW__" and wx.VERSION_STRING < "2.9.0":
+			self.Bind(wx.EVT_RIGHT_UP, self.OnContextMenu)
+		else:
+			self.Bind(wx.EVT_CONTEXT_MENU, self.OnContextMenu)
 	
 	def LoadChapter(self, book, chapter, verse=-1):
 		self.SetPage(self.GetPage(book, chapter, verse))

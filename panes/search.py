@@ -8,9 +8,9 @@ import os
 import re
 import wx
 from wx.html import EVT_HTML_LINK_CLICKED
-from wx.lib.agw import aui
 
 import dialogs.index as indexer
+from agw import aui
 from htmlwin import BaseHtmlWindow
 
 _ = wx.GetTranslation
@@ -264,7 +264,10 @@ class SearchPane(wx.Panel):
 			self.Bind(wx.EVT_MENU, self.OnPrintMenu, id=id)
 		self.toolbar.Bind(aui.EVT_AUITOOLBAR_TOOL_DROPDOWN, self.OnPrintDropdown, id=wx.ID_PRINT)
 		self.results.Bind(EVT_HTML_LINK_CLICKED, self.OnHtmlLinkClicked)
-		self.results.Bind(wx.EVT_CONTEXT_MENU, self.OnContextMenu)
+		if wx.Platform == "__WXMSW__" and wx.VERSION_STRING < "2.9.0":
+			self.results.Bind(wx.EVT_RIGHT_UP, self.OnContextMenu)
+		else:
+			self.results.Bind(wx.EVT_CONTEXT_MENU, self.OnContextMenu)
 		for option in ("AllWords", "ExactMatch", "Phrase", "RegularExpression"):
 			getattr(self, option).Bind(wx.EVT_CHECKBOX, self.OnCheckbox)
 		self.rangechoice.Bind(wx.EVT_CHOICE, self.OnRange)
@@ -440,7 +443,7 @@ class SearchPane(wx.Panel):
 		if id != wx.ID_PAGE_SETUP:
 			header = _("<div align=center><b>Search results for \"%s\" in the %s (%d&nbsp;verses)</b></div>") % (self.text.GetValue(), self.lastversion, self.verses)
 			text = self.html[:12] + header + self.html[self.html.index("</font>") + 7:]
-			if wx.VERSION_STRING >= "2.9.0.0":
+			if wx.VERSION_STRING >= "2.9.0":
 				self._parent.printer.SetName(_("Search Results"))
 			if id == wx.ID_PRINT:
 				self._parent.printer.PrintText(text)
