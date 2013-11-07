@@ -6,8 +6,8 @@ Copyright (C) 2013 Timothy Johnson <timothysw@objectmail.com>
 import re
 import wx
 from wx.html import EVT_HTML_LINK_CLICKED
-from wx.lib.agw import aui
 
+from agw import aui
 from htmlwin import BaseHtmlWindow
 from panes.search import refalize2
 
@@ -21,7 +21,7 @@ class MultiverseDialog(wx.Dialog):
 		self.html = ""
 		self.lastversion = None
 		
-		self.toolbar = aui.AuiToolBar(self, -1, agwStyle=aui.AUI_TB_DEFAULT_STYLE | aui.AUI_TB_OVERFLOW | aui.AUI_TB_HORZ_TEXT)
+		self.toolbar = aui.AuiToolBar(self, -1, agwStyle=aui.AUI_TB_DEFAULT_STYLE | aui.AUI_TB_OVERFLOW | aui.AUI_TB_PLAIN_BACKGROUND | aui.AUI_TB_HORZ_TEXT)
 		self.toolbar.AddLabel(-1, _("Version:"), self.toolbar.GetTextExtent(_("Version:"))[0] - 5)
 		self.version = wx.Choice(self.toolbar, -1, choices=parent.versions)
 		tab = parent.notebook.GetSelection()
@@ -62,7 +62,10 @@ class MultiverseDialog(wx.Dialog):
 			self.Bind(wx.EVT_MENU, self.OnPrintMenu, id=id)
 		self.toolbar.Bind(aui.EVT_AUITOOLBAR_TOOL_DROPDOWN, self.OnPrintDropdown, id=wx.ID_PRINT)
 		self.results.Bind(EVT_HTML_LINK_CLICKED, self.OnHtmlLinkClicked)
-		self.results.Bind(wx.EVT_CONTEXT_MENU, self.OnContextMenu)
+		if wx.Platform == "__WXMSW__" and wx.VERSION_STRING < "2.9.0":
+			self.results.Bind(wx.EVT_RIGHT_UP, self.OnContextMenu)
+		else:
+			self.results.Bind(wx.EVT_CONTEXT_MENU, self.OnContextMenu)
 		self.close.Bind(wx.EVT_BUTTON, self.OnClose)
 		self.Bind(wx.EVT_CLOSE, self.OnClose)
 	
@@ -119,7 +122,7 @@ class MultiverseDialog(wx.Dialog):
 		id = event.GetId()
 		if id != wx.ID_PAGE_SETUP:
 			text = self.html.replace("</b></a>", " (%s)</b></a>" % self.lastversion, 1)
-			if wx.VERSION_STRING >= "2.9.0.0":
+			if wx.VERSION_STRING >= "2.9.0":
 				self._parent.printer.SetName(_("Search Results"))
 			if id == wx.ID_PRINT:
 				self._parent.printer.PrintText(text)

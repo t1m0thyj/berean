@@ -5,7 +5,6 @@ Copyright (C) 2013 Timothy Johnson <timothysw@objectmail.com>
 
 import os
 import wx
-from wx.lib.agw import aui
 
 import helper
 import htmlwin
@@ -14,9 +13,13 @@ import panes
 import parallel
 import printing
 import toolbar
+from agw import aui
 
 _ = wx.GetTranslation
-aui.auibar.MakeDisabledBitmap = lambda bitmap: wx.BitmapFromImage(bitmap.ConvertToImage().ConvertToGreyscale())
+if wx.VERSION_STRING < "2.9.0":
+	aui.auibar.MakeDisabledBitmap = lambda bitmap: wx.BitmapFromImage(bitmap.ConvertToImage().ConvertToGreyscale())
+else:
+	aui.auibar.MakeDisabledBitmap = wx.Bitmap.ConvertToDisabled
 
 class MainFrame(wx.Frame):
 	def __init__(self, app):
@@ -83,7 +86,7 @@ class MainFrame(wx.Frame):
 		self.zoombarwidth = (self.zoombar.GetToolSize()[0] + self.zoombar.GetToolSeparation()) * 2 + self.zoomctrl.GetSize()[0]
 		self.statusbar.SetStatusWidths([-2, -1, -1, self.zoombarwidth + 1])
 		
-		self.notebook = aui.AuiNotebook(self, -1, agwStyle=(aui.AUI_NB_DEFAULT_STYLE ^ aui.AUI_NB_TAB_MOVE ^ aui.AUI_NB_CLOSE_ON_ACTIVE_TAB ^ aui.AUI_NB_MIDDLE_CLICK_CLOSE) | aui.AUI_NB_HIDE_ON_SINGLE_TAB)
+		self.notebook = aui.AuiNotebook(self, -1, agwStyle=(aui.AUI_NB_DEFAULT_STYLE ^ aui.AUI_NB_TAB_MOVE ^ aui.AUI_NB_CLOSE_ON_ACTIVE_TAB ^ aui.AUI_NB_MIDDLE_CLICK_CLOSE) | aui.AUI_NB_WINDOWLIST_BUTTON | aui.AUI_NB_HIDE_ON_SINGLE_TAB | aui.AUI_NB_USE_IMAGES_DROPDOWN)
 		self.notebook.SetSashDClickUnsplit(True)
 		v = 0
 		while v < len(self.versions):
@@ -103,11 +106,11 @@ class MainFrame(wx.Frame):
 		self.aui.AddPane(self.tree, aui.AuiPaneInfo().Name("treepane").Caption(_("Bible")).Left().Layer(1).BestSize((150, -1)))
 		
 		self.search = panes.SearchPane(self)
-		self.aui.AddPane(self.search, aui.AuiPaneInfo().Name("searchpane").Caption(_("Search")).Right().Layer(1).BestSize((display[0] / 4, -1)))
+		self.aui.AddPane(self.search, aui.AuiPaneInfo().Name("searchpane").Caption(_("Search")).MaximizeButton(True).Right().Layer(1).BestSize((display[0] / 4, -1)))
 		panes.search.books = [book.replace(" ", "").lower() for book in self.books]
 		
 		self.notes = panes.NotesPane(self)
-		self.aui.AddPane(self.notes, aui.AuiPaneInfo().Name("notespane").Caption(_("Notes")).Bottom().Layer(0).BestSize((-1, display[1] / 4)))
+		self.aui.AddPane(self.notes, aui.AuiPaneInfo().Name("notespane").Caption(_("Notes")).MaximizeButton(True).Bottom().Layer(0).BestSize((-1, display[1] / 4)))
 		
 		filename = os.path.join(app.userdatadir, "berean.aui")
 		if os.path.isfile(filename):
@@ -117,7 +120,7 @@ class MainFrame(wx.Frame):
 		
 		self.LoadChapter(self.reference[0], self.reference[1], self.reference[2], True)
 		browser = self.GetBrowser()
-		if app.settings["ActiveTab"] != len(self.versions):
+		if app.settings["ActiveTab"] < len(self.versions):
 			self.statusbar.SetStatusText(browser.description, 1)
 		browser.SetFocus()
 		
@@ -284,7 +287,6 @@ class MainFrame(wx.Frame):
 		self.statusbar.SetStatusText("%s %d (%s)" % (self.books[self.reference[0] - 1], self.reference[1], version), 0)
 		if new < len(self.versions):
 			self.search.version.SetSelection(new)
-		if new != len(self.versions):
 			self.statusbar.SetStatusText(browser.description, 1)
 		wx.CallAfter(browser.SetFocus)
 	

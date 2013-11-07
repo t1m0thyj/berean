@@ -8,7 +8,8 @@ import cStringIO
 import os.path
 import wx
 from wx import richtext
-from wx.lib.agw import aui
+
+from agw import aui
 
 _ = wx.GetTranslation
 
@@ -191,7 +192,7 @@ class NotesPanel(wx.Panel):
 	def OnSize(self, event):
 		style = richtext.RichTextAttr()
 		style.SetFlags(wx.TEXT_ATTR_FONT_FACE | wx.TEXT_ATTR_FONT_SIZE)
-		style.SetFontFaceName(self.font.GetValue())
+		style.SetFontFaceName(self.font.GetStringSelection())
 		style.SetFontSize(int(self.size.GetValue()))
 		if self.editor.HasSelection():
 			self.editor.SetStyle(self.editor.GetSelectionRange(), style)
