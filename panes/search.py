@@ -190,73 +190,61 @@ class SearchPane(wx.Panel):
 		self.toolbar.EnableTool(wx.ID_PRINT, False)
 		self.toolbar.Realize()
 		self.results = BaseHtmlWindow(self)
-		self.general = wx.CollapsiblePane(self, -1, _("General Options"), style=wx.CP_DEFAULT_STYLE | wx.CP_NO_TLW_RESIZE)
-		general = self.general.GetPane()
-		self.AllWords = wx.CheckBox(general, -1, _("All Words in Verse"), style=wx.CHK_3STATE)
-		self.CaseSensitive = wx.CheckBox(general, -1, _("Case Sensitive"))
-		self.ExactMatch = wx.CheckBox(general, -1, _("Exact Match Needed"), style=wx.CHK_3STATE)
-		self.Phrase = wx.CheckBox(general, -1, _("Phrase in Order"), style=wx.CHK_3STATE)
-		self.RegularExpression = wx.CheckBox(general, -1, _("Regular Expression"))
+		self.optionspane = wx.CollapsiblePane(self, -1, _("Search Options"), style=wx.CP_DEFAULT_STYLE | wx.CP_NO_TLW_RESIZE)
+		optionspane = self.optionspane.GetPane()
+		self.AllWords = wx.CheckBox(optionspane, -1, _("All Words in Verse"), style=wx.CHK_3STATE)
+		self.CaseSensitive = wx.CheckBox(optionspane, -1, _("Case Sensitive"))
+		self.ExactMatch = wx.CheckBox(optionspane, -1, _("Exact Match Needed"), style=wx.CHK_3STATE)
+		self.Phrase = wx.CheckBox(optionspane, -1, _("Phrase in Order"), style=wx.CHK_3STATE)
+		self.RegularExpression = wx.CheckBox(optionspane, -1, _("Regular Expression"))
 		for option in self.options:
 			getattr(self, option).Set3StateValue(parent._app.settings[option])
-		self.version = wx.Choice(general, -1, choices=parent.versions)
-		self.advanced = wx.CollapsiblePane(self, -1, _("Advanced Options"), style=wx.CP_DEFAULT_STYLE | wx.CP_NO_TLW_RESIZE)
-		advanced = self.advanced.GetPane()
 		if wx.VERSION_STRING >= "2.9.1.0":
-			box = wx.StaticBox(advanced, -1, _("Range"))
+			box = wx.StaticBox(optionspane, -1, _("Search in"))
 		else:
-			box = advanced
+			box = optionspane
+		self.version = wx.Choice(box, -1, choices=parent.versions)
 		self.rangechoice = wx.Choice(box, -1, choices=ranges)
 		self.rangechoice.SetSelection(0)
-		self.Start = wx.StaticText(box, -1, _("Start:"))
 		self.start = wx.Choice(box, -1, choices=parent.books)
 		self.start.SetSelection(0)
-		self.Stop = wx.StaticText(box, -1, _("Stop:"))
+		self.rangetext = wx.StaticText(box, -1, _("to"))
 		self.stop = wx.Choice(box, -1, choices=parent.books)
 		self.stop.SetSelection(65)
-		for control in (self.Start, self.start, self.Stop, self.stop):
-			control.Disable()
+		for item in (self.start, self.rangetext, self.stop):
+			item.Disable()
 		
 		sizer = wx.BoxSizer(wx.VERTICAL)
 		sizer2 = wx.BoxSizer(wx.HORIZONTAL)
 		sizer2.Add(self.text, 1, wx.ALL ^ wx.RIGHT, 2)
-		sizer2.Add(self.toolbar, 0, wx.ALL | wx.ALIGN_CENTER_VERTICAL, 0)
+		sizer2.Add(self.toolbar, 0, wx.ALIGN_CENTER_VERTICAL)
 		sizer.Add(sizer2, 0, wx.EXPAND)
-		sizer.Add(self.results, 4, wx.EXPAND)
+		sizer.Add(self.results, 1, wx.EXPAND)
 		sizer3 = wx.BoxSizer(wx.VERTICAL)
 		for option in self.options:
 			sizer3.Add(getattr(self, option), 1, wx.ALL, 2)
-		sizer4 = wx.BoxSizer(wx.HORIZONTAL)
-		sizer4.Add(wx.StaticText(general, -1, _("Version:")), 0, wx.ALL | wx.ALIGN_CENTER_VERTICAL, 2)
-		sizer4.Add(self.version, 1, (wx.ALL ^ wx.LEFT) | wx.EXPAND, 2)
-		sizer3.Add(sizer4, 0, wx.EXPAND)
-		general.SetSizer(sizer3)
-		sizer.Add(self.general, 0, wx.ALL | wx.EXPAND, 2)
-		sizer5 = wx.BoxSizer(wx.VERTICAL)
-		sizer6 = wx.BoxSizer(wx.HORIZONTAL)
-		sizer5.Add(sizer6, 0, wx.EXPAND)
 		if wx.VERSION_STRING < "2.9.1.0":
-			box = wx.StaticBox(advanced, -1, _("Range"))
-		sizer7 = wx.StaticBoxSizer(box, wx.VERTICAL)
-		sizer7.Add(self.rangechoice, 0, wx.BOTTOM | wx.EXPAND, 2)
-		sizer8 = wx.FlexGridSizer(cols=2, hgap=2, vgap=2)
-		sizer8.AddGrowableCol(1)
-		sizer8.Add(self.Start, 0, wx.ALIGN_RIGHT | wx.ALIGN_CENTER_VERTICAL)
-		sizer8.Add(self.start, 1, wx.EXPAND)
-		sizer8.Add(self.Stop, 0, wx.ALIGN_RIGHT | wx.ALIGN_CENTER_VERTICAL)
-		sizer8.Add(self.stop, 1, wx.EXPAND)
-		sizer7.Add(sizer8, 1, wx.EXPAND)
-		sizer5.Add(sizer7, 1, wx.EXPAND)
-		advanced.SetSizer(sizer5)
-		sizer.Add(self.advanced, 0, wx.ALL | wx.EXPAND, 2)
+			box = wx.StaticBox(optionspane, -1, _("Search in"))
+		sizer4 = wx.StaticBoxSizer(box, wx.VERTICAL)
+		sizer5 = wx.BoxSizer(wx.HORIZONTAL)
+		sizer5.Add(self.version, 0, wx.ALL | wx.EXPAND, 2)
+		sizer5.Add(self.rangechoice, 1, wx.ALL | wx.EXPAND, 2)
+		sizer4.Add(sizer5, 1, wx.EXPAND)
+		sizer6 = wx.BoxSizer(wx.HORIZONTAL)
+		sizer6.Add(self.start, 1, wx.ALL | wx.EXPAND, 2)
+		sizer6.Add(self.rangetext, 0, wx.LEFT | wx.RIGHT | wx.ALIGN_CENTER_VERTICAL, 5)
+		sizer6.Add(self.stop, 1, wx.ALL | wx.EXPAND, 2)
+		sizer4.Add(sizer6, 1, wx.EXPAND)
+		sizer3.Add(sizer4, 0, wx.ALL | wx.EXPAND, 2)
+		optionspane.SetSizer(sizer3)
+		sizer.Add(self.optionspane, 0, wx.ALL | wx.EXPAND, 2)
 		self.SetSizer(sizer)
 		
-		self.general.Collapse(not parent._app.settings["GeneralOptions"])
+		self.optionspane.Collapse(not parent._app.settings["OptionsPane"])
 		if parent._app.settings["ActiveTab"] < len(parent.versions):
 			self.version.SetSelection(parent._app.settings["ActiveTab"])
 		else:
 			self.version.SetSelection(0)
-		self.advanced.Collapse(not parent._app.settings["AdvancedOptions"])
 		
 		self.text.Bind(wx.EVT_TEXT_ENTER, self.OnSearch)
 		self.toolbar.Bind(wx.EVT_MENU, self.OnSearch, id=self.ID_SEARCH)
@@ -540,11 +528,11 @@ class SearchPane(wx.Panel):
 				self.start.SetSelection(self._parent.reference[0] - 1)
 				self.stop.SetSelection(self._parent.reference[0] - 1)
 			if self.start.IsEnabled():
-				for control in (self.Start, self.start, self.Stop, self.stop):
-					control.Disable()
+				for item in (self.start, self.rangetext, self.stop):
+					item.Disable()
 		else:
-			for control in (self.Start, self.start, self.Stop, self.stop):
-				control.Enable()
+			for item in (self.start, self.rangetext, self.stop):
+				item.Enable()
 	
 	def OnStart(self, event):
 		self.stop.SetSelection(event.GetSelection())
