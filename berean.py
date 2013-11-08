@@ -50,9 +50,9 @@ class FileConfig(ConfigParser.RawConfigParser):
 					"HebrewBookOrder":False, "ActiveNotes":0,
 					"VersionList":["KJV", "YLT"], "ParallelVersions":["KJV", "YLT"],
 					"FavoritesList":[], "ReferenceHistory":[], "ChapterHistory":[],
-					"AbbrevSearchResults":False, "LastSearch":"", "GeneralOptions":True,
+					"AbbrevSearchResults":False, "LastSearch":"", "OptionsPane":True,
 					"AllWords":True, "CaseSensitive":False, "ExactMatch":False, "Phrase":False, "RegularExpression":False,
-					"AdvancedOptions":False, "SearchHistory":[], "LastVerses":""}
+					"SearchHistory":[], "LastVerses":""}
 		if self.has_option("Main", "WindowPos"):
 			settings["WindowPos"] = map(int, self.getunicode("Main", "WindowPos").split(","))
 		if self.has_option("Main", "WindowSize"):
@@ -82,13 +82,11 @@ class FileConfig(ConfigParser.RawConfigParser):
 			settings["AbbrevSearchResults"] = self.getboolean("Search", "AbbrevSearchResults")
 		if self.has_option("Search", "LastSearch"):
 			settings["LastSearch"] = self.getunicode("Search", "LastSearch")
-		if self.has_option("Search", "GeneralOptions"):
-			settings["GeneralOptions"] = self.getboolean("Search", "GeneralOptions")
+		if self.has_option("Search", "OptionsPane"):
+			settings["OptionsPane"] = self.getboolean("Search", "OptionsPane")
 		for option in ("AllWords", "CaseSensitive", "ExactMatch", "Phrase", "RegularExpression"):
 			if self.has_option("Search", option):
 				settings[option] = self.getint("Search", option)
-		if self.has_option("Search", "AdvancedOptions"):
-			settings["AdvancedOptions"] = self.getboolean("Search", "AdvancedOptions")
 		if self.has_option("Search", "LastVerses"):
 			settings["LastVerses"] = self.getunicode("Search", "LastVerses")
 		if self.has_section("Search\\SearchHistory"):
@@ -140,13 +138,12 @@ class FileConfig(ConfigParser.RawConfigParser):
 		self.set("Search", "AbbrevSearchResults", str(self._app.settings["AbbrevSearchResults"]))
 		self.setlist("Search", "SearchHistory", frame.search.text.GetStrings())
 		self.set("Search", "LastSearch", frame.search.text.GetValue())
-		self.set("Search", "GeneralOptions", str(frame.search.general.IsExpanded()))
+		self.set("Search", "OptionsPane", str(frame.search.optionspane.IsExpanded()))
 		for option in frame.search.options:
 			state = getattr(frame.search, option).Get3StateValue()
 			if state == wx.CHK_UNDETERMINED:
 				state += frame.search.states[option]
 			self.set("Search", option, str(state))
-		self.set("Search", "AdvancedOptions", str(frame.search.advanced.IsExpanded()))
 		self.set("Search", "LastVerses", self._app.settings["LastVerses"])
 		config = open(self.filename, 'w')
 		self.write(config)
