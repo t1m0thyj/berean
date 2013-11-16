@@ -9,8 +9,8 @@ import re
 import wx
 from wx.html import EVT_HTML_LINK_CLICKED
 
+import aui
 import dialogs.index as indexer
-from agw import aui
 from htmlwin import BaseHtmlWindow
 
 _ = wx.GetTranslation
@@ -252,10 +252,7 @@ class SearchPane(wx.Panel):
 			self.Bind(wx.EVT_MENU, self.OnPrintMenu, id=id)
 		self.toolbar.Bind(aui.EVT_AUITOOLBAR_TOOL_DROPDOWN, self.OnPrintDropdown, id=wx.ID_PRINT)
 		self.results.Bind(EVT_HTML_LINK_CLICKED, self.OnHtmlLinkClicked)
-		if wx.Platform == "__WXMSW__" and wx.VERSION_STRING < "2.9.0":
-			self.results.Bind(wx.EVT_RIGHT_UP, self.OnContextMenu)
-		else:
-			self.results.Bind(wx.EVT_CONTEXT_MENU, self.OnContextMenu)
+		self.results.Bind(wx.EVT_RIGHT_UP, self.OnContextMenu)	# EVT_CONTEXT_MENU doesn't work for wxHtmlWindow in 2.8
 		for option in ("AllWords", "ExactMatch", "Phrase", "RegularExpression"):
 			getattr(self, option).Bind(wx.EVT_CHECKBOX, self.OnCheckbox)
 		self.rangechoice.Bind(wx.EVT_CHOICE, self.OnRange)

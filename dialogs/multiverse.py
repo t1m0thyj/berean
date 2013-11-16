@@ -7,7 +7,7 @@ import re
 import wx
 from wx.html import EVT_HTML_LINK_CLICKED
 
-from agw import aui
+import aui
 from htmlwin import BaseHtmlWindow
 from panes.search import refalize2
 
@@ -49,7 +49,7 @@ class MultiverseDialog(wx.Dialog):
 																 (wx.ACCEL_CTRL, ord("A"), wx.ID_SELECTALL)]))
 		self.results = BaseHtmlWindow(self.splitter)
 		self.splitter.SplitHorizontally(self.references, self.results, 60)
-		self.close = wx.Button(self, wx.ID_CLOSE)
+		self.close = wx.Button(self, wx.ID_CLOSE)	# Needed because GNOME 3 doesn't have close button on dialogs
 		
 		sizer = wx.BoxSizer(wx.VERTICAL)
 		sizer.Add(self.toolbar, 0, wx.EXPAND)
@@ -62,10 +62,7 @@ class MultiverseDialog(wx.Dialog):
 			self.Bind(wx.EVT_MENU, self.OnPrintMenu, id=id)
 		self.toolbar.Bind(aui.EVT_AUITOOLBAR_TOOL_DROPDOWN, self.OnPrintDropdown, id=wx.ID_PRINT)
 		self.results.Bind(EVT_HTML_LINK_CLICKED, self.OnHtmlLinkClicked)
-		if wx.Platform == "__WXMSW__" and wx.VERSION_STRING < "2.9.0":
-			self.results.Bind(wx.EVT_RIGHT_UP, self.OnContextMenu)
-		else:
-			self.results.Bind(wx.EVT_CONTEXT_MENU, self.OnContextMenu)
+		self.results.Bind(wx.EVT_RIGHT_UP, self.OnContextMenu)	# EVT_CONTEXT_MENU doesn't work for wxHtmlWindow in 2.8
 		self.close.Bind(wx.EVT_BUTTON, self.OnClose)
 		self.Bind(wx.EVT_CLOSE, self.OnClose)
 	

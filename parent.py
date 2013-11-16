@@ -6,6 +6,7 @@ Copyright (C) 2013 Timothy Johnson <timothysw@objectmail.com>
 import os
 import wx
 
+import aui
 import helper
 import htmlwin
 import menu
@@ -13,13 +14,11 @@ import panes
 import parallel
 import printing
 import toolbar
-from agw import aui
 
 _ = wx.GetTranslation
 if wx.VERSION_STRING < "2.9.0":
 	aui.auibar.MakeDisabledBitmap = lambda bitmap: wx.BitmapFromImage(bitmap.ConvertToImage().ConvertToGreyscale())
-else:
-	aui.auibar.MakeDisabledBitmap = wx.Bitmap.ConvertToDisabled
+aui.auibook.AuiTabCtrl.ShowTooltip = lambda self: None
 
 class MainFrame(wx.Frame):
 	def __init__(self, app):
