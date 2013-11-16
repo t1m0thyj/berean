@@ -11,8 +11,6 @@ import urllib2
 import webbrowser
 import wx
 
-from agw import genericmessagedialog
-
 _ = wx.GetTranslation
 
 def OnError(*exception):
@@ -24,10 +22,9 @@ def LogError(exception):
 		return
 	error = True
 	details = "".join(traceback.format_exception(*exception))
-	dialog = genericmessagedialog.GenericMessageDialog(None, _("An error has occurred in the application."), _("Error"), wx.ICON_ERROR | wx.YES_NO | wx.CANCEL)
+	dialog = wx.MessageDialog(None, _("An error has occurred in the application."), _("Error"), wx.ICON_ERROR | wx.YES_NO | wx.CANCEL)
 	dialog.SetExtendedMessage(details)
 	dialog.SetYesNoCancelLabels(_("Report"), _("Ignore"), _("Abort"))
-	dialog.Bind(wx.EVT_CLOSE, dialog.OnNo)	# Make close button behave like Ignore, not Abort
 	button = dialog.ShowModal()
 	if button == wx.ID_YES:
 		mac = ""
@@ -68,11 +65,3 @@ wxPython %s
     default encoding: %s
 Berean %s
     frozen: %s"""
-
-def OnCancel(genericmessagedialog, event):
-	if not event:
-		genericmessagedialog.EndDialog(wx.ID_NO)
-	else:
-		genericmessagedialog.EndDialog(wx.ID_CANCEL)
-
-genericmessagedialog.GenericMessageDialog.OnCancel = OnCancel	# Make Escape key behave like Ignore, not Abort

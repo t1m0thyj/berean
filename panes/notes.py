@@ -9,7 +9,7 @@ import os.path
 import wx
 from wx import richtext
 
-from agw import aui
+import aui
 
 _ = wx.GetTranslation
 

@@ -5,7 +5,7 @@ Copyright (C) 2013 Timothy Johnson <timothysw@objectmail.com>
 
 import wx
 
-from agw import aui
+import aui
 from panes.search import refalize, validate
 
 _ = wx.GetTranslation
