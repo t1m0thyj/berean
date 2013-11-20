@@ -60,6 +60,8 @@ class ParallelWindow(HtmlWindow):
 				items.append("</tr>")
 			self.verses = i
 		self.SetDescription(versions)
+		if wx.VERSION_STRING >= "2.9.4.0":
+			self._frame.notebook.SetPageToolTip(len(self._frame.versions), self.description)
 		return body % (self._frame.zoom, "\n\t\t".join(items))
 	
 	def LoadChapter(self, book, chapter, verse=-1):

@@ -5,14 +5,13 @@ Copyright (C) 2013 Timothy Johnson <timothysw@objectmail.com>
 
 import wx
 
-import aui
 from panes.search import refalize, validate
 
 _ = wx.GetTranslation
 
-class ToolBar(aui.AuiToolBar):
+class ToolBar(wx.ToolBar):
 	def __init__(self, parent):
-		super(ToolBar, self).__init__(parent, -1, agwStyle=aui.AUI_TB_DEFAULT_STYLE | aui.AUI_TB_OVERFLOW | aui.AUI_TB_HORZ_TEXT)
+		super(ToolBar, self).__init__(parent, -1, style=wx.TB_FLAT | wx.TB_NODIVIDER)
 		self._parent = parent
 		
 		self.current = len(parent._app.settings["ChapterHistory"]) - 1
@@ -22,17 +21,23 @@ class ToolBar(aui.AuiToolBar):
 		self.reference.SetValue(parent._app.settings["LastReference"])
 		self.AddControl(self.reference)
 		self.reference.Bind(wx.EVT_TEXT_ENTER, self.OnSearch)
-		self.AddSimpleTool(wx.ID_FIND, "", parent.Bitmap("goto"), _("Go to Reference (Ctrl+F)"))
+		self.AddLabelTool(wx.ID_FIND, "", parent.Bitmap("goto"), shortHelp=_("Go to Reference (Ctrl+F)"))
 		self.Bind(wx.EVT_MENU, self.OnSearch, id=wx.ID_FIND)
 		self.AddSeparator()
-		self.AddSimpleTool(wx.ID_BACKWARD, _("Back"), parent.Bitmap("back"), _("Go Back (Alt+Left)"))
-		self.SetToolDropDown(wx.ID_BACKWARD, True)
+		if wx.VERSION_STRING < "2.9.0.0":
+			self.AddLabelTool(wx.ID_BACKWARD, _("Back"), parent.Bitmap("back"), shortHelp=_("Go Back (Alt+Left)"))
+			self.Bind(wx.EVT_TOOL_RCLICKED, self.OnBackRClicked, id=wx.ID_BACKWARD)
+		else:
+			self.AddLabelTool(wx.ID_BACKWARD, _("Back"), parent.Bitmap("back"), kind=wx.ITEM_DROPDOWN, shortHelp=_("Go Back (Alt+Left)"))
+			self.Bind(wx.EVT_TOOL_DROPDOWN, self.OnBackDropdown, id=wx.ID_BACKWARD)
 		self.Bind(wx.EVT_MENU, self.OnBack, id=wx.ID_BACKWARD)
-		self.Bind(aui.EVT_AUITOOLBAR_TOOL_DROPDOWN, self.OnBackDropdown, id=wx.ID_BACKWARD)
-		self.AddSimpleTool(wx.ID_FORWARD, _("Forward"), parent.Bitmap("forward"), _("Go Forward (Alt+Right)"))
-		self.SetToolDropDown(wx.ID_FORWARD, True)
+		if wx.VERSION_STRING < "2.9.0.0":
+			self.AddLabelTool(wx.ID_FORWARD, _("Forward"), parent.Bitmap("forward"), shortHelp=_("Go Forward (Alt+Right)"))
+			self.Bind(wx.EVT_TOOL_RCLICKED, self.OnForwardRClicked, id=wx.ID_FORWARD)
+		else:
+			self.AddLabelTool(wx.ID_FORWARD, _("Forward"), parent.Bitmap("forward"), kind=wx.ITEM_DROPDOWN, shortHelp=_("Go Forward (Alt+Right)"))
+			self.Bind(wx.EVT_TOOL_DROPDOWN, self.OnForwardDropdown, id=wx.ID_FORWARD)
 		self.Bind(wx.EVT_MENU, self.OnForward, id=wx.ID_FORWARD)
-		self.Bind(aui.EVT_AUITOOLBAR_TOOL_DROPDOWN, self.OnForwardDropdown, id=wx.ID_FORWARD)
 		self.AddSeparator()
 		self.books = wx.Choice(self, -1, choices=parent.books)
 		self.books.SetSelection(parent.reference[0] - 1)
@@ -42,10 +47,10 @@ class ToolBar(aui.AuiToolBar):
 		self.AddControl(self.chapter)
 		self.chapter.Bind(wx.EVT_TEXT_ENTER, self.OnChapter)
 		self.chapter.Bind(wx.EVT_SPINCTRL, self.OnChapter)
-		self.AddSimpleTool(wx.ID_PRINT, "", parent.Bitmap("print"), _("Print (Ctrl+P)"))
+		self.AddLabelTool(wx.ID_PRINT, "", parent.Bitmap("print"), shortHelp=_("Print (Ctrl+P)"))
 		self.AddSeparator()
-		self.AddSimpleTool(parent.menubar.Favorites.ID_ADD, "", parent.Bitmap("add-favorite"), _("Add to Favorites (Ctrl+D)"))
-		self.AddSimpleTool(parent.menubar.Favorites.ID_MANAGE, "", parent.Bitmap("favorites"), _("Manage Favorites"))
+		self.AddLabelTool(parent.menubar.Favorites.ID_ADD, "", parent.Bitmap("add-favorite"), shortHelp=_("Add to Favorites (Ctrl+D)"))
+		self.AddLabelTool(parent.menubar.Favorites.ID_MANAGE, "", parent.Bitmap("favorites"), shortHelp=_("Manage Favorites"))
 		
 		self.Realize()
 	
@@ -54,19 +59,10 @@ class ToolBar(aui.AuiToolBar):
 			current = len(self.history) - 1
 		self.EnableTool(wx.ID_BACKWARD, current >= 0)
 		self.EnableTool(wx.ID_FORWARD, current < len(self.history) - 1)
-		self.Refresh(False)
+		self.Realize()
 		self._parent.menubar.Enable(wx.ID_BACKWARD, current >= 0)
 		self._parent.menubar.Enable(wx.ID_FORWARD, current < len(self.history) - 1)
 		self.current = current
-	
-	def GetPopupPos(self, toolbar, id):
-		if toolbar.GetToolFits(id):
-			x, y, width, height = toolbar.GetToolRect(id)
-			return (x, y + height)
-		else:
-			x, y = toolbar.GetPosition()
-			width, height = toolbar.GetSize()
-			return (x + width - 16, y + height)
 	
 	def OnSearch(self, event):
 		reference = self.reference.GetValue()
@@ -100,13 +96,20 @@ class ToolBar(aui.AuiToolBar):
 		book, chapter, verse = refalize(self.history[self.current - 1])
 		self._parent.LoadChapter(book, chapter, verse, True)
 	
+	def OnBackRClicked(self, event):
+		menu = wx.Menu()
+		for i in range(self.current - 1, -1, -1):
+			menu.Append(wx.ID_HIGHEST + i, self.history[i])
+			self.Bind(wx.EVT_MENU, self.OnHistoryItem, id=wx.ID_HIGHEST + i)
+		self.PopupMenu(menu)
+	
 	def OnBackDropdown(self, event):
-		if event.IsDropDownClicked():
-			menu = wx.Menu()
-			for i in range(self.current - 1, -1, -1):
-				menu.Append(wx.ID_HIGHEST + i, self.history[i])
-				self.Bind(wx.EVT_MENU, self.OnHistoryItem, id=wx.ID_HIGHEST + i)
-			self.PopupMenu(menu, self.GetPopupPos(self, wx.ID_BACKWARD))
+		menu = wx.Menu()
+		for i in range(self.current - 1, -1, -1):
+			menu.Append(wx.ID_HIGHEST + i, self.history[i])
+			self.Bind(wx.EVT_MENU, self.OnHistoryItem, id=wx.ID_HIGHEST + i)
+		self.SetDropdownMenu(wx.ID_BACKWARD, menu)
+		event.Skip()
 	
 	def OnHistoryItem(self, event):
 		book, chapter, verse = refalize(self.history[event.GetId() - wx.ID_HIGHEST])
@@ -116,13 +119,20 @@ class ToolBar(aui.AuiToolBar):
 		book, chapter, verse = refalize(self.history[self.current + 1])
 		self._parent.LoadChapter(book, chapter, verse, True)
 	
+	def OnForwardRClicked(self, event):
+		menu = wx.Menu()
+		for i in range(self.current + 1, len(self.history)):
+			menu.Append(wx.ID_HIGHEST + i, self.history[i])
+			self.Bind(wx.EVT_MENU, self.OnHistoryItem, id=wx.ID_HIGHEST + i)
+		self.PopupMenu(menu)
+	
 	def OnForwardDropdown(self, event):
-		if event.IsDropDownClicked():
-			menu = wx.Menu()
-			for i in range(self.current + 1, len(self.history)):
-				menu.Append(wx.ID_HIGHEST + i, self.history[i])
-				self.Bind(wx.EVT_MENU, self.OnHistoryItem, id=wx.ID_HIGHEST + i)
-			self.PopupMenu(menu, self.GetPopupPos(self, wx.ID_FORWARD))
+		menu = wx.Menu()
+		for i in range(self.current + 1, len(self.history)):
+			menu.Append(wx.ID_HIGHEST + i, self.history[i])
+			self.Bind(wx.EVT_MENU, self.OnHistoryItem, id=wx.ID_HIGHEST + i)
+		self.SetDropdownMenu(wx.ID_FORWARD, menu)
+		event.Skip()
 	
 	def OnBook(self, event):
 		book = self.books.GetSelection() + 1
