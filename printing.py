@@ -35,12 +35,12 @@ class Printer(html.HtmlEasyPrinting):
 		dialog.Destroy()
 	
 	def Print(self):
-		if wx.VERSION_STRING >= "2.9.0":
+		if wx.VERSION_STRING >= "2.9.0.0":
 			self.SetName("%s %d (%s)" % (self._frame.books[self._frame.reference[0] - 1], self._frame.reference[1], self._frame.notebook.GetPageText(self._frame.notebook.GetSelection())))
 		self.PrintText(self.GetChapter())
 	
 	def Preview(self):
-		if wx.VERSION_STRING >= "2.9.0":
+		if wx.VERSION_STRING >= "2.9.0.0":
 			self.SetName("%s %d (%s)" % (self._frame.books[self._frame.reference[0] - 1], self._frame.reference[1], self._frame.notebook.GetPageText(self._frame.notebook.GetSelection())))
 		self.PreviewText(self.GetChapter())
 

@@ -7,7 +7,6 @@ import re
 import wx
 from wx.html import EVT_HTML_LINK_CLICKED
 
-import aui
 from htmlwin import BaseHtmlWindow
 from panes.search import refalize2
 
@@ -21,8 +20,8 @@ class MultiverseDialog(wx.Dialog):
 		self.html = ""
 		self.lastversion = None
 		
-		self.toolbar = aui.AuiToolBar(self, -1, agwStyle=aui.AUI_TB_DEFAULT_STYLE | aui.AUI_TB_OVERFLOW | aui.AUI_TB_PLAIN_BACKGROUND | aui.AUI_TB_HORZ_TEXT)
-		self.toolbar.AddLabel(-1, _("Version:"), self.toolbar.GetTextExtent(_("Version:"))[0] - 5)
+		self.toolbar = wx.ToolBar(self, -1, style=wx.TB_FLAT | wx.TB_NODIVIDER | wx.TB_HORZ_TEXT)
+		self.toolbar.AddControl(wx.StaticText(self.toolbar, -1, _("Version:")))
 		self.version = wx.Choice(self.toolbar, -1, choices=parent.versions)
 		tab = parent.notebook.GetSelection()
 		if tab < len(parent.versions):
@@ -32,11 +31,18 @@ class MultiverseDialog(wx.Dialog):
 		self.toolbar.AddControl(self.version)
 		self.toolbar.AddSeparator()
 		ID_SEARCH = wx.NewId()
-		self.toolbar.AddSimpleTool(ID_SEARCH, _("Search"), parent.Bitmap("search"), _("Search (Ctrl+Enter)"))
-		self.toolbar.AddSimpleTool(wx.ID_PRINT, _("Print"), parent.Bitmap("print"), _("Print Search Results"))
-		self.toolbar.SetToolDropDown(wx.ID_PRINT, True)
+		self.toolbar.AddLabelTool(ID_SEARCH, _("Search"), parent.Bitmap("search"), shortHelp=_("Search (Ctrl+Enter)"))
+		if wx.VERSION_STRING < "2.9.0.0":
+			self.toolbar.AddLabelTool(wx.ID_PRINT, _("Print"), parent.Bitmap("print"), shortHelp=_("Print Search Results"))
+		else:
+			self.toolbar.AddLabelTool(wx.ID_PRINT, _("Print"), parent.Bitmap("print"), kind=wx.ITEM_DROPDOWN, shortHelp=_("Print Search Results"))
+			menu = wx.Menu()
+			menu.Append(wx.ID_PRINT, _("&Print..."))
+			menu.Append(wx.ID_PAGE_SETUP, _("Page Set&up..."))
+			menu.Append(wx.ID_PREVIEW, _("Print Previe&w..."))
+			self.toolbar.SetDropdownMenu(wx.ID_PRINT, menu)
 		self.toolbar.EnableTool(wx.ID_PRINT, False)
-		self.toolbar.AddSimpleTool(wx.ID_COPY, _("Copy"), parent.Bitmap("copy"), _("Copy with Formatting"))
+		self.toolbar.AddLabelTool(wx.ID_COPY, _("Copy"), parent.Bitmap("copy"), shortHelp=_("Copy with Formatting"))
 		self.toolbar.EnableTool(wx.ID_COPY, False)
 		self.toolbar.Realize()
 		self.splitter = wx.SplitterWindow(self, -1)
@@ -60,7 +66,6 @@ class MultiverseDialog(wx.Dialog):
 		self.Bind(wx.EVT_MENU, self.OnSearch, id=ID_SEARCH)
 		for id in (wx.ID_PRINT, wx.ID_PAGE_SETUP, wx.ID_PREVIEW):
 			self.Bind(wx.EVT_MENU, self.OnPrintMenu, id=id)
-		self.toolbar.Bind(aui.EVT_AUITOOLBAR_TOOL_DROPDOWN, self.OnPrintDropdown, id=wx.ID_PRINT)
 		self.results.Bind(EVT_HTML_LINK_CLICKED, self.OnHtmlLinkClicked)
 		self.results.Bind(wx.EVT_RIGHT_UP, self.OnContextMenu)	# EVT_CONTEXT_MENU doesn't work for wxHtmlWindow in 2.8
 		self.close.Bind(wx.EVT_BUTTON, self.OnClose)
@@ -109,7 +114,7 @@ class MultiverseDialog(wx.Dialog):
 			self.results.SetPage(self.html)
 			self.toolbar.EnableTool(wx.ID_PRINT, True)
 			##self.toolbar.EnableTool(wx.ID_COPY, True)
-			self.toolbar.Refresh(False)
+			self.toolbar.Realize()
 			self.lastversion = self.version.GetStringSelection()
 			wx.CallAfter(self.results.SetFocus)
 		except:
@@ -119,7 +124,7 @@ class MultiverseDialog(wx.Dialog):
 		id = event.GetId()
 		if id != wx.ID_PAGE_SETUP:
 			text = self.html.replace("</b></a>", " (%s)</b></a>" % self.lastversion, 1)
-			if wx.VERSION_STRING >= "2.9.0":
+			if wx.VERSION_STRING >= "2.9.0.0":
 				self._parent.printer.SetName(_("Search Results"))
 			if id == wx.ID_PRINT:
 				self._parent.printer.PrintText(text)
@@ -127,14 +132,6 @@ class MultiverseDialog(wx.Dialog):
 				self._parent.printer.PreviewText(text)
 		else:
 			self._parent.printer.PageSetup()
-	
-	def OnPrintDropdown(self, event):
-		if event.IsDropDownClicked():
-			menu = wx.Menu()
-			menu.Append(wx.ID_PRINT, _("&Print..."))
-			menu.Append(wx.ID_PAGE_SETUP, _("Page Set&up..."))
-			menu.Append(wx.ID_PREVIEW, _("Print Previe&w..."))
-			self.toolbar.PopupMenu(menu, self._parent.toolbar.GetPopupPos(self.toolbar, wx.ID_PRINT))
 	
 	def OnHtmlLinkClicked(self, event):
 		if self._parent.notebook.GetPageText(self._parent.notebook.GetSelection()) != self.lastversion:
