@@ -25,7 +25,7 @@ import wx
 import debug
 import parent
 
-_version = debug._version = "1.4.6"
+_version = debug._version = "1.4.7"
 ConfigParser.str = lambda value: value.encode("utf_8")	# Make ConfigParser work with Unicode
 
 class FileConfig(ConfigParser.RawConfigParser):
@@ -154,6 +154,9 @@ class FileConfig(ConfigParser.RawConfigParser):
 			section = "%s\\%s" % (section, option)
 		if not self.has_section(section):
 			self.add_section(section)
+		else:
+			for option in self.options(section):
+				self.remove_option(section, option)
 		for i in range(len(value)):
 			self.set(section, "Item%d" % (i + 1), value[i])
 

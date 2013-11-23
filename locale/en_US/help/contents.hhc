@@ -1,37 +1,37 @@
 <html>
 <head>
-	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 </head>
 <body>
 <ul>
-	<li> <object type="text/sitemap">
-		<param name="Name" value="Menus">
-		<param name="Local" value="menus.html">
+	<li><object type="text/sitemap">
+			<param name="Name" value="Menus">
+			<param name="Local" value="menus.html">
 		</object>
 	<ul>
-		<li> <object type="text/sitemap">
-			<param name="Name" value="File menu">
-			<param name="Local" value="file_menu.html">
+		<li><object type="text/sitemap">
+				<param name="Name" value="File menu">
+				<param name="Local" value="file_menu.html">
 			</object>
-		<li> <object type="text/sitemap">
-			<param name="Name" value="Edit menu">
-			<param name="Local" value="edit_menu.html">
+		<li><object type="text/sitemap">
+				<param name="Name" value="Edit menu">
+				<param name="Local" value="edit_menu.html">
 			</object>
-		<li> <object type="text/sitemap">
-			<param name="Name" value="View menu">
-			<param name="Local" value="view_menu.html">
+		<li><object type="text/sitemap">
+				<param name="Name" value="View menu">
+				<param name="Local" value="view_menu.html">
 			</object>
-		<li> <object type="text/sitemap">
-			<param name="Name" value="Favorites menu">
-			<param name="Local" value="favorites_menu.html">
+		<li><object type="text/sitemap">
+				<param name="Name" value="Favorites menu">
+				<param name="Local" value="favorites_menu.html">
 			</object>
-		<li> <object type="text/sitemap">
-			<param name="Name" value="Tools menu">
-			<param name="Local" value="tools_menu.html">
+		<li><object type="text/sitemap">
+				<param name="Name" value="Tools menu">
+				<param name="Local" value="tools_menu.html">
 			</object>
-		<li> <object type="text/sitemap">
-			<param name="Name" value="Help menu">
-			<param name="Local" value="help_menu.html">
+		<li><object type="text/sitemap">
+				<param name="Name" value="Help menu">
+				<param name="Local" value="help_menu.html">
 			</object>
 	</ul>
 </ul>

@@ -64,7 +64,6 @@ class FavoritesMenu(wx.Menu):
 		if self.HasFavorite(refalize(favorite)) == -1:
 			self.favorites.append(favorite)
 			self.UpdateFavorites()
-			wx.MessageBox(_("%s has been added to the favorites list.") % favorite, "Berean", wx.ICON_INFORMATION | wx.OK)
 		else:
 			wx.MessageBox(_("%s is already in the favorites list.") % favorite, "Berean", wx.ICON_EXCLAMATION | wx.OK)
 	
