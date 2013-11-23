@@ -36,32 +36,30 @@ class ParallelWindow(HtmlWindow):
 				versions.append(self._frame.versions[selection])
 		items = []
 		if len(Bibles):
-			items.append("<tr>")
+			items.append("\t<tr>")
 			for i in range(len(Bibles)):
-				items.append("\t<td><div align=center><font size=+1><b>%s %d (%s)</b></font></div></td>" % (Bibles[i][book][0], chapter, versions[i]))
+				items.append(heading % (Bibles[i][book][0], chapter, versions[i]))
 				if Bibles[i][book][chapter][0]:
-					items[-1] = "%s<br>%s</div></td>" % (items[-1][:-11], Bibles[i][book][chapter][0].replace("[", "<i>").replace("]", "</i>"))
-			items.append("</tr>")
+					items[-1] = items[-1].replace("</div>", subtitle % Bibles[i][book][chapter][0].replace("[", "<i>").replace("]", "</i>"))
+			items.append("\t</tr>")
 			for i in range(1, max([len(Bible[book][chapter]) for Bible in Bibles])):
-				items.append("<tr>")
+				items.append("\t<tr>")
 				if i < len(Bibles[0][book][chapter]):
-					items.append("\t<td><font size=-1>%d&nbsp;</font>%s<a name=\"%d\"></a></td>" % (i, Bibles[0][book][chapter][i].replace("[", "<i>").replace("]", "</i>"), i + 1))
+					items.append("\t\t<td><font size=-1>%d&nbsp;</font>%s<a name=\"%d\"></a></td>" % (i, Bibles[0][book][chapter][i].replace("[", "<i>").replace("]", "</i>"), i + 1))
 					if i == verse:
 						items[-1] = "<b>%s</b>" % items[-1]
 				else:
-					items.append("\t<td><a name=\"%d\"></a></td>" % (i + 1))
+					items.append("\t\t<td><a name=\"%d\"></a></td>" % (i + 1))
 				for j in range(1, len(Bibles)):
 					if i < len(Bibles[j][book][chapter]):
-						items.append("\t<td><font size=-1>%d&nbsp;</font>%s</td>" % (i, Bibles[j][book][chapter][i].replace("[", "<i>").replace("]", "</i>")))
+						items.append("\t\t<td><font size=-1>%d&nbsp;</font>%s</td>" % (i, Bibles[j][book][chapter][i].replace("[", "<i>").replace("]", "</i>")))
 						if i == verse:
 							items[-1] = "<b>%s</b>" % items[-1]
 					else:
-						items.append("\t<td></td>")
-				items.append("</tr>")
+						items.append("\t\t<td></td>")
+				items.append("\t</tr>")
 			self.verses = i
 		self.SetDescription(versions)
-		if wx.VERSION_STRING >= "2.9.4.0":
-			self._frame.notebook.SetPageToolTip(len(self._frame.versions), self.description)
 		return body % (self._frame.zoom, "\n\t\t".join(items))
 	
 	def LoadChapter(self, book, chapter, verse=-1):
@@ -73,11 +71,23 @@ class ParallelWindow(HtmlWindow):
 
 body = """<html>
 <body>
-	<font size=%d><table valign=top cellspacing=2 cellpadding=0><tbody>
+	<font size=%d>
+	<table valign=top cellspacing=2 cellpadding=0>
+		<tbody>
 		%s
-	</tbody></table></font>
+		</tbody>
+	</table>
+	</font>
 </body>
 </html>"""
+heading = """		<td>
+				<div align=center>
+				<font size=+1><b>%s %d (%s)</b></font>
+				</div>
+			</td>"""
+subtitle = """<br />
+				%s
+				</div>"""
 
 class ParallelPanel(wx.Panel):
 	def __init__(self, parent):

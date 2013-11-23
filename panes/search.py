@@ -8,6 +8,7 @@ import os
 import re
 import wx
 from wx.html import EVT_HTML_LINK_CLICKED
+from wx.lib.agw import aui
 
 import dialogs.index as indexer
 from htmlwin import BaseHtmlWindow
@@ -181,18 +182,11 @@ class SearchPane(wx.Panel):
 		
 		self.text = wx.ComboBox(self, -1, choices=parent._app.settings["SearchHistory"], style=wx.TE_PROCESS_ENTER)
 		self.text.SetValue(parent._app.settings["LastSearch"])
-		self.toolbar = wx.ToolBar(self, -1, style=wx.TB_FLAT | wx.TB_NODIVIDER)
+		self.toolbar = aui.AuiToolBar(self, -1, agwStyle=aui.AUI_TB_DEFAULT_STYLE | aui.AUI_TB_PLAIN_BACKGROUND)
 		self.ID_SEARCH = wx.NewId()
-		self.toolbar.AddLabelTool(self.ID_SEARCH, "", parent.Bitmap("search"), shortHelp=_("Search"))
-		if wx.VERSION_STRING < "2.9.0.0":
-			self.toolbar.AddLabelTool(wx.ID_PRINT, "", parent.Bitmap("print"), shortHelp=_("Print Search Results"))
-		else:
-			self.toolbar.AddLabelTool(wx.ID_PRINT, "", parent.Bitmap("print"), kind=wx.ITEM_DROPDOWN, shortHelp=_("Print Search Results"))
-			menu = wx.Menu()
-			menu.Append(wx.ID_PRINT, _("&Print..."))
-			menu.Append(wx.ID_PAGE_SETUP, _("Page Set&up..."))
-			menu.Append(wx.ID_PREVIEW, _("Print Previe&w..."))
-			self.toolbar.SetDropdownMenu(wx.ID_PRINT, menu)
+		self.toolbar.AddSimpleTool(self.ID_SEARCH, "", parent.Bitmap("search"), _("Search"))
+		self.toolbar.AddSimpleTool(wx.ID_PRINT, "", parent.Bitmap("print"), _("Print Search Results"))
+		self.toolbar.SetToolDropDown(wx.ID_PRINT, True)
 		self.toolbar.EnableTool(wx.ID_PRINT, False)
 		self.toolbar.Realize()
 		self.results = BaseHtmlWindow(self)
@@ -205,32 +199,27 @@ class SearchPane(wx.Panel):
 		self.RegularExpression = wx.CheckBox(optionspane, -1, _("Regular Expression"))
 		for option in self.options:
 			getattr(self, option).Set3StateValue(parent._app.settings[option])
-		if wx.VERSION_STRING >= "2.9.1.0":
-			box = wx.StaticBox(optionspane, -1, _("Search in"))
-		else:
-			box = optionspane
-		self.version = wx.Choice(box, -1, choices=parent.versions)
-		self.rangechoice = wx.Choice(box, -1, choices=ranges)
+		self.version = wx.Choice(optionspane, -1, choices=parent.versions)
+		self.rangechoice = wx.Choice(optionspane, -1, choices=ranges)
 		self.rangechoice.SetSelection(0)
-		self.start = wx.Choice(box, -1, choices=parent.books)
+		self.start = wx.Choice(optionspane, -1, choices=parent.books)
 		self.start.SetSelection(0)
-		self.rangetext = wx.StaticText(box, -1, _("to"))
-		self.stop = wx.Choice(box, -1, choices=parent.books)
+		self.rangetext = wx.StaticText(optionspane, -1, _("to"))
+		self.stop = wx.Choice(optionspane, -1, choices=parent.books)
 		self.stop.SetSelection(65)
 		for item in (self.start, self.rangetext, self.stop):
 			item.Disable()
 		
 		sizer = wx.BoxSizer(wx.VERTICAL)
 		sizer2 = wx.BoxSizer(wx.HORIZONTAL)
-		sizer2.Add(self.text, 1, wx.ALL, 2)
-		sizer2.Add(self.toolbar, 0, wx.RIGHT | wx.ALIGN_CENTER_VERTICAL, 2)
+		sizer2.Add(self.text, 1, wx.ALL ^ wx.RIGHT, 2)
+		sizer2.Add(self.toolbar, 0, wx.ALIGN_CENTER_VERTICAL)
 		sizer.Add(sizer2, 0, wx.EXPAND)
 		sizer.Add(self.results, 1, wx.EXPAND)
 		sizer3 = wx.BoxSizer(wx.VERTICAL)
 		for option in self.options:
 			sizer3.Add(getattr(self, option), 1, wx.ALL, 2)
-		if wx.VERSION_STRING < "2.9.1.0":
-			box = wx.StaticBox(optionspane, -1, _("Search in"))
+		box = wx.StaticBox(optionspane, -1, _("Search in"))
 		sizer4 = wx.StaticBoxSizer(box, wx.VERTICAL)
 		sizer5 = wx.BoxSizer(wx.HORIZONTAL)
 		sizer5.Add(self.version, 0, wx.ALL | wx.EXPAND, 2)
@@ -256,6 +245,7 @@ class SearchPane(wx.Panel):
 		self.toolbar.Bind(wx.EVT_MENU, self.OnSearch, id=self.ID_SEARCH)
 		for id in (wx.ID_PRINT, wx.ID_PAGE_SETUP, wx.ID_PREVIEW):
 			self.Bind(wx.EVT_MENU, self.OnPrintMenu, id=id)
+		self.toolbar.Bind(aui.EVT_AUITOOLBAR_TOOL_DROPDOWN, self.OnPrintDropdown, id=wx.ID_PRINT)
 		self.results.Bind(EVT_HTML_LINK_CLICKED, self.OnHtmlLinkClicked)
 		self.results.Bind(wx.EVT_RIGHT_UP, self.OnContextMenu)	# EVT_CONTEXT_MENU doesn't work for wxHtmlWindow in 2.8
 		for option in ("AllWords", "ExactMatch", "Phrase", "RegularExpression"):
@@ -288,7 +278,7 @@ class SearchPane(wx.Panel):
 			if self.text.GetCount() > 10:
 				self.text.Delete(10)
 		self.toolbar.EnableTool(wx.ID_PRINT, True)
-		self.toolbar.Realize()
+		self.toolbar.Refresh(False)
 		self.verses = number
 		wx.CallAfter(self.results.SetFocus)
 	
@@ -377,11 +367,11 @@ class SearchPane(wx.Panel):
 					else:
 						break
 				if len(verses) == 1:
-					results.append("<p><a href='%d.%d.%d'>%s %d:%d</a><br>%s</p>" % (b, c, v, books[b - 1], c, v, verses[0]))
+					results.append("<p><a href='%d.%d.%d'>%s %d:%d</a><br />%s</p>" % (b, c, v, books[b - 1], c, v, verses[0]))
 				else:
 					for j in range(len(verses)):
 						verses[j] = "<font size=-1><a href='%d.%d.%d'>%d</a>&nbsp;</font>%s" % (b, c, v + j, v + j, verses[j])
-					results.append("<p><a href='%d.%d.%d'>%s %d:%d-%d</a><br>%s</p>" % (b, c, v, books[b - 1], c, v, v + len(verses) - 1, " ".join(verses)))
+					results.append("<p><a href='%d.%d.%d'>%s %d:%d-%d</a><br />%s</p>" % (b, c, v, books[b - 1], c, v, v + len(verses) - 1, " ".join(verses)))
 		else:
 			lastbook = 0
 			while i < len(matches):
@@ -398,9 +388,9 @@ class SearchPane(wx.Panel):
 				else:
 					results.append(", <a href='%d.%d.%d'>%d:%d-%d</a>" % (b, c, v, c, v, v + verses - 1))
 				if b != lastbook:
-					results[-1] = "<br><b>%s</b>%s" % (books[b - 1].upper(), results[-1][1:])
+					results[-1] = "<br /><b>%s</b>%s" % (books[b - 1].upper(), results[-1][1:])
 				lastbook = b
-			results.insert(0, "<br>")
+			results.insert(0, "<br />")
 		return (results, len(matches))
 	
 	def FindWord(self, word, options):
@@ -441,6 +431,14 @@ class SearchPane(wx.Panel):
 				self._parent.printer.PreviewText(text)
 		else:
 			self._parent.printer.PageSetup()
+	
+	def OnPrintDropdown(self, event):
+		if event.IsDropDownClicked():
+			menu = wx.Menu()
+			menu.Append(wx.ID_PRINT, _("&Print..."))
+			menu.Append(wx.ID_PAGE_SETUP, _("Page Set&up..."))
+			menu.Append(wx.ID_PREVIEW, _("Print Previe&w..."))
+			self.toolbar.PopupMenu(menu, self._parent.toolbar.GetPopupPos(self.toolbar, wx.ID_PRINT))
 	
 	def OnHtmlLinkClicked(self, event):
 		if self._parent.notebook.GetPageText(self._parent.notebook.GetSelection()) != self.lastversion:

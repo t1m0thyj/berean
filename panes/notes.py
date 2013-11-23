@@ -8,6 +8,7 @@ import cStringIO
 import os.path
 import wx
 from wx import richtext
+from wx.lib.agw import aui
 
 _ = wx.GetTranslation
 
@@ -36,17 +37,17 @@ class NotesPanel(wx.Panel):
 			cPickle.dump({}, new, -1)
 			new.close()
 		
-		self.toolbar = wx.ToolBar(self, -1, style=wx.TB_FLAT | wx.TB_NODIVIDER)
-		self.toolbar.AddLabelTool(wx.ID_SAVE, "", self._frame.Bitmap("save"), shortHelp=_("Save (Ctrl+S)"))
+		self.toolbar = aui.AuiToolBar(self, -1, agwStyle=aui.AUI_TB_DEFAULT_STYLE | aui.AUI_TB_OVERFLOW | aui.AUI_TB_PLAIN_BACKGROUND)
+		self.toolbar.AddSimpleTool(wx.ID_SAVE, "", self._frame.Bitmap("save"), _("Save (Ctrl+S)"))
 		self.toolbar.Bind(wx.EVT_MENU, self.OnSave, id=wx.ID_SAVE)
-		self.toolbar.AddLabelTool(wx.ID_PRINT, "", self._frame.Bitmap("print"), shortHelp=_("Print (Ctrl+P)"))
+		self.toolbar.AddSimpleTool(wx.ID_PRINT, "", self._frame.Bitmap("print"), _("Print (Ctrl+P)"))
 		self.toolbar.Bind(wx.EVT_MENU, self.OnPrint, id=wx.ID_PRINT)
 		self.toolbar.AddSeparator()
-		self.toolbar.AddLabelTool(wx.ID_CUT, "", self._frame.Bitmap("cut"), shortHelp=_("Cut (Ctrl+X)"))
+		self.toolbar.AddSimpleTool(wx.ID_CUT, "", self._frame.Bitmap("cut"), _("Cut (Ctrl+X)"))
 		self.toolbar.Bind(wx.EVT_MENU, self.OnCut, id=wx.ID_CUT)
-		self.toolbar.AddLabelTool(wx.ID_COPY, "", self._frame.Bitmap("copy"), shortHelp=_("Copy (Ctrl+C)"))
+		self.toolbar.AddSimpleTool(wx.ID_COPY, "", self._frame.Bitmap("copy"), _("Copy (Ctrl+C)"))
 		self.toolbar.Bind(wx.EVT_MENU, self.OnCopy, id=wx.ID_COPY)
-		self.toolbar.AddLabelTool(wx.ID_PASTE, "", self._frame.Bitmap("paste"), shortHelp=_("Paste (Ctrl+V)"))
+		self.toolbar.AddSimpleTool(wx.ID_PASTE, "", self._frame.Bitmap("paste"), _("Paste (Ctrl+V)"))
 		self.toolbar.Bind(wx.EVT_MENU, self.OnPaste, id=wx.ID_PASTE)
 		self.toolbar.AddSeparator()
 		self.fonts = sorted(wx.FontEnumerator.GetFacenames())
@@ -61,38 +62,38 @@ class NotesPanel(wx.Panel):
 		self.toolbar.AddControl(self.size)
 		self.size.Bind(wx.EVT_TEXT_ENTER, self.OnSize)
 		self.size.Bind(wx.EVT_COMBOBOX, self.OnSize)
-		self.toolbar.AddCheckLabelTool(wx.ID_BOLD, "", self._frame.Bitmap("bold"), shortHelp=_("Bold (Ctrl+B)"))
+		self.toolbar.AddCheckTool(wx.ID_BOLD, "", self._frame.Bitmap("bold"), wx.NullBitmap, _("Bold (Ctrl+B)"))
 		self.Bind(wx.EVT_MENU, self.OnBold, id=wx.ID_BOLD)
-		self.toolbar.AddCheckLabelTool(wx.ID_ITALIC, "", self._frame.Bitmap("italic"), shortHelp=_("Italic (Ctrl+I)"))
+		self.toolbar.AddCheckTool(wx.ID_ITALIC, "", self._frame.Bitmap("italic"), wx.NullBitmap, _("Italic (Ctrl+I)"))
 		self.Bind(wx.EVT_MENU, self.OnItalic, id=wx.ID_ITALIC)
-		self.toolbar.AddCheckLabelTool(wx.ID_UNDERLINE, "", self._frame.Bitmap("underline"), shortHelp=_("Underline (Ctrl+U)"))
+		self.toolbar.AddCheckTool(wx.ID_UNDERLINE, "", self._frame.Bitmap("underline"), wx.NullBitmap, _("Underline (Ctrl+U)"))
 		self.Bind(wx.EVT_MENU, self.OnUnderline, id=wx.ID_UNDERLINE)
 		self.toolbar.AddSeparator()
-		self.toolbar.AddRadioLabelTool(wx.ID_JUSTIFY_LEFT, "", self._frame.Bitmap("left"), shortHelp=_("Align Left (Ctrl+L)"))
+		self.toolbar.AddRadioTool(wx.ID_JUSTIFY_LEFT, "", self._frame.Bitmap("left"), wx.NullBitmap, _("Align Left (Ctrl+L)"))
 		self.Bind(wx.EVT_MENU, self.OnAlignLeft, id=wx.ID_JUSTIFY_LEFT)
-		self.toolbar.AddRadioLabelTool(wx.ID_JUSTIFY_CENTER, "", self._frame.Bitmap("center"), shortHelp=_("Align Center (Ctrl+E)"))
+		self.toolbar.AddRadioTool(wx.ID_JUSTIFY_CENTER, "", self._frame.Bitmap("center"), wx.NullBitmap, _("Align Center (Ctrl+E)"))
 		self.Bind(wx.EVT_MENU, self.OnAlignCenter, id=wx.ID_JUSTIFY_CENTER)
-		self.toolbar.AddRadioLabelTool(wx.ID_JUSTIFY_RIGHT, "", self._frame.Bitmap("right"), shortHelp=_("Align Right (Ctrl+R)"))
+		self.toolbar.AddRadioTool(wx.ID_JUSTIFY_RIGHT, "", self._frame.Bitmap("right"), wx.NullBitmap, _("Align Right (Ctrl+R)"))
 		self.Bind(wx.EVT_MENU, self.OnAlignRight, id=wx.ID_JUSTIFY_RIGHT)
 		self.toolbar.AddSeparator()
 		self.ID_NUMBERING = wx.NewId()
-		self.toolbar.AddLabelTool(self.ID_NUMBERING, "", self._frame.Bitmap("numbering"), shortHelp=_("Numbering"))
+		self.toolbar.AddSimpleTool(self.ID_NUMBERING, "", self._frame.Bitmap("numbering"), _("Numbering"))
 		self.Bind(wx.EVT_MENU, self.OnNumbering, id=self.ID_NUMBERING)
 		self.ID_BULLETS = wx.NewId()
-		self.toolbar.AddLabelTool(self.ID_BULLETS, "", self._frame.Bitmap("bullets"), shortHelp=_("Bullets"))
+		self.toolbar.AddSimpleTool(self.ID_BULLETS, "", self._frame.Bitmap("bullets"), _("Bullets"))
 		self.Bind(wx.EVT_MENU, self.OnBullets, id=self.ID_BULLETS)
 		self.ID_DEDENT = wx.NewId()
-		self.toolbar.AddLabelTool(self.ID_DEDENT, "", self._frame.Bitmap("dedent"), shortHelp=_("Decrease Indent"))
+		self.toolbar.AddSimpleTool(self.ID_DEDENT, "", self._frame.Bitmap("dedent"), _("Decrease Indent"))
 		self.Bind(wx.EVT_MENU, self.OnDecreaseIndent, id=self.ID_DEDENT)
 		self.ID_INDENT = wx.NewId()
-		self.toolbar.AddLabelTool(self.ID_INDENT, "", self._frame.Bitmap("indent"), shortHelp=_("Increase Indent"))
+		self.toolbar.AddSimpleTool(self.ID_INDENT, "", self._frame.Bitmap("indent"), _("Increase Indent"))
 		self.Bind(wx.EVT_MENU, self.OnIncreaseIndent, id=self.ID_INDENT)
 		self.toolbar.AddSeparator()
 		self.ID_COLOR = wx.NewId()
-		self.toolbar.AddLabelTool(self.ID_COLOR, "", self._frame.Bitmap("font-color"), shortHelp=_("Font Color"))
+		self.toolbar.AddSimpleTool(self.ID_COLOR, "", self._frame.Bitmap("font-color"), _("Font Color"))
 		self.Bind(wx.EVT_MENU, self.OnColor, id=self.ID_COLOR)
 		self.ID_HIGHLIGHT = wx.NewId()
-		self.toolbar.AddLabelTool(self.ID_HIGHLIGHT, "", self._frame.Bitmap("highlighting"), shortHelp=_("Highlighting"))
+		self.toolbar.AddSimpleTool(self.ID_HIGHLIGHT, "", self._frame.Bitmap("highlighting"), _("Highlighting"))
 		self.Bind(wx.EVT_MENU, self.OnHighlighting, id=self.ID_HIGHLIGHT)
 		self.toolbar.Realize()
 		
@@ -143,7 +144,7 @@ class NotesPanel(wx.Panel):
 			if self.editor.IsSelectionAligned(getattr(wx, "TEXT_ALIGNMENT_%s" % alignment)):
 				self.toolbar.ToggleTool(getattr(wx, "ID_JUSTIFY_%s" % alignment), True)
 				break
-		self.toolbar.Realize()
+		self.toolbar.Refresh(False)
 	
 	def SaveText(self):
 		key = "%d.%d" % (self._frame.reference[0], self._frame.reference[1])
@@ -200,37 +201,37 @@ class NotesPanel(wx.Panel):
 	def OnBold(self, event):
 		if self.editor.HasFocus():	# Toolbar item must be manually toggled if hotkey was used
 			self.toolbar.ToggleTool(wx.ID_BOLD, not self.editor.IsSelectionBold())
-			self.toolbar.Realize()
+			self.toolbar.Refresh(False)
 		self.editor.ApplyBoldToSelection()
 	
 	def OnItalic(self, event):
 		if self.editor.HasFocus():
 			self.toolbar.ToggleTool(wx.ID_ITALIC, not self.editor.IsSelectionItalics())
-			self.toolbar.Realize()
+			self.toolbar.Refresh(False)
 		self.editor.ApplyItalicToSelection()
 	
 	def OnUnderline(self, event):
 		if self.editor.HasFocus():
 			self.toolbar.ToggleTool(wx.ID_UNDERLINE, not self.editor.IsSelectionUnderlined())
-			self.toolbar.Realize()
+			self.toolbar.Refresh(False)
 		self.editor.ApplyUnderlineToSelection()
 	
 	def OnAlignLeft(self, event):
 		if self.editor.HasFocus():
 			self.toolbar.ToggleTool(wx.ID_JUSTIFY_LEFT, not self.editor.IsSelectionAligned(wx.TEXT_ALIGNMENT_LEFT))
-			self.toolbar.Realize()
+			self.toolbar.Refresh(False)
 		self.editor.ApplyAlignmentToSelection(wx.TEXT_ALIGNMENT_LEFT)
 	
 	def OnAlignCenter(self, event):
 		if self.editor.HasFocus():
 			self.toolbar.ToggleTool(wx.ID_JUSTIFY_CENTER, not self.editor.IsSelectionAligned(wx.TEXT_ALIGNMENT_CENTER))
-			self.toolbar.Realize()
+			self.toolbar.Refresh(False)
 		self.editor.ApplyAlignmentToSelection(wx.TEXT_ALIGNMENT_CENTER)
 	
 	def OnAlignRight(self, event):
 		if self.editor.HasFocus():
 			self.toolbar.ToggleTool(wx.ID_JUSTIFY_RIGHT, not self.editor.IsSelectionAligned(wx.TEXT_ALIGNMENT_RIGHT))
-			self.toolbar.Realize()
+			self.toolbar.Refresh(False)
 		self.editor.ApplyAlignmentToSelection(wx.TEXT_ALIGNMENT_RIGHT)
 	
 	def OnNumbering(self, event):
@@ -310,6 +311,7 @@ class NotesPanel(wx.Panel):
 			self.editor.SetStyle(selection, style)
 	
 	def OnColor(self, event):
+		self.toolbar.SetToolSticky(self.ID_COLOR, True)
 		style = richtext.RichTextAttr()
 		style.SetFlags(wx.TEXT_ATTR_TEXT_COLOUR)
 		data = wx.ColourData()
@@ -321,13 +323,13 @@ class NotesPanel(wx.Panel):
 		data.SetColour(color)
 		data.SetCustomColour(0, self.foreground)
 		dialog = wx.ColourDialog(self._frame, data)
-		pos = wx.GetMousePosition()
+		pos = list(self.toolbar.ClientToScreen(self._frame.toolbar.GetPopupPos(self.toolbar, self.ID_COLOR)))
 		width, height = dialog.GetSize()
 		display = wx.GetDisplaySize()
 		if pos[0] + width > display[0]:
-			pos[0] -= (width + wx.SystemSettings.GetMetric(wx.SYS_FRAMESIZE_X) * 2 - 1)
+			pos[0] -= (width - self.toolbar.GetToolRect(self.ID_COLOR)[2] + wx.SystemSettings.GetMetric(wx.SYS_FRAMESIZE_X) * 2 - 1)
 		if pos[1] + height > display[1]:
-			pos[1] -= (height + wx.SystemSettings.GetMetric(wx.SYS_FRAMESIZE_Y) * 2 - 1)
+			pos[1] -= (height + self.toolbar.GetToolRect(self.ID_COLOR)[3] + wx.SystemSettings.GetMetric(wx.SYS_FRAMESIZE_Y) * 2 - 1)
 		dialog.SetPosition(pos)
 		dialog.SetTitle(_("Font Color"))
 		if dialog.ShowModal() == wx.ID_OK:
@@ -340,8 +342,10 @@ class NotesPanel(wx.Panel):
 				self.editor.SetStyle(self.editor.GetSelectionRange(), style)
 			self.foreground = color.GetAsString(wx.C2S_HTML_SYNTAX)
 		dialog.Destroy()
+		self.toolbar.SetToolSticky(self.ID_COLOR, False)
 	
 	def OnHighlighting(self, event):
+		self.toolbar.SetToolSticky(self.ID_HIGHLIGHT, True)
 		style = richtext.RichTextAttr()
 		style.SetFlags(wx.TEXT_ATTR_BACKGROUND_COLOUR)
 		data = wx.ColourData()
@@ -353,13 +357,13 @@ class NotesPanel(wx.Panel):
 		data.SetColour(color)
 		data.SetCustomColour(0, self.background)
 		dialog = wx.ColourDialog(self._frame, data)
-		pos = wx.GetMousePosition()
+		pos = list(self.toolbar.ClientToScreen(self._frame.toolbar.GetPopupPos(self.toolbar, self.ID_HIGHLIGHT)))
 		width, height = dialog.GetSize()
 		display = wx.GetDisplaySize()
 		if pos[0] + width > display[0]:
-			pos[0] -= (width + wx.SystemSettings.GetMetric(wx.SYS_FRAMESIZE_X) * 2 - 1)
+			pos[0] -= (width - self.toolbar.GetToolRect(self.ID_COLOR)[2] + wx.SystemSettings.GetMetric(wx.SYS_FRAMESIZE_X) * 2 - 1)
 		if pos[1] + height > display[1]:
-			pos[1] -= (height + wx.SystemSettings.GetMetric(wx.SYS_FRAMESIZE_Y) * 2 - 1)
+			pos[1] -= (height + self.toolbar.GetToolRect(self.ID_COLOR)[3] + wx.SystemSettings.GetMetric(wx.SYS_FRAMESIZE_Y) * 2 - 1)
 		dialog.SetPosition(pos)
 		dialog.SetTitle(_("Highlighting"))
 		if dialog.ShowModal() == wx.ID_OK:
@@ -372,6 +376,7 @@ class NotesPanel(wx.Panel):
 				self.editor.SetStyle(self.editor.GetSelectionRange(), style)
 			self.background = color.GetAsString(wx.C2S_HTML_SYNTAX)
 		dialog.Destroy()
+		self.toolbar.SetToolSticky(self.ID_HIGHLIGHT, False)
 	
 	def OnChar(self, event):
 		key = event.GetKeyCode()
@@ -404,18 +409,20 @@ class NotesPanel(wx.Panel):
 		self.UpdateUI()
 		event.Skip()
 
-class NotesPane(wx.Notebook):
+class NotesPane(aui.AuiNotebook):
 	def __init__(self, parent):
-		wx.Notebook.__init__(self, parent, -1)
+		aui.AuiNotebook.__init__(self, parent, -1, agwStyle=(aui.AUI_NB_DEFAULT_STYLE ^ aui.AUI_NB_CLOSE_ON_ACTIVE_TAB ^ aui.AUI_NB_MIDDLE_CLICK_CLOSE) | aui.AUI_NB_SUB_NOTEBOOK)
 		self._parent = parent
 		
 		self.AddPage(NotesPanel(self, _("Study Notes")), _("Study Notes"))
 		self.AddPage(NotesPanel(self, _("Topic Notes")), _("Topic Notes"))
 		self.SetSelection(parent._app.settings["ActiveNotes"])
 		
-		self.Bind(wx.EVT_NOTEBOOK_PAGE_CHANGED, self.OnNotebookPageChanged)
+		self.Bind(aui.EVT_AUINOTEBOOK_PAGE_CHANGED, self.OnAuiNotebookPageChanged)
 	
-	def OnNotebookPageChanged(self, event):
+	def OnAuiNotebookPageChanged(self, event):
+		page = self.GetPage(event.GetSelection())
+		page.GetSizer().Layout()	# Refresh overflow state of toolbar
 		wx.CallAfter(self.GetCurrentPage().editor.SetFocus)
 
 sizes = ["8", "9", "10", "11", "12", "14", "16", "18", "20", "22", "24", "26", "28", "36", "48", "72"]

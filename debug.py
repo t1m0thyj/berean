@@ -22,9 +22,9 @@ def LogError(exception):
 		return
 	error = True
 	details = "".join(traceback.format_exception(*exception))
-	dialog = wx.MessageDialog(None, _("An error has occurred in the application."), _("Error"), wx.ICON_ERROR | wx.YES_NO | wx.CANCEL)
-	dialog.SetExtendedMessage(details)
-	dialog.SetYesNoCancelLabels(_("Report"), _("Ignore"), _("Abort"))
+	dialog = wx.MessageDialog(None, _("An error occurred in the application."), _("Error"), wx.ICON_ERROR | wx.YES_NO | wx.CANCEL)
+	##dialog.SetExtendedMessage(details)
+	##dialog.SetYesNoCancelLabels(_("&Report"), _("&Ignore"), _("&Abort"))
 	button = dialog.ShowModal()
 	if button == wx.ID_YES:
 		mac = ""

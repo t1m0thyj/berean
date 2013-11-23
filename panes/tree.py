@@ -9,7 +9,7 @@ _ = wx.GetTranslation
 
 class TreePane(wx.TreeCtrl):
 	def __init__(self, parent):
-		wx.TreeCtrl.__init__(self, parent, -1, style=wx.NO_BORDER | wx.TR_DEFAULT_STYLE | wx.TR_TWIST_BUTTONS | wx.TR_NO_LINES | wx.TR_FULL_ROW_HIGHLIGHT | wx.TR_HIDE_ROOT)
+		wx.TreeCtrl.__init__(self, parent, -1, style=wx.TR_DEFAULT_STYLE | wx.NO_BORDER | wx.TR_TWIST_BUTTONS | wx.TR_NO_LINES | wx.TR_FULL_ROW_HIGHLIGHT | wx.TR_HIDE_ROOT)
 		self._parent = parent
 		
 		self.items = [self.AddRoot("")] + range(66)

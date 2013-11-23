@@ -11,7 +11,7 @@ import os
 import shutil
 import sys
 
-_version = "1.4.6"
+_version = "1.4.7"
 manifest = """<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0">
     <assemblyIdentity version="0.64.1.0" processorArchitecture="x86" 

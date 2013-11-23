@@ -46,6 +46,6 @@ class Printer(html.HtmlEasyPrinting):
 
 head = """<html>
 <head>
-	<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 	<title>%s</title>
 </head>"""
