@@ -8,8 +8,8 @@ import os
 import re
 import wx
 from wx.html import EVT_HTML_LINK_CLICKED
-from wx.lib.agw import aui
 
+import aui
 import dialogs.index as indexer
 from htmlwin import BaseHtmlWindow
 
@@ -132,20 +132,20 @@ def validate(reference, numbers=False):
 			return True
 	return False
 
-abbrevs = {"jdg":7,
-		   "1kgs":11,
-		   "2kgs":12,
-		   "ca":22, "can":22, "cant":22, "canti":22, "cantic":22, "canticl":22, "canticle":22, "canticles":22,
-		   "mk":41, "mrk":41,
-		   "lk":42,
-		   "jh":43, "jhn":43,
-		   "php":50,
-		   "phm":57,
-		   "jas":59,
-		   "1jh":62, "1jhn":62,
-		   "2jh":63, "2jhn":63,
-		   "3jh":64, "3jhn":64,
-		   "jde":65}
+abbrevs = {"jdg": 7,
+		   "1kgs": 11,
+		   "2kgs": 12,
+		   "ca": 22, "can": 22, "cant": 22, "canti": 22, "cantic": 22, "canticl": 22, "canticle": 22, "canticles": 22,
+		   "mk": 41, "mrk": 41,
+		   "lk": 42,
+		   "jh": 43, "jhn": 43,
+		   "php": 50,
+		   "phm": 57,
+		   "jas": 59,
+		   "1jh": 62, "1jhn": 62,
+		   "2jh": 63, "2jhn": 63,
+		   "3jh": 64, "3jhn": 64,
+		   "jde": 65}
 
 class SearchPane(wx.Panel):
 	def __init__(self, parent):
@@ -423,7 +423,7 @@ class SearchPane(wx.Panel):
 		if id != wx.ID_PAGE_SETUP:
 			header = _("<div align=center><b>Search results for \"%s\" in the %s (%d&nbsp;verses)</b></div>") % (self.text.GetValue(), self.lastversion, self.verses)
 			text = self.html[:12] + header + self.html[self.html.index("</font>") + 7:]
-			if wx.VERSION_STRING >= "2.9.0.0":
+			if wx.VERSION_STRING >= "2.8.11.0":
 				self._parent.printer.SetName(_("Search Results"))
 			if id == wx.ID_PRINT:
 				self._parent.printer.PrintText(text)
@@ -434,11 +434,13 @@ class SearchPane(wx.Panel):
 	
 	def OnPrintDropdown(self, event):
 		if event.IsDropDownClicked():
+			self.toolbar.SetToolSticky(wx.ID_PRINT, True)
 			menu = wx.Menu()
 			menu.Append(wx.ID_PRINT, _("&Print..."))
 			menu.Append(wx.ID_PAGE_SETUP, _("Page Set&up..."))
 			menu.Append(wx.ID_PREVIEW, _("Print Previe&w..."))
 			self.toolbar.PopupMenu(menu, self._parent.toolbar.GetPopupPos(self.toolbar, wx.ID_PRINT))
+			self.toolbar.SetToolSticky(wx.ID_PRINT, False)
 	
 	def OnHtmlLinkClicked(self, event):
 		if self._parent.notebook.GetPageText(self._parent.notebook.GetSelection()) != self.lastversion:

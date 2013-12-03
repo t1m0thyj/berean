@@ -36,31 +36,31 @@ class ParallelWindow(HtmlWindow):
 				versions.append(self._frame.versions[selection])
 		items = []
 		if len(Bibles):
-			items.append("\t<tr>")
+			items.append("  <tr>")
 			for i in range(len(Bibles)):
 				items.append(heading % (Bibles[i][book][0], chapter, versions[i]))
 				if Bibles[i][book][chapter][0]:
 					items[-1] = items[-1].replace("</div>", subtitle % Bibles[i][book][chapter][0].replace("[", "<i>").replace("]", "</i>"))
-			items.append("\t</tr>")
+			items.append("  </tr>")
 			for i in range(1, max([len(Bible[book][chapter]) for Bible in Bibles])):
-				items.append("\t<tr>")
+				items.append("  <tr>")
 				if i < len(Bibles[0][book][chapter]):
-					items.append("\t\t<td><font size=-1>%d&nbsp;</font>%s<a name=\"%d\"></a></td>" % (i, Bibles[0][book][chapter][i].replace("[", "<i>").replace("]", "</i>"), i + 1))
+					items.append("    <td><font size=-1>%d&nbsp;</font>%s<a name=\"%d\"></a></td>" % (i, Bibles[0][book][chapter][i].replace("[", "<i>").replace("]", "</i>"), i + 1))
 					if i == verse:
 						items[-1] = "<b>%s</b>" % items[-1]
 				else:
-					items.append("\t\t<td><a name=\"%d\"></a></td>" % (i + 1))
+					items.append("    <td><a name=\"%d\"></a></td>" % (i + 1))
 				for j in range(1, len(Bibles)):
-					if i < len(Bibles[j][book][chapter]):
-						items.append("\t\t<td><font size=-1>%d&nbsp;</font>%s</td>" % (i, Bibles[j][book][chapter][i].replace("[", "<i>").replace("]", "</i>")))
+					if i < len(Bibles[j][book][chapter]) and len(Bibles[j][book][chapter][i]):
+						items.append("    <td><font size=-1>%d&nbsp;</font>%s</td>" % (i, Bibles[j][book][chapter][i].replace("[", "<i>").replace("]", "</i>")))
 						if i == verse:
 							items[-1] = "<b>%s</b>" % items[-1]
 					else:
-						items.append("\t\t<td></td>")
-				items.append("\t</tr>")
+						items.append("    <td></td>")
+				items.append("  </tr>")
 			self.verses = i
 		self.SetDescription(versions)
-		return body % (self._frame.zoom, "\n\t\t".join(items))
+		return body % (self._frame.zoom, "\n    ".join(items))
 	
 	def LoadChapter(self, book, chapter, verse=-1):
 		self.SetPage(self.GetPage(book, chapter, verse))
@@ -71,23 +71,23 @@ class ParallelWindow(HtmlWindow):
 
 body = """<html>
 <body>
-	<font size=%d>
-	<table valign=top cellspacing=2 cellpadding=0>
-		<tbody>
-		%s
-		</tbody>
-	</table>
-	</font>
+  <font size=%d>
+  <table valign=top cellspacing=2 cellpadding=0>
+    <tbody>
+    %s
+    </tbody>
+  </table>
+  </font>
 </body>
 </html>"""
-heading = """		<td>
-				<div align=center>
-				<font size=+1><b>%s %d (%s)</b></font>
-				</div>
-			</td>"""
+heading = """    <td>
+        <div align=center>
+        <font size=+1><b>%s %d (%s)</b></font>
+        </div>
+      </td>"""
 subtitle = """<br />
-				%s
-				</div>"""
+        %s
+        </div>"""
 
 class ParallelPanel(wx.Panel):
 	def __init__(self, parent):

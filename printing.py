@@ -16,6 +16,7 @@ class Printer(html.HtmlEasyPrinting):
 		data = self.GetPageSetupData()
 		data.SetMarginTopLeft(wx.Point(15, 15))
 		data.SetMarginBottomRight(wx.Point(15, 15))
+		self.SetFooter("<div align=center><font size=-1>Page @PAGENUM@</font></div>")
 	
 	def GetChapter(self):
 		browser = self._frame.GetBrowser()
@@ -35,17 +36,17 @@ class Printer(html.HtmlEasyPrinting):
 		dialog.Destroy()
 	
 	def Print(self):
-		if wx.VERSION_STRING >= "2.9.0.0":
+		if wx.VERSION_STRING >= "2.8.11.0":
 			self.SetName("%s %d (%s)" % (self._frame.books[self._frame.reference[0] - 1], self._frame.reference[1], self._frame.notebook.GetPageText(self._frame.notebook.GetSelection())))
 		self.PrintText(self.GetChapter())
 	
 	def Preview(self):
-		if wx.VERSION_STRING >= "2.9.0.0":
+		if wx.VERSION_STRING >= "2.8.11.0":
 			self.SetName("%s %d (%s)" % (self._frame.books[self._frame.reference[0] - 1], self._frame.reference[1], self._frame.notebook.GetPageText(self._frame.notebook.GetSelection())))
 		self.PreviewText(self.GetChapter())
 
 head = """<html>
 <head>
-	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-	<title>%s</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>%s</title>
 </head>"""
