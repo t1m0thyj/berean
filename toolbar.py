@@ -4,8 +4,8 @@ Copyright (C) 2013 Timothy Johnson <timothysw@objectmail.com>
 """
 
 import wx
-from wx.lib.agw import aui
 
+import aui
 from panes.search import refalize, validate
 
 _ = wx.GetTranslation
@@ -102,11 +102,13 @@ class ToolBar(aui.AuiToolBar):
 	
 	def OnBackDropdown(self, event):
 		if event.IsDropDownClicked():
+			self.SetToolSticky(wx.ID_BACKWARD, True)
 			menu = wx.Menu()
 			for i in range(self.current - 1, -1, -1):
 				menu.Append(wx.ID_HIGHEST + i, self.history[i])
 				self.Bind(wx.EVT_MENU, self.OnHistoryItem, id=wx.ID_HIGHEST + i)
 			self.PopupMenu(menu, self.GetPopupPos(self, wx.ID_BACKWARD))
+			self.SetToolSticky(wx.ID_BACKWARD, False)
 	
 	def OnHistoryItem(self, event):
 		book, chapter, verse = refalize(self.history[event.GetId() - wx.ID_HIGHEST])
@@ -118,11 +120,13 @@ class ToolBar(aui.AuiToolBar):
 	
 	def OnForwardDropdown(self, event):
 		if event.IsDropDownClicked():
+			self.SetToolSticky(wx.ID_FORWARD, True)
 			menu = wx.Menu()
 			for i in range(self.current + 1, len(self.history)):
 				menu.Append(wx.ID_HIGHEST + i, self.history[i])
 				self.Bind(wx.EVT_MENU, self.OnHistoryItem, id=wx.ID_HIGHEST + i)
 			self.PopupMenu(menu, self.GetPopupPos(self, wx.ID_FORWARD))
+			self.SetToolSticky(wx.ID_FORWARD, False)
 	
 	def OnBook(self, event):
 		book = self.books.GetSelection() + 1

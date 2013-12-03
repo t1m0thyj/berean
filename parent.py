@@ -5,8 +5,8 @@ Copyright (C) 2013 Timothy Johnson <timothysw@objectmail.com>
 
 import os
 import wx
-from wx.lib.agw import aui
 
+import aui
 import helper
 import htmlwin
 import menu
@@ -18,8 +18,6 @@ import toolbar
 _ = wx.GetTranslation
 if wx.VERSION_STRING < "2.9.0.0":
 	aui.auibar.MakeDisabledBitmap = lambda bitmap: wx.BitmapFromImage(bitmap.ConvertToImage().ConvertToGreyscale())
-else:
-	aui.auibar.MakeDisabledBitmap = wx.Bitmap.ConvertToDisabled
 
 class MainFrame(wx.Frame):
 	def __init__(self, app):

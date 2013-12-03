@@ -6,8 +6,8 @@ Copyright (C) 2013 Timothy Johnson <timothysw@objectmail.com>
 import re
 import wx
 from wx.html import EVT_HTML_LINK_CLICKED
-from wx.lib.agw import aui
 
+import aui
 from htmlwin import BaseHtmlWindow
 from panes.search import refalize2
 
@@ -49,7 +49,7 @@ class MultiverseDialog(wx.Dialog):
 																 (wx.ACCEL_CTRL, ord("A"), wx.ID_SELECTALL)]))
 		self.results = BaseHtmlWindow(self.splitter)
 		self.splitter.SplitHorizontally(self.references, self.results, 60)
-		self.close = wx.Button(self, wx.ID_CLOSE)	# Needed because GNOME 3 doesn't have close button on dialogs
+		self.close = wx.Button(self, wx.ID_CLOSE)	# Needed because Gnome 3 doesn't have close button on dialogs
 		
 		sizer = wx.BoxSizer(wx.VERTICAL)
 		sizer.Add(self.toolbar, 0, wx.EXPAND)
@@ -68,7 +68,8 @@ class MultiverseDialog(wx.Dialog):
 	
 	def OnSearch(self, event):
 		try:
-			browser = self._parent.GetBrowser(self._parent.versions.index(self.version.GetStringSelection()))
+			version = self.version.GetStringSelection()
+			browser = self._parent.GetBrowser(self._parent.versions.index(version))
 			data = refalize2(self.references.GetValue(), browser.Bible)
 			results = []
 			if self._parent._app.settings["AbbrevSearchResults"]:
@@ -80,7 +81,10 @@ class MultiverseDialog(wx.Dialog):
 				b2, c2, v2 = stop
 				try:
 					if start == stop:
-						results.append("<p><a href='%d.%d.%d'>%s %d:%d</a><br />%s</p>" % (b1, c1, v1, books[b1 - 1], c1, v1, browser.Bible[b1][c1][v1]))
+						if len(browser.Bible[b1][c1][v1]):
+							results.append("<p><a href='%d.%d.%d'>%s %d:%d</a><br />%s</p>" % (b1, c1, v1, books[b1 - 1], c1, v1, browser.Bible[b1][c1][v1]))
+						else:
+							results.append(_("<p><font color=gray>%s %d:%d is not in the %s.</font></p>") % (books[b1 - 1], c1, v1, version))
 					else:
 						result = []
 						for b in range(b1, b2 + 1):
@@ -91,8 +95,10 @@ class MultiverseDialog(wx.Dialog):
 											result.append("<hr /><a href='%d.%d.-1'>%s %d</a>" % (b, c, books[b - 1], c))
 										elif not v:
 											result.append("<p><a href='%d.%d.-1'>%s %d</a></p>" % (b, c, books[b - 1], c))
-										else:
+										elif len(browser.Bible[b][c][v]):
 											result.append("<font size=-1><a href='%d.%d.%d'>%d</a>&nbsp;</font>%s" % (b, c, v, v, browser.Bible[b][c][v]))
+										else:
+											result.append("")
 						if not len(result):
 							raise AssertionError
 				except:
@@ -110,7 +116,7 @@ class MultiverseDialog(wx.Dialog):
 			self.toolbar.EnableTool(wx.ID_PRINT, True)
 			##self.toolbar.EnableTool(wx.ID_COPY, True)
 			self.toolbar.Refresh(False)
-			self.lastversion = self.version.GetStringSelection()
+			self.lastversion = version
 			wx.CallAfter(self.results.SetFocus)
 		except:
 			wx.MessageBox(_("Sorry, but I cannot understand all of those references.\nMake sure that they exist\n(i.e., are not like Mark 17 or Psalms 1:66).\n\nIf you think that Berean should accept them,\nplease email <timothysw@objectmail.com>."), "Berean", wx.ICON_EXCLAMATION | wx.OK)
@@ -119,7 +125,7 @@ class MultiverseDialog(wx.Dialog):
 		id = event.GetId()
 		if id != wx.ID_PAGE_SETUP:
 			text = self.html.replace("</b></a>", " (%s)</b></a>" % self.lastversion, 1)
-			if wx.VERSION_STRING >= "2.9.0.0":
+			if wx.VERSION_STRING >= "2.8.11.0":
 				self._parent.printer.SetName(_("Search Results"))
 			if id == wx.ID_PRINT:
 				self._parent.printer.PrintText(text)
@@ -130,11 +136,13 @@ class MultiverseDialog(wx.Dialog):
 	
 	def OnPrintDropdown(self, event):
 		if event.IsDropDownClicked():
+			self.toolbar.SetToolSticky(wx.ID_PRINT, True)
 			menu = wx.Menu()
 			menu.Append(wx.ID_PRINT, _("&Print..."))
 			menu.Append(wx.ID_PAGE_SETUP, _("Page Set&up..."))
 			menu.Append(wx.ID_PREVIEW, _("Print Previe&w..."))
 			self.toolbar.PopupMenu(menu, self._parent.toolbar.GetPopupPos(self.toolbar, wx.ID_PRINT))
+			self.toolbar.SetToolSticky(wx.ID_PRINT, False)
 	
 	def OnHtmlLinkClicked(self, event):
 		if self._parent.notebook.GetPageText(self._parent.notebook.GetSelection()) != self.lastversion:

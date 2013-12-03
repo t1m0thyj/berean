@@ -44,15 +44,15 @@ class FileConfig(ConfigParser.RawConfigParser):
 	def Load(self):
 		display = wx.GetDisplaySize()
 		best = (int(display[0] * 0.8), int(display[1] * 0.8))
-		settings = {"WindowPos":wx.DefaultPosition, "WindowSize":best, "MaximizeState":False,
-					"MinimizeToTray":False, "SelectedBook":1, "SelectedChapter":1, "ZoomLevel":3,
-					"ActiveVerse":-1, "ActiveTab":0, "LastReference":"",
-					"HebrewBookOrder":False, "ActiveNotes":0,
-					"VersionList":["KJV", "YLT"], "ParallelVersions":["KJV", "YLT"],
-					"FavoritesList":[], "ReferenceHistory":[], "ChapterHistory":[],
-					"AbbrevSearchResults":False, "LastSearch":"", "OptionsPane":True,
-					"AllWords":True, "CaseSensitive":False, "ExactMatch":False, "Phrase":False, "RegularExpression":False,
-					"SearchHistory":[], "LastVerses":""}
+		settings = {"WindowPos": wx.DefaultPosition, "WindowSize": best, "MaximizeState": False,
+					"MinimizeToTray": False, "SelectedBook": 1, "SelectedChapter": 1, "ZoomLevel": 3,
+					"ActiveVerse": -1, "ActiveTab": 0, "LastReference": "",
+					"HebrewBookOrder": False, "ActiveNotes": 0,
+					"VersionList": ["KJV", "WEB"], "ParallelVersions": ["KJV", "WEB"],
+					"FavoritesList": [], "ReferenceHistory": [], "ChapterHistory": [],
+					"AbbrevSearchResults": False, "LastSearch": "", "OptionsPane": True,
+					"AllWords": True, "CaseSensitive": False, "ExactMatch": False, "Phrase": False, "RegularExpression": False,
+					"SearchHistory": [], "LastVerses": ""}
 		if self.has_option("Main", "WindowPos"):
 			settings["WindowPos"] = map(int, self.getunicode("Main", "WindowPos").split(","))
 		if self.has_option("Main", "WindowSize"):

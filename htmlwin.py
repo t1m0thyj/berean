@@ -102,12 +102,14 @@ class ChapterWindow(HtmlWindow):
 			if self.Bible[book][chapter][0]:
 				items[0] = subtitle % (items[0][:-6], self.Bible[book][chapter][0].replace("[", "<i>").replace("]", "</i>"))
 			for i in range(1, len(self.Bible[book][chapter])):
+				if not len(self.Bible[book][chapter][i]):
+					continue
 				items.append("<font size=-1>%d&nbsp;</font>%s<a name=\"%d\"></a>" % (i, self.Bible[book][chapter][i].replace("[", "<i>").replace("]", "</i>"), i + 1))
 				if i == verse:
 					items[-1] = "<b>%s</b>" % items[-1]
 		else:
-			items = [_("<font color=gray>%s %s is not in the %s.</font>") % (self._frame.books[book - 1], chapter, self.version)]
-		return body % (self._frame.zoom, "\n\t<br />\n\t".join(items))
+			items = [_("<font color=gray>%s %d is not in the %s.</font>") % (self._frame.books[book - 1], chapter, self.version)]
+		return body % (self._frame.zoom, "\n  <br />\n  ".join(items))
 
 def download(version, versiondir):
 	def reporthook(blocks, size, total):
@@ -126,14 +128,14 @@ def download(version, versiondir):
 
 body = """<html>
 <body>
-	<font size=%d>
-	%s
-	</font>
+  <font size=%d>
+  %s
+  </font>
 </body>
 </html>"""
 heading = """<div align=center>
-	<font size=+1><b>%s %d</b></font>
-	</div>"""
+  <font size=+1><b>%s %d</b></font>
+  </div>"""
 subtitle = """%s<br />
-	%s
-	</div>"""
+  %s
+  </div>"""
