@@ -4,6 +4,7 @@ Copyright (C) 2013 Timothy Johnson <timothysw@objectmail.com>
 """
 
 import os
+
 import wx
 
 import favorites
@@ -51,9 +52,12 @@ class MenuBar(wx.MenuBar):
         self.View.Append(wx.ID_ZOOM_100, _("Reset Zoom\tCtrl+0"), _("Restores the text to the default size"))
         frame.Bind(wx.EVT_MENU, self.OnZoomDefault, id=wx.ID_ZOOM_100)
         self.View.AppendSeparator()
-        self.ID_TOOLBAR = wx.NewId()
-        self.View.AppendCheckItem(self.ID_TOOLBAR, _("&Toolbar"), _("Shows or hides the toolbar"))
-        frame.Bind(wx.EVT_MENU, self.OnToolbar, id=self.ID_TOOLBAR)
+        self.ID_MAIN_TOOLBAR = wx.NewId()
+        self.View.AppendCheckItem(self.ID_MAIN_TOOLBAR, _("&Main Toolbar"), _("Shows or hides the main toolbar"))
+        frame.Bind(wx.EVT_MENU, self.OnMainToolBar, id=self.ID_MAIN_TOOLBAR)
+        self.ID_CHAPTER_TOOLBAR = wx.NewId()
+        self.View.AppendCheckItem(self.ID_CHAPTER_TOOLBAR, _("&Chapter Toolbar"), _("Shows or hides the chapter toolbar"))
+        frame.Bind(wx.EVT_MENU, self.OnChapterToolBar, id=self.ID_CHAPTER_TOOLBAR)
         self.View.AppendSeparator()
         self.ID_TREEPANE = wx.NewId()
         self.View.AppendCheckItem(self.ID_TREEPANE, _("T&ree Pane\tCtrl+Alt+T"), _("Shows or hides the tree pane"))
@@ -120,8 +124,11 @@ class MenuBar(wx.MenuBar):
     def OnZoomDefault(self, event):
         self._frame.Zoom(0)
 
-    def OnToolbar(self, event):
-        self._frame.ShowToolbar(event.IsChecked())
+    def OnMainToolBar(self, event):
+        self._frame.ShowMainToolBar(event.IsChecked())
+
+    def OnChapterToolBar(self, event):
+        self._frame.ShowChapterToolBar(event.IsChecked())
 
     def OnTreePane(self, event):
         self._frame.ShowTreePane(event.IsChecked())
@@ -143,6 +150,7 @@ class MenuBar(wx.MenuBar):
 
     def OnAbout(self, event):
         self._frame.helper.ShowAboutBox()
+
 
 class TaskBarIcon(wx.TaskBarIcon):
     def __init__(self, frame):

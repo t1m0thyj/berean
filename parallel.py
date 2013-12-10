@@ -22,7 +22,8 @@ class ParallelWindow(HtmlWindow):
         if len(versions) <= 2:
             self.description = _(" and ").join(versions)
         else:
-            self.description = _("%s, and %s") % (", ".join(versions[:-1]), versions[-1])
+            self.description = _("%s, and %s") % (", ".join(versions[:-1]),
+                versions[-1])
 
     def GetPage(self, book, chapter, verse=-1):
         Bibles = []
@@ -38,7 +39,8 @@ class ParallelWindow(HtmlWindow):
         if len(Bibles):
             items.append("  <tr>")
             for i in range(len(Bibles)):
-                items.append(heading % (Bibles[i][book][0], chapter, versions[i]))
+                items.append(heading % (Bibles[i][book][0], chapter,
+                    versions[i]))
                 if Bibles[i][book][chapter][0]:
                     items[-1] = items[-1].replace("</div>", subtitle % Bibles[i][book][chapter][0].replace("[", "<i>").replace("]", "</i>"))
             items.append("  </tr>")
@@ -60,6 +62,8 @@ class ParallelWindow(HtmlWindow):
                 items.append("  </tr>")
             self.verses = i
         self.SetDescription(versions)
+        if wx.VERSION_STRING >= "2.9.4.0":
+            self._frame.notebook.SetPageToolTip(len(self._frame.versions), self.description)
         return body % (self._frame.zoom, "\n    ".join(items))
 
     def LoadChapter(self, book, chapter, verse=-1):
@@ -69,26 +73,6 @@ class ParallelWindow(HtmlWindow):
             wx.CallAfter(self.ScrollToAnchor, str(verse))
             self.verse = -1
 
-body = """<html>
-<body>
-  <font size=%d>
-  <table valign=top cellspacing=2 cellpadding=0>
-    <tbody>
-    %s
-    </tbody>
-  </table>
-  </font>
-</body>
-</html>
-"""
-heading = """    <td>
-        <div align=center>
-        <font size=+1><b>%s %d (%s)</b></font>
-        </div>
-      </td>"""
-subtitle = """<br />
-        %s
-        </div>"""
 
 class ParallelPanel(wx.Panel):
     def __init__(self, parent):
@@ -151,6 +135,7 @@ class ParallelPanel(wx.Panel):
         self._frame.parallel.LoadChapter(*self._frame.reference)
         wx.CallAfter(self._frame.parallel.SetFocus)
 
+
 class ChoiceDropTarget(wx.DropTarget):
     def __init__(self, panel, index):
         wx.DropTarget.__init__(self)
@@ -174,3 +159,24 @@ class ChoiceDropTarget(wx.DropTarget):
             self._panel.choices[index].SetSelection(old)
             self._panel._frame.parallel.LoadChapter(*self._panel._frame.reference)
         return default
+
+body = """<html>
+<body>
+  <font size=%d>
+  <table valign=top cellspacing=2 cellpadding=0>
+    <tbody>
+    %s
+    </tbody>
+  </table>
+  </font>
+</body>
+</html>
+"""
+heading = """    <td>
+        <div align=center>
+        <font size=+1><b>%s %d (%s)</b></font>
+        </div>
+      </td>"""
+subtitle = """<br />
+        %s
+        </div>"""

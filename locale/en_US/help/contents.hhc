@@ -11,27 +11,27 @@
 	<ul>
 		<li><object type="text/sitemap">
 				<param name="Name" value="File menu">
-				<param name="Local" value="file_menu.html">
+				<param name="Local" value="file-menu.html">
 			</object>
 		<li><object type="text/sitemap">
 				<param name="Name" value="Edit menu">
-				<param name="Local" value="edit_menu.html">
+				<param name="Local" value="edit-menu.html">
 			</object>
 		<li><object type="text/sitemap">
 				<param name="Name" value="View menu">
-				<param name="Local" value="view_menu.html">
+				<param name="Local" value="view-menu.html">
 			</object>
 		<li><object type="text/sitemap">
 				<param name="Name" value="Favorites menu">
-				<param name="Local" value="favorites_menu.html">
+				<param name="Local" value="favorites-menu.html">
 			</object>
 		<li><object type="text/sitemap">
 				<param name="Name" value="Tools menu">
-				<param name="Local" value="tools_menu.html">
+				<param name="Local" value="tools-menu.html">
 			</object>
 		<li><object type="text/sitemap">
 				<param name="Name" value="Help menu">
-				<param name="Local" value="help_menu.html">
+				<param name="Local" value="help-menu.html">
 			</object>
 	</ul>
 </ul>

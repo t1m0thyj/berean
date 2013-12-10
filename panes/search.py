@@ -6,10 +6,11 @@ Copyright (C) 2013 Timothy Johnson <timothysw@objectmail.com>
 import cPickle
 import os
 import re
+
 import wx
+from wx import aui
 from wx.html import EVT_HTML_LINK_CLICKED
 
-import aui
 import dialogs.index as indexer
 from htmlwin import BaseHtmlWindow
 
@@ -34,10 +35,11 @@ def refalize(reference):
     else:
         return (book, 1, int(groups[1]))
 
+
 def refalize2(references, Bible):
     references = filter(None, [reference.lstrip() for reference in re.split(r'[,;\n]', references)])
     pattern = re.compile(r'((?:[1-3]\s?|i{1,3}\s)?[A-Za-z]+)?\s*(\d+)?\W*(\d+)?', flags=re.IGNORECASE)
-    style = 1    # 0 = full reference, 1 = reference with no verse, 2 = reference with no chapter
+    style = 1   # 0 = full reference, 1 = reference with no verse, 2 = reference with no chapter
     for i in range(len(references)):
         if "-" in references[i]:
             first, last = references[i].split("-")
@@ -106,7 +108,7 @@ def refalize2(references, Bible):
                 last = (book, chapter, verse)
             else:
                 last = None
-        elif re.search(r'\W*ff', references[i][match.end(len(groups)):], flags=re.IGNORECASE):    # Recognize 'ff'
+        elif re.search(r'\W*ff', references[i][match.end(len(groups)):], flags=re.IGNORECASE):  # Recognize 'ff'
             if style != 1:
                 last = (book, chapter, len(Bible[book][chapter]) - 1)
             else:
@@ -118,9 +120,10 @@ def refalize2(references, Bible):
         references[i] = (first, last)
     return references
 
+
 def validate(reference, numbers=False):
     reference = reference.strip()
-    if "0" <= reference[-1] <= "9":
+    if reference[-1].isdigit():
         return True
     if not numbers:
         book = reference.replace(" ", "").lower()
@@ -132,20 +135,6 @@ def validate(reference, numbers=False):
             return True
     return False
 
-abbrevs = {"jdg": 7,
-           "1kgs": 11,
-           "2kgs": 12,
-           "ca": 22, "can": 22, "cant": 22, "canti": 22, "cantic": 22, "canticl": 22, "canticle": 22, "canticles": 22,
-           "mk": 41, "mrk": 41,
-           "lk": 42,
-           "jh": 43, "jhn": 43,
-           "php": 50,
-           "phm": 57,
-           "jas": 59,
-           "1jh": 62, "1jhn": 62,
-           "2jh": 63, "2jhn": 63,
-           "3jh": 64, "3jhn": 64,
-           "jde": 65}
 
 class SearchPane(wx.Panel):
     def __init__(self, parent):
@@ -182,15 +171,18 @@ class SearchPane(wx.Panel):
 
         self.text = wx.ComboBox(self, -1, choices=parent._app.settings["SearchHistory"], style=wx.TE_PROCESS_ENTER)
         self.text.SetValue(parent._app.settings["LastSearch"])
-        self.toolbar = aui.AuiToolBar(self, -1, agwStyle=aui.AUI_TB_DEFAULT_STYLE | aui.AUI_TB_PLAIN_BACKGROUND)
+        style = aui.AUI_TB_DEFAULT_STYLE
+        if wx.VERSION_STRING >= "2.9.5.0":
+            style |= aui.AUI_TB_PLAIN_BACKGROUND
+        self.toolbar = aui.AuiToolBar(self, -1, (-1, -1), (-1, -1), style)
         self.ID_SEARCH = wx.NewId()
-        self.toolbar.AddSimpleTool(self.ID_SEARCH, "", parent.Bitmap("search"), _("Search"))
-        self.toolbar.AddSimpleTool(wx.ID_PRINT, "", parent.Bitmap("print"), _("Print Search Results"))
+        self.toolbar.AddTool(self.ID_SEARCH, "", parent.Bitmap("search"), _("Search"))
+        self.toolbar.AddTool(wx.ID_PRINT, "", parent.Bitmap("print"), _("Print Search Results"))
         self.toolbar.SetToolDropDown(wx.ID_PRINT, True)
         self.toolbar.EnableTool(wx.ID_PRINT, False)
         self.toolbar.Realize()
         self.results = BaseHtmlWindow(self)
-        self.optionspane = wx.CollapsiblePane(self, -1, _("Search Options"), style=wx.CP_DEFAULT_STYLE | wx.CP_NO_TLW_RESIZE)
+        self.optionspane = wx.CollapsiblePane(self, -1, _("Options"), style=wx.CP_DEFAULT_STYLE | wx.CP_NO_TLW_RESIZE)
         optionspane = self.optionspane.GetPane()
         self.AllWords = wx.CheckBox(optionspane, -1, _("All Words in Verse"), style=wx.CHK_3STATE)
         self.CaseSensitive = wx.CheckBox(optionspane, -1, _("Case Sensitive"))
@@ -247,7 +239,7 @@ class SearchPane(wx.Panel):
             self.Bind(wx.EVT_MENU, self.OnPrintMenu, id=id)
         self.toolbar.Bind(aui.EVT_AUITOOLBAR_TOOL_DROPDOWN, self.OnPrintDropdown, id=wx.ID_PRINT)
         self.results.Bind(EVT_HTML_LINK_CLICKED, self.OnHtmlLinkClicked)
-        self.results.Bind(wx.EVT_RIGHT_UP, self.OnContextMenu)    # EVT_CONTEXT_MENU doesn't work for wxHtmlWindow in 2.8
+        self.results.Bind(wx.EVT_RIGHT_UP, self.OnContextMenu)  # EVT_CONTEXT_MENU doesn't work for wxHtmlWindow in 2.8
         for option in ("AllWords", "ExactMatch", "Phrase", "RegularExpression"):
             getattr(self, option).Bind(wx.EVT_CHECKBOX, self.OnCheckbox)
         self.rangechoice.Bind(wx.EVT_CHOICE, self.OnRange)
@@ -285,13 +277,13 @@ class SearchPane(wx.Panel):
     def FindText(self, text):
         options = [getattr(self, option).Get3StateValue() == wx.CHK_CHECKED for option in self.options]
         flags = re.UNICODE
-        if not options[1]:    # not Case Sensitive
+        if not options[1]:  # not Case Sensitive
             flags |= re.IGNORECASE
         self.lastversion = self.version.GetStringSelection()
         browser = self._parent.GetBrowser(self._parent.versions.index(self.lastversion))
         start = self.start.GetSelection() + 1
         stop = self.stop.GetSelection() + 1
-        if not options[4]:    # not Regular Expression
+        if not options[4]:  # not Regular Expression
             words = [re.compile(r'\W', re.UNICODE).sub(r'', word) for word in text.split()]
             if options[0] or options[3]:    # All Words or Phrase
                 longest = ""
@@ -299,9 +291,9 @@ class SearchPane(wx.Panel):
                     if len(word) >= len(longest):
                         longest = word
                 matches = self.FindWord(longest, options)
-                if options[0]:    # All Words
+                if options[0]:  # All Words
                     words.remove(longest)
-                    if options[2]:    # Exact Match
+                    if options[2]:  # Exact Match
                         words = [r'\b%s\b' % word for word in words]
                         longest = r'\b%s\b' % longest
                     for word in words:
@@ -316,7 +308,7 @@ class SearchPane(wx.Panel):
                 matches = []
                 for word in words:
                     matches += self.FindWord(word, options)
-                if options[2]:    # Exact Match
+                if options[2]:  # Exact Match
                     pattern = re.compile(r'(%s)' % "|".join([r'\b%s\b' % word for word in words]), flags)
                     matches = filter(lambda item: pattern.search(browser.Bible[item[0]][item[1]][item[2]]), matches)
                 else:
@@ -326,7 +318,7 @@ class SearchPane(wx.Panel):
             i = 0
             previous = None
             while i < len(matches):
-                if matches[i] == previous:    # Avoid showing the same verse multiple times
+                if matches[i] == previous:  # Avoid showing the same verse multiple times
                     matches.pop(i)
                     continue
                 previous = matches[i]
@@ -396,17 +388,17 @@ class SearchPane(wx.Panel):
     def FindWord(self, word, options):
         index = self.indexes[self._parent.versions.index(self.lastversion)]
         matches = []
-        if not options[1]:    # not Case Sensitive
+        if not options[1]:  # not Case Sensitive
             cases = [word.lower(), word.capitalize(), word.upper()]
-            if "-" in word:    # Elelohe-Israel, not Elelohe-israel
+            if "-" in word: # Elelohe-Israel, not Elelohe-israel
                 cases.append("-".join([item.capitalize() for item in word.split("-")]))
             for case in cases:
                 if case in index:
                     matches += [[ord(char) - 32 for char in index[case][i:i + 3]] for i in range(0, len(index[case]), 3)]
         elif word in index:
             matches += [[ord(char) - 32 for char in index[word][i:i + 3]] for i in range(0, len(index[word]), 3)]
-        if not (options[2] or options[3]):    # not Exact Match or Phrase
-            if not options[1]:    # not Case Sensitive
+        if not (options[2] or options[3]):  # not Exact Match or Phrase
+            if not options[1]:  # not Case Sensitive
                 lower = word.lower()
                 for word2 in index:
                     lower2 = word2.lower()
@@ -534,9 +526,14 @@ class SearchPane(wx.Panel):
     def OnCollapsiblePaneChanged(self, event):
         self.Layout()
 
+abbrevs = {"jdg": 7, "1kgs": 11, "2kgs": 12, "ca": 22, "can": 22, "cant": 22,
+    "canti": 22, "cantic": 22, "canticl": 22, "canticle": 22, "canticles": 22,
+    "mk": 41, "mrk": 41, "lk": 42, "jh": 43, "jhn": 43, "php": 50, "phm": 57,
+    "jas": 59, "1jh": 62, "1jhn": 62, "2jh": 63, "2jhn": 63, "3jh": 64,
+    "3jhn": 64, "jde": 65}
 ranges = map(_, ["Entire Bible", "Old Testament", "Pentateuch (Gen - Deu)",
-                 "History (Jos - Est)", "Wisdom (Job - Son)",
-                 "Major Prophets (Isa - Dan)", "Minor Prophets (Hos - Mal)",
-                 "New Testament", "Gospels & Acts (Mat - Act)",
-                 "Paul's Letters (Rom - Heb)", "General Letters (Jam - Jde)",
-                 "Apocalypse (Rev)", "Just Current Book", "Custom..."])
+    "History (Jos - Est)", "Wisdom (Job - Son)", "Major Prophets (Isa - Dan)",
+    "Minor Prophets (Hos - Mal)", "New Testament",
+    "Gospels & Acts (Mat - Act)", "Paul's Letters (Rom - Heb)",
+    "General Letters (Jam - Jde)", "Apocalypse (Rev)", "Just Current Book",
+    "Custom..."])

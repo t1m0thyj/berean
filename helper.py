@@ -4,7 +4,7 @@ Copyright (C) 2013 Timothy Johnson <timothysw@objectmail.com>
 """
 
 import os.path
-import webbrowser
+
 import wx
 from wx import html
 
@@ -33,7 +33,7 @@ class HelpSystem(html.HtmlHelpController):
     def OnHelpHtmlLinkClicked(self, event):
         href = event.GetLinkInfo().GetHref()
         if href.startswith("http:"):
-            webbrowser.open(href)
+            wx.LaunchDefaultBrowser(href)
         else:
             event.Skip()
 

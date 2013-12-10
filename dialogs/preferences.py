@@ -4,6 +4,7 @@ Copyright (C) 2013 Timothy Johnson <timothysw@objectmail.com>
 """
 
 import os
+
 import wx
 
 _ = wx.GetTranslation
@@ -29,13 +30,10 @@ class PreferenceDialog(wx.Dialog):
         self.general = wx.Panel(self.listbook, -1)
         self.MinimizeToTray = wx.CheckBox(self.general, -1, _("Minimize to system tray"))
         self.MinimizeToTray.SetValue(parent._app.settings["MinimizeToTray"])
-        self.HebrewBookOrder = wx.CheckBox(self.general, -1, _("Use Hebrew Old Testament book order in tree pane*"))
-        self.HebrewBookOrder.SetValue(parent._app.settings["HebrewBookOrder"])
         self.AbbrevSearchResults = wx.CheckBox(self.general, -1, _("Abbreviate book names in search results"))
         self.AbbrevSearchResults.SetValue(parent._app.settings["AbbrevSearchResults"])
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add(self.MinimizeToTray, 0, wx.ALL, 2)
-        sizer.Add(self.HebrewBookOrder, 0, wx.ALL, 2)
         sizer.Add(self.AbbrevSearchResults, 0, wx.ALL, 2)
         self.general.SetSizer(sizer)
         self.listbook.AddPage(self.general, _("General"), imageId=0)
@@ -90,14 +88,13 @@ class PreferenceDialog(wx.Dialog):
 
     def OnApply(self, event):
         self._parent._app.settings["MinimizeToTray"] = self.MinimizeToTray.GetValue()
-        self._parent._app.settings["HebrewBookOrder"] = self.HebrewBookOrder.GetValue()
         self._parent._app.settings["AbbrevSearchResults"] = self.AbbrevSearchResults.GetValue()
         versions = []
         for i in range(len(self.abbrevs)):
             if self.VersionList.IsChecked(i):
                 versions.append(self.abbrevs[i])
         if versions != self._parent.versions:
-            for version in self._parent.versions:    # Delete old indexes
+            for version in self._parent.versions:   # Delete old indexes
                 if version not in versions:
                     wx.CallAfter(os.remove, os.path.join(self._parent._app.userdatadir, "indexes", "%s.idx" % version))
             self._parent.versions = versions
