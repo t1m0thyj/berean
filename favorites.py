@@ -81,6 +81,7 @@ class FavoritesMenu(wx.Menu):
     def OnViewAll(self, event):
         self._frame.MultiverseSearch("\n".join(self.favorites))
 
+
 class FavoritesManager(wx.Dialog):
     def __init__(self, parent):
         wx.Dialog.__init__(self, parent, -1, _("Manage Favorites"), style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER)

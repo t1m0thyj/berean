@@ -6,6 +6,7 @@ Copyright (C) 2013 Timothy Johnson <timothysw@objectmail.com>
 import cPickle
 import os.path
 import re
+
 import wx
 
 _ = wx.GetTranslation

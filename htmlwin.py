@@ -6,6 +6,7 @@ Copyright (C) 2013 Timothy Johnson <timothysw@objectmail.com>
 import cPickle
 import os.path
 import urllib
+
 import wx
 import wx.lib.dragscroller
 from wx import html
@@ -33,6 +34,7 @@ class BaseHtmlWindow(html.HtmlWindow):
     def OnMiddleUp(self, event):
         self.dragscroller.Stop()
 
+
 class HtmlWindow(BaseHtmlWindow):
     def __init__(self, parent, frame):
         BaseHtmlWindow.__init__(self, parent)
@@ -40,7 +42,7 @@ class HtmlWindow(BaseHtmlWindow):
 
         self.verse = -1
 
-        self.Bind(wx.EVT_RIGHT_UP, self.OnContextMenu)    # EVT_CONTEXT_MENU doesn't work for wxHtmlWindow in 2.8
+        self.Bind(wx.EVT_RIGHT_UP, self.OnContextMenu)  # EVT_CONTEXT_MENU doesn't work for wxHtmlWindow in 2.8
 
     def LoadChapter(self, book, chapter, verse=-1):
         self.SetPage(self.GetPage(book, chapter, verse))
@@ -69,6 +71,7 @@ class HtmlWindow(BaseHtmlWindow):
             self._frame.ShowSearchPane()
         self._frame.search.text.SetValue(self.SelectionToText().strip().lstrip("1234567890 "))
         self._frame.search.OnSearch(None)
+
 
 class ChapterWindow(HtmlWindow):
     def __init__(self, parent, version):
@@ -110,6 +113,7 @@ class ChapterWindow(HtmlWindow):
         else:
             items = [_("<font color=gray>%s %d is not in the %s.</font>") % (self._frame.books[book - 1], chapter, self.version)]
         return body % (self._frame.zoom, "\n  <br />\n  ".join(items))
+
 
 def download(version, versiondir):
     def reporthook(blocks, size, total):

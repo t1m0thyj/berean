@@ -4,15 +4,15 @@ Copyright (C) 2013 Timothy Johnson <timothysw@objectmail.com>
 """
 
 import wx
+from wx import aui
 
-import aui
 from panes.search import refalize, validate
 
 _ = wx.GetTranslation
 
-class ToolBar(aui.AuiToolBar):
+class MainToolBar(aui.AuiToolBar):
     def __init__(self, parent):
-        super(ToolBar, self).__init__(parent, -1, agwStyle=aui.AUI_TB_DEFAULT_STYLE | aui.AUI_TB_OVERFLOW | aui.AUI_TB_HORZ_TEXT)
+        aui.AuiToolBar.__init__(self, parent, -1, (-1, -1), (-1, -1), aui.AUI_TB_DEFAULT_STYLE | aui.AUI_TB_OVERFLOW | aui.AUI_TB_HORZ_TEXT)
         self._parent = parent
 
         self.current = len(parent._app.settings["ChapterHistory"]) - 1
@@ -22,30 +22,20 @@ class ToolBar(aui.AuiToolBar):
         self.reference.SetValue(parent._app.settings["LastReference"])
         self.AddControl(self.reference)
         self.reference.Bind(wx.EVT_TEXT_ENTER, self.OnSearch)
-        self.AddSimpleTool(wx.ID_FIND, "", parent.Bitmap("goto"), _("Go to Reference (Ctrl+F)"))
+        self.AddTool(wx.ID_FIND, "", parent.Bitmap("goto"), _("Go to Reference (Ctrl+F)"))
         self.Bind(wx.EVT_MENU, self.OnSearch, id=wx.ID_FIND)
         self.AddSeparator()
-        self.AddSimpleTool(wx.ID_BACKWARD, _("Back"), parent.Bitmap("back"), _("Go Back (Alt+Left)"))
+        self.AddTool(wx.ID_BACKWARD, _("Back"), parent.Bitmap("back"), _("Go Back (Alt+Left)"))
         self.SetToolDropDown(wx.ID_BACKWARD, True)
         self.Bind(wx.EVT_MENU, self.OnBack, id=wx.ID_BACKWARD)
         self.Bind(aui.EVT_AUITOOLBAR_TOOL_DROPDOWN, self.OnBackDropdown, id=wx.ID_BACKWARD)
-        self.AddSimpleTool(wx.ID_FORWARD, _("Forward"), parent.Bitmap("forward"), _("Go Forward (Alt+Right)"))
+        self.AddTool(wx.ID_FORWARD, _("Forward"), parent.Bitmap("forward"), _("Go Forward (Alt+Right)"))
         self.SetToolDropDown(wx.ID_FORWARD, True)
         self.Bind(wx.EVT_MENU, self.OnForward, id=wx.ID_FORWARD)
         self.Bind(aui.EVT_AUITOOLBAR_TOOL_DROPDOWN, self.OnForwardDropdown, id=wx.ID_FORWARD)
         self.AddSeparator()
-        self.books = wx.Choice(self, -1, choices=parent.books)
-        self.books.SetSelection(parent.reference[0] - 1)
-        self.AddControl(self.books)
-        self.books.Bind(wx.EVT_CHOICE, self.OnBook)
-        self.chapter = wx.SpinCtrl(self, -1, str(parent.reference[1]), size=(60, -1), min=1, max=parent.chapters[parent.reference[0] - 1])
-        self.AddControl(self.chapter)
-        self.chapter.Bind(wx.EVT_TEXT_ENTER, self.OnChapter)
-        self.chapter.Bind(wx.EVT_SPINCTRL, self.OnChapter)
-        self.AddSimpleTool(wx.ID_PRINT, "", parent.Bitmap("print"), _("Print (Ctrl+P)"))
-        self.AddSeparator()
-        self.AddSimpleTool(parent.menubar.Favorites.ID_ADD, "", parent.Bitmap("add-favorite"), _("Add to Favorites (Ctrl+D)"))
-        self.AddSimpleTool(parent.menubar.Favorites.ID_MANAGE, "", parent.Bitmap("favorites"), _("Manage Favorites"))
+        self.AddTool(parent.menubar.Favorites.ID_ADD, "", parent.Bitmap("add-favorite"), _("Add to Favorites (Ctrl+D)"))
+        self.AddTool(parent.menubar.Favorites.ID_MANAGE, "", parent.Bitmap("favorites"), _("Manage Favorites"))
 
         self.Realize()
 
@@ -128,16 +118,15 @@ class ToolBar(aui.AuiToolBar):
             self.PopupMenu(menu, self.GetPopupPos(self, wx.ID_FORWARD))
             self.SetToolSticky(wx.ID_FORWARD, False)
 
-    def OnBook(self, event):
-        book = self.books.GetSelection() + 1
-        if self._parent.reference[1] > self._parent.chapters[book - 1]:
-            chapter = self._parent.chapters[book - 1]
-        else:
-            chapter = self._parent.reference[1]
-        self.chapter.SetRange(1, self._parent.chapters[book - 1])
-        self.chapter.SetValue(chapter)
-        self._parent.LoadChapter(book, chapter)
 
-    def OnChapter(self, event):
-        if not self._parent.skipevents:
-            self._parent.LoadChapter(self._parent.reference[0], self.chapter.GetValue())
+class ChapterToolBar(aui.AuiToolBar):
+    def __init__(self, parent):
+        aui.AuiToolBar.__init__(self, parent, -1, (-1, -1), (-1, -1), aui.AUI_TB_DEFAULT_STYLE | aui.AUI_TB_OVERFLOW | aui.AUI_TB_HORZ_TEXT)
+        self._parent = parent
+
+        self.AddTool(wx.ID_PRINT, "", parent.Bitmap("print"), _("Print (Ctrl+P)"))
+        self.AddTool(wx.ID_COPY, "", parent.Bitmap("copy"), _("Copy (Ctrl+C)"))
+        self.AddSeparator()
+        self.AddTool(wx.ID_ZOOM_IN, "", parent.Bitmap("zoom-in"), _("Zoom In (Ctrl++)"))
+        self.AddTool(wx.ID_ZOOM_OUT, "", parent.Bitmap("zoom-out"), _("Zoom Out (Ctrl+-)"))
+        self.Realize()
