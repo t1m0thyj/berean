@@ -156,7 +156,7 @@ class MultiverseDialog(wx.Dialog):
             menu.Append(wx.ID_PAGE_SETUP, _("Page Set&up..."))
             menu.Append(wx.ID_PREVIEW, _("Print Previe&w..."))
             self.toolbar.PopupMenu(menu,
-                self._parent.toolbar.GetPopupPos(self.toolbar, wx.ID_PRINT))
+                self._parent.main_toolbar.GetPopupPos(self.toolbar, wx.ID_PRINT))
             self.toolbar.SetToolSticky(wx.ID_PRINT, False)
 
     def OnHtmlLinkClicked(self, event):
