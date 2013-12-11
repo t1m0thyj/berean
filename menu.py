@@ -107,13 +107,13 @@ class MenuBar(wx.MenuBar):
         self._frame.Copy()
 
     def OnReference(self, event):
-        self._frame.toolbar.OnSearch(event)
+        self._frame.main_toolbar.OnSearch(event)
 
     def OnBack(self, event):
-        self._frame.toolbar.OnBack(event)
+        self._frame.main_toolbar.OnBack(event)
 
     def OnForward(self, event):
-        self._frame.toolbar.OnForward(event)
+        self._frame.main_toolbar.OnForward(event)
 
     def OnZoomIn(self, event):
         self._frame.Zoom(1)

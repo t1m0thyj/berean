@@ -16,6 +16,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+import codecs
 import ConfigParser
 import getopt
 import os
@@ -93,7 +94,7 @@ class Berean(wx.App):
 
         systemtray = "--systemtray" in options
         if not systemtray:
-            splash = wx.SplashScreen(wx.Bitmap(os.path.join(self.cwd,
+            splash_screen = wx.SplashScreen(wx.Bitmap(os.path.join(self.cwd,
                 "images", "splash.png"), wx.BITMAP_TYPE_PNG),
                 wx.SPLASH_CENTRE_ON_SCREEN | wx.SPLASH_NO_TIMEOUT, 0, None,
                 -1, style=wx.BORDER_SIMPLE | wx.FRAME_NO_TASKBAR)
@@ -112,7 +113,7 @@ class Berean(wx.App):
         self.SetTopWindow(self.frame)
         self.frame.Show()
         if not systemtray:
-            splash.Destroy()
+            splash_screen.Destroy()
         else:
             self.frame.Iconize()
 
@@ -123,6 +124,7 @@ class Berean(wx.App):
         filename = os.path.join(self.userdatadir, "berean.ini")
         if os.path.isfile(filename):
             ini = open(filename, 'r')
+            ini.seek(ini.readline().index("[")) # Seek past UTF8 BOM
             self.config.readfp(ini)
             ini.close()
         display_size = wx.GetDisplaySize()
@@ -214,6 +216,7 @@ class Berean(wx.App):
             self.config.set("Search", option, str(state))
         self.config.set("Search", "LastVerses", self.settings["LastVerses"])
         ini = open(os.path.join(self.userdatadir, "berean.ini"), 'w')
+        ini.write(codecs.BOM_UTF8)
         self.config.write(ini)
         ini.close()
 
