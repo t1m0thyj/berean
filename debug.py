@@ -1,8 +1,4 @@
-"""
-debug.py - error handling functions for Berean
-Copyright (C) 2013 Timothy Johnson <timothysw@objectmail.com>
-NOTE: Parts of this file are based on code from GUI2Exe
-"""
+"""debug.py - error handling functions for Berean"""
 
 import platform
 import sys
@@ -12,6 +8,31 @@ import urllib2
 import wx
 
 _ = wx.GetTranslation
+
+error = False
+text = """Please explain what you were doing in Berean when the error occurred.
+
+%s
+DO NOT EDIT ANYTHING BELOW THIS LINE.
+%s
+
+%s
+%s
+
+%s%s
+    architecture: %s
+    machine: %s
+    byte order: %s
+Python %s
+    default encoding: %s
+    file system encoding: %s
+wxPython %s
+    platform info: %s
+    default encoding: %s
+Berean %s
+    frozen: %s
+"""
+
 
 def OnError(*exception):
     wx.CallAfter(LogError, exception)
@@ -41,7 +62,7 @@ def LogError(exception):
                               sys.getdefaultencoding(),
                               sys.getfilesystemencoding(), wx.VERSION_STRING,
                               ", ".join(wx.PlatformInfo),
-                              wx.GetDefaultPyEncoding(), _version,
+                              wx.GetDefaultPyEncoding(), VERSION,
                               hasattr(sys, "frozen"))
             if wx.Platform != "__WXMAC__":
                 message = urllib2.quote(message)
@@ -55,27 +76,3 @@ def LogError(exception):
         wx.LogError(_("An error occurred in the application.") + "\n\n" +
             details)
     error = False
-
-error = False
-text = """Please explain what you were doing in Berean when the error occurred.
-
-%s
-DO NOT EDIT ANYTHING BELOW THIS LINE.
-%s
-
-%s
-%s
-
-%s%s
-    architecture: %s
-    machine: %s
-    byte order: %s
-Python %s
-    default encoding: %s
-    file system encoding: %s
-wxPython %s
-    platform info: %s
-    default encoding: %s
-Berean %s
-    frozen: %s
-"""

@@ -1,7 +1,4 @@
-"""
-printing.py - printer class and save as function for Berean
-Copyright (C) 2013 Timothy Johnson <timothysw@objectmail.com>
-"""
+"""printing.py - printer class and save as function for Berean"""
 
 import wx
 from wx import html

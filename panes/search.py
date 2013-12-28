@@ -1,15 +1,11 @@
-"""
-search.py - search functions and pane class for Berean
-Copyright (C) 2013 Timothy Johnson <timothysw@objectmail.com>
-"""
+"""search.py - search functions and pane class for Berean"""
 
 import cPickle
 import os
 import re
 
 import wx
-from wx import aui
-from wx.html import EVT_HTML_LINK_CLICKED
+from wx import aui, html
 
 import dialogs.index as indexer
 from htmlwin import BaseHtmlWindow
@@ -238,7 +234,7 @@ class SearchPane(wx.Panel):
         for id in (wx.ID_PRINT, wx.ID_PAGE_SETUP, wx.ID_PREVIEW):
             self.Bind(wx.EVT_MENU, self.OnPrintMenu, id=id)
         self.toolbar.Bind(aui.EVT_AUITOOLBAR_TOOL_DROPDOWN, self.OnPrintDropdown, id=wx.ID_PRINT)
-        self.results.Bind(EVT_HTML_LINK_CLICKED, self.OnHtmlLinkClicked)
+        self.results.Bind(html.EVT_HTML_LINK_CLICKED, self.OnHtmlLinkClicked)
         self.results.Bind(wx.EVT_RIGHT_UP, self.OnContextMenu)  # EVT_CONTEXT_MENU doesn't work for wxHtmlWindow in 2.8
         for option in ("AllWords", "ExactMatch", "Phrase", "RegularExpression"):
             getattr(self, option).Bind(wx.EVT_CHECKBOX, self.OnCheckbox)
@@ -531,9 +527,9 @@ abbrevs = {"jdg": 7, "1kgs": 11, "2kgs": 12, "ca": 22, "can": 22, "cant": 22,
     "mk": 41, "mrk": 41, "lk": 42, "jh": 43, "jhn": 43, "php": 50, "phm": 57,
     "jas": 59, "1jh": 62, "1jhn": 62, "2jh": 63, "2jhn": 63, "3jh": 64,
     "3jhn": 64, "jde": 65}
-ranges = map(_, ["Entire Bible", "Old Testament", "Pentateuch (Gen - Deu)",
-    "History (Jos - Est)", "Wisdom (Job - Son)", "Major Prophets (Isa - Dan)",
+ranges = map(_, ["Entire Bible", "Old Testament", "Pentateuch (Gen - Deut)",
+    "History (Josh - Esth)", "Wisdom (Job - Song)", "Major Prophets (Isa - Dan)",
     "Minor Prophets (Hos - Mal)", "New Testament",
-    "Gospels & Acts (Mat - Act)", "Paul's Letters (Rom - Heb)",
-    "General Letters (Jam - Jde)", "Apocalypse (Rev)", "Just Current Book",
+    "Gospels & Acts (Matt - Acts)", "Paul's Letters (Rom - Heb)",
+    "General Letters (Jas - Jude)", "Apocalypse (Rev)", "Just Current Book",
     "Custom..."])

@@ -1,7 +1,4 @@
-"""
-parallel.py - parallel window classes for Berean
-Copyright (C) 2013 Timothy Johnson <timothysw@objectmail.com>
-"""
+"""parallel.py - parallel window classes for Berean"""
 
 import wx
 

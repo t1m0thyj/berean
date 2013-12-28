@@ -1,13 +1,9 @@
-"""
-multiverse.py - multiple verse search dialog for Berean
-Copyright (C) 2013 Timothy Johnson <timothysw@objectmail.com>
-"""
+"""multiverse.py - multiple verse search dialog for Berean"""
 
 import re
 
 import wx
-from wx import aui
-from wx.html import EVT_HTML_LINK_CLICKED
+from wx import aui, html
 
 from htmlwin import BaseHtmlWindow
 from panes.search import refalize2
@@ -72,7 +68,7 @@ class MultiverseDialog(wx.Dialog):
             self.Bind(wx.EVT_MENU, self.OnPrintMenu, id=id)
         self.toolbar.Bind(aui.EVT_AUITOOLBAR_TOOL_DROPDOWN,
             self.OnPrintDropdown, id=wx.ID_PRINT)
-        self.results.Bind(EVT_HTML_LINK_CLICKED, self.OnHtmlLinkClicked)
+        self.results.Bind(html.EVT_HTML_LINK_CLICKED, self.OnHtmlLinkClicked)
         # EVT_CONTEXT_MENU doesn't work for wxHtmlWindow in 2.8
         self.results.Bind(wx.EVT_RIGHT_UP, self.OnContextMenu)
         self.close.Bind(wx.EVT_BUTTON, self.OnClose)

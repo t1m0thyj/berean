@@ -1,7 +1,4 @@
-"""
-preferences.py - preference dialog class for Berean
-Copyright (C) 2013 Timothy Johnson <timothysw@objectmail.com>
-"""
+"""preferences.py - preference dialog class for Berean"""
 
 import os
 

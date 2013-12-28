@@ -1,7 +1,4 @@
-"""
-tree.py - tree pane class for Berean
-Copyright (C) 2013 Timothy Johnson <timothysw@objectmail.com>
-"""
+"""tree.py - tree pane class for Berean"""
 
 import wx
 

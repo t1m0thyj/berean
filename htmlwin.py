@@ -1,7 +1,4 @@
-"""
-htmlwin.py - HTML window classes for Berean
-Copyright (C) 2013 Timothy Johnson <timothysw@objectmail.com>
-"""
+"""htmlwin.py - HTML window classes for Berean"""
 
 import cPickle
 import os.path
