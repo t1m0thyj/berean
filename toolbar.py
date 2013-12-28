@@ -1,7 +1,4 @@
-"""
-toolbar.py - toolbar class for Berean
-Copyright (C) 2013 Timothy Johnson <timothysw@objectmail.com>
-"""
+"""toolbar.py - toolbar class for Berean"""
 
 import wx
 from wx import aui
@@ -22,7 +19,7 @@ class MainToolBar(aui.AuiToolBar):
         self.reference.SetValue(parent._app.settings["LastReference"])
         self.AddControl(self.reference)
         self.reference.Bind(wx.EVT_TEXT_ENTER, self.OnSearch)
-        self.AddTool(wx.ID_FIND, "", parent.Bitmap("goto"), _("Go to Reference (Ctrl+F)"))
+        self.AddTool(wx.ID_FIND, "", parent.Bitmap("goto"), _("Go to Verse (Ctrl+F)"))
         self.Bind(wx.EVT_MENU, self.OnSearch, id=wx.ID_FIND)
         self.AddSeparator()
         self.AddTool(wx.ID_BACKWARD, _("Back"), parent.Bitmap("back"), _("Go Back (Alt+Left)"))

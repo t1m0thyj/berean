@@ -1,7 +1,4 @@
-"""
-index.py - indexing dialog class for Berean
-Copyright (C) 2013 Timothy Johnson <timothysw@objectmail.com>
-"""
+"""index.py - indexing dialog class for Berean"""
 
 import cPickle
 import os.path

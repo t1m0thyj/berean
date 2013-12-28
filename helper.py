@@ -1,7 +1,4 @@
-"""
-helper.py - help system for Berean
-Copyright (C) 2013 Timothy Johnson <timothysw@objectmail.com>
-"""
+"""helper.py - help system for Berean"""
 
 import os.path
 
@@ -9,6 +6,20 @@ import wx
 from wx import html
 
 _ = wx.GetTranslation
+
+license = """This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+"""
 
 class HelpSystem(html.HtmlHelpController):
     def __init__(self, frame):
@@ -40,22 +51,9 @@ class HelpSystem(html.HtmlHelpController):
     def ShowAboutBox(self):
         info = wx.AboutDialogInfo()
         info.SetName("Berean")
-        info.SetVersion(self._frame._app.version)
+        info.SetVersion(VERSION)
         info.SetCopyright("Copyright (C) 2011-2013 Timothy Johnson. All rights reserved.")
         info.SetDescription(_("A Bible study tool that is free, cross-platform, and open-source."))
         info.SetWebSite("http://berean.sf.net")
         info.SetLicense(license)
         wx.AboutBox(info)
-
-license = """This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <http://www.gnu.org/licenses/>."""

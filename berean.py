@@ -1,6 +1,5 @@
-"""
-berean.py - main script for Berean
-Copyright (C) 2013 Timothy Johnson <timothysw@objectmail.com>
+"""berean.py - main script for Berean
+Copyright (c) 2013 Timothy Johnson <timothysw@objectmail.com>
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -27,7 +26,7 @@ import wx
 import debug
 import parent
 
-_version = debug._version = "1.5.0"
+VERSION = debug.VERSION = parent.helper.VERSION = "1.5.0"
 # Make ConfigParser work with Unicode
 ConfigParser.str = lambda value: value.encode("utf_8")
 
@@ -107,7 +106,6 @@ class Berean(wx.App):
         language = self.locale.GetCanonicalName()
         if os.path.isfile(os.path.join(localedir, language, "LC_MESSAGES", "berean.mo")):
             self.locale.AddCatalog(language)
-        self.version = _version
 
         self.frame = parent.MainFrame(self)
         self.SetTopWindow(self.frame)
@@ -124,7 +122,7 @@ class Berean(wx.App):
         filename = os.path.join(self.userdatadir, "berean.ini")
         if os.path.isfile(filename):
             ini = open(filename, 'r')
-            ini.seek(ini.readline().index("[")) # Seek past UTF8 BOM
+            ini.seek(ini.readline().index("[")) # Seek past BOM
             self.config.readfp(ini)
             ini.close()
         display_size = wx.GetDisplaySize()

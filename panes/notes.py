@@ -1,7 +1,4 @@
-"""
-notes.py - notes pane class for Berean
-Copyright (C) 2013 Timothy Johnson <timothysw@objectmail.com>
-"""
+"""notes.py - notes pane class for Berean"""
 
 import cPickle
 import cStringIO

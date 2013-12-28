@@ -1,7 +1,4 @@
-"""
-parent.py - parent frame class for Berean
-Copyright (C) 2013 Timothy Johnson <timothysw@objectmail.com>
-"""
+"""parent.py - parent frame class for Berean"""
 
 import os
 
@@ -24,14 +21,15 @@ class MainFrame(wx.Frame):
             app.settings["WindowSize"])
         self._app = app
 
-        self.abbrevs = ("Gen", "Exo", "Lev", "Num", "Deu", "Jos", "Jdg",
-            "Rut", "1Sa", "2Sa", "1Ki", "2Ki", "1Ch", "2Ch", "Ezr", "Neh",
-            "Est", "Job", "Psa", "Pro", "Ecc", "Son", "Isa", "Jer", "Lam",
-            "Eze", "Dan", "Hos", "Joe", "Amo", "Oba", "Jon", "Mic", "Nah",
-            "Hab", "Zep", "Hag", "Zec", "Mal", "Mat", "Mar", "Luk", "Joh",
-            "Act", "Rom", "1Co", "2Co", "Gal", "Eph", "Php", "Col", "1Th",
-            "2Th", "1Ti", "2Ti", "Tit", "Phm", "Heb", "Jam", "1Pe", "2Pe",
-            "1Jo", "2Jo", "3Jo", "Jde", "Rev")
+        self.abbrevs = ("Gen", "Exod", "Lev", "Num", "Deut", "Josh", "Judg",
+            "Ruth", "1Sam", "2Sam", "1Kgs", "2Kgs", "1Chr", "2Chr", "Ezra",
+            "Neh", "Esth", "Job", "Ps", "Prov", "Eccl", "Song", "Isa", "Jer",
+            "Lam", "Ezek", "Dan", "Hos", "Joel", "Amos", "Obad", "Jonah",
+            "Mic", "Nah", "Hab", "Zeph", "Hag", "Zech", "Mal", "Matt", "Mark",
+            "Luke", "John", "Acts", "Rom", "1Cor", "2Cor", "Gal", "Eph",
+            "Phil", "Col", "1Thess", "2Thess", "1Tim", "2Tim", "Titus",
+            "Phlm", "Heb", "Jas", "1Pet", "2Pet", "1John", "2John", "3John",
+            "Jude", "Rev")
         self.books = ("Genesis", "Exodus", "Leviticus", "Numbers",
             "Deuteronomy", "Joshua", "Judges", "Ruth", "1 Samuel", "2 Samuel",
             "1 Kings", "2 Kings", "1 Chronicles", "2 Chronicles", "Ezra",

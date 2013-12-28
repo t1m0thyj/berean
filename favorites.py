@@ -1,7 +1,4 @@
-"""
-favorites.py - favorites system for Berean
-Copyright (C) 2013 Timothy Johnson <timothysw@objectmail.com>
-"""
+"""favorites.py - favorites system for Berean"""
 
 import wx
 from wx import gizmos

@@ -1,7 +1,4 @@
-"""
-setup.py - builds executable for Berean
-Copyright (C) 2013 Timothy Johnson <timothysw@objectmail.com>
-"""
+"""setup.py - builds executable for Berean"""
 
 from distutils.core import setup
 from py2exe.build_exe import py2exe
@@ -9,9 +6,8 @@ from py2exe.build_exe import py2exe
 import glob
 import os
 import shutil
-import sys
 
-_version = "1.5.0"
+VERSION = "1.5.0"
 manifest = """<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0">
     <assemblyIdentity version="0.64.1.0" processorArchitecture="x86"
@@ -32,7 +28,8 @@ manifest = """<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
             processorArchitecture="x86" publicKeyToken="1fc8b3b9a1e18e3b" />
         </dependentAssembly>
     </dependency>
-</assembly>"""
+</assembly>
+"""
 cwd = os.path.dirname(__file__)
 os.chdir(cwd)
 
@@ -40,7 +37,7 @@ class Target:
     def __init__(self):
         self.dest_base = "berean"
         self.name = "Berean"
-        self.version = _version
+        self.version = VERSION
         self.company_name = "Timothy Johnson"
         self.copyright = "Copyright \xa9 2011-2013 Timothy Johnson. " \
             "All rights reserved."
@@ -52,8 +49,6 @@ class Target:
 
 if os.path.isdir("dist"):
     shutil.rmtree("dist")
-sys.path.append("C:\\WINDOWS\\WinSxS\\" \
-    "x86_Microsoft.VC90.CRT_1fc8b3b9a1e18e3b_9.0.21022.8_x-ww_d08d0375")
 
 setup(data_files=[("images", glob.glob("images\\*.*")),
         ("images\\flags", glob.glob("images\\flags\\*.*")),
@@ -73,7 +68,7 @@ setup(data_files=[("images", glob.glob("images\\*.*")),
             "Tkconstants", "Tkinter"],
         "dll_excludes": ["libgdk-win32-2.0-0.dll", "libgobject-2.0-0.dll",
             "tcl85.dll", "tk85.dll", "msvcr80.dll", "UxTheme.dll",
-            "w9xpopen.exe"],
+            "msvcp90.dll", "w9xpopen.exe"],
         "xref": False,
         "ascii": False,
         "skip_archive": False,

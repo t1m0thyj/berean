@@ -1,7 +1,4 @@
-"""
-menu.py - menu and menubar classes for Berean
-Copyright (C) 2013 Timothy Johnson <timothysw@objectmail.com>
-"""
+"""menu.py - menu and menubar classes for Berean"""
 
 import os
 
@@ -38,7 +35,7 @@ class MenuBar(wx.MenuBar):
         self.Append(self.Edit, _("&Edit"))
 
         self.View = wx.Menu()
-        self.View.Append(wx.ID_FIND, _("Go to Reference\tCtrl+F"), _("Goes to the specified reference"))
+        self.View.Append(wx.ID_FIND, _("Go to Verse\tCtrl+F"), _("Goes to the specified verse"))
         frame.Bind(wx.EVT_MENU, self.OnReference, id=wx.ID_FIND)
         self.View.Append(wx.ID_BACKWARD, _("Go &Back\tAlt+Left"), _("Returns to the previous chapter"))
         frame.Bind(wx.EVT_MENU, self.OnBack, id=wx.ID_BACKWARD)

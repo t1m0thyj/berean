@@ -1,6 +1,3 @@
-"""
-berean.pyw - no console launcher for Berean
-Copyright (C) 2012 Timothy Johnson <timothysw@objectmail.com>
-"""
+"""berean.pyw - no console launcher for Berean"""
 
 __import__("berean").main()
