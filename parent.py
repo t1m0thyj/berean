@@ -1,17 +1,18 @@
-"""parent.py - parent frame class for Berean"""
+"""parent.py - parent frame class"""
 
 import os
 
 import wx
 from wx import aui
 
-import helper
+import help
 import htmlwin
 import menu
 import panes
 import parallel
 import printing
 import toolbar
+from info import *
 
 _ = wx.GetTranslation
 
@@ -21,47 +22,17 @@ class MainFrame(wx.Frame):
             app.settings["WindowSize"])
         self._app = app
 
-        self.abbrevs = ("Gen", "Exod", "Lev", "Num", "Deut", "Josh", "Judg",
-            "Ruth", "1Sam", "2Sam", "1Kgs", "2Kgs", "1Chr", "2Chr", "Ezra",
-            "Neh", "Esth", "Job", "Ps", "Prov", "Eccl", "Song", "Isa", "Jer",
-            "Lam", "Ezek", "Dan", "Hos", "Joel", "Amos", "Obad", "Jonah",
-            "Mic", "Nah", "Hab", "Zeph", "Hag", "Zech", "Mal", "Matt", "Mark",
-            "Luke", "John", "Acts", "Rom", "1Cor", "2Cor", "Gal", "Eph",
-            "Phil", "Col", "1Thess", "2Thess", "1Tim", "2Tim", "Titus",
-            "Phlm", "Heb", "Jas", "1Pet", "2Pet", "1John", "2John", "3John",
-            "Jude", "Rev")
-        self.books = ("Genesis", "Exodus", "Leviticus", "Numbers",
-            "Deuteronomy", "Joshua", "Judges", "Ruth", "1 Samuel", "2 Samuel",
-            "1 Kings", "2 Kings", "1 Chronicles", "2 Chronicles", "Ezra",
-            "Nehemiah", "Esther", "Job", "Psalms", "Proverbs", "Ecclesiastes",
-            "Song of Solomon", "Isaiah", "Jeremiah", "Lamentations",
-            "Ezekiel", "Daniel", "Hosea", "Joel", "Amos", "Obadiah", "Jonah",
-            "Micah", "Nahum", "Habakkuk", "Zephaniah", "Haggai", "Zechariah",
-            "Malachi", "Matthew", "Mark", "Luke", "John", "Acts", "Romans",
-            "1 Corinthians", "2 Corinthians", "Galatians", "Ephesians",
-            "Philippians", "Colossians", "1 Thessalonians", "2 Thessalonians",
-            "1 Timothy", "2 Timothy", "Titus", "Philemon", "Hebrews", "James",
-            "1 Peter", "2 Peter", "1 John", "2 John", "3 John", "Jude",
-            "Revelation")
-        self.chapters = (50, 40, 27, 36, 34, 24, 21, 4, 31, 24, 22, 25, 29,
-            36, 10, 13, 10, 42, 150, 31, 12, 8, 66, 52, 5, 48, 12, 14, 3, 9,
-            1, 4, 7, 3, 3, 3, 2, 14, 4, 28, 16, 24, 21, 28, 16, 16, 13, 6, 6,
-            4, 4, 5, 3, 6, 4, 3, 1, 13, 5, 5, 3, 5, 1, 1, 1, 22)
-        self.helper = helper.HelpSystem(self)
+        self.help = help.HelpSystem(self)
         self.printer = printing.Printer(self)
         self.rect = wx.RectPS(app.settings["WindowPos"],
             app.settings["WindowSize"])
         self.reference = (app.settings["SelectedBook"],
             app.settings["SelectedChapter"], app.settings["ActiveVerse"])
         self.versions = app.settings["VersionList"]
-        self.zoom = app.settings["ZoomLevel"]
+        self.zoom_level = app.settings["ZoomLevel"]
 
-        icons = wx.IconBundle()
-        icons.AddIconFromFile(os.path.join(app.cwd, "images",
-            "berean-16.png"), wx.BITMAP_TYPE_PNG)
-        icons.AddIconFromFile(os.path.join(app.cwd, "images",
-            "berean-32.png"), wx.BITMAP_TYPE_PNG)
-        self.SetIcons(icons)
+        self.SetIcons(wx.IconBundleFromFile(os.path.join(app.cwd,
+            "berean.ico"), wx.BITMAP_TYPE_ICO))
         versiondir = os.path.join(app.userdatadir, "versions")
         if not os.path.isdir(versiondir):
             os.mkdir(versiondir)
@@ -72,15 +43,22 @@ class MainFrame(wx.Frame):
         self.menubar = menu.MenuBar(self)
         self.SetMenuBar(self.menubar)
 
-        self.main_toolbar = toolbar.MainToolBar(self)
-        self.aui.AddPane(self.main_toolbar,
-            aui.AuiPaneInfo().Name("main_toolbar").Caption("Main Toolbar").ToolbarPane().Top())
-        self.chapter_toolbar = toolbar.ChapterToolBar(self)
-        self.aui.AddPane(self.chapter_toolbar,
-            aui.AuiPaneInfo().Name("chapter_toolbar").Caption("Chapter Toolbar").ToolbarPane().Top())
+        self.toolbar = toolbar.MainToolBar(self)
+        self.aui.AddPane(self.toolbar,
+            aui.AuiPaneInfo().Name("toolbar").Caption("Main Toolbar").ToolbarPane().Top())
 
-        self.statusbar = self.CreateStatusBar(3)
-        self.statusbar.SetStatusWidths([-2, -1, -1])
+        self.statusbar = self.CreateStatusBar(4)
+        self.zoombar = wx.ToolBar(self.statusbar, -1, style=wx.TB_FLAT | wx.TB_NODIVIDER)
+        self.zoombar.AddLabelTool(wx.ID_ZOOM_OUT, "", self.Bitmap("zoom-out"), shortHelp=_("Zoom Out (Ctrl+-)"))
+        self.zoombar.EnableTool(wx.ID_ZOOM_OUT, self.zoom_level > 1)
+        self.zoomctrl = wx.Slider(self.zoombar, -1, self.zoom_level, 1, 7, size=(100, -1))
+        self.zoomctrl.Bind(wx.EVT_SCROLL_CHANGED, self.OnZoomCtrl)
+        self.zoombar.AddControl(self.zoomctrl)
+        self.zoombar.AddLabelTool(wx.ID_ZOOM_IN, "", self.Bitmap("zoom-in"), shortHelp=_("Zoom In (Ctrl++)"))
+        self.zoombar.EnableTool(wx.ID_ZOOM_IN, self.zoom_level < 7)
+        self.zoombar.Realize()
+        self.zoombarwidth = (self.zoombar.GetToolSize()[0] + self.zoombar.GetToolSeparation()) * 2 + self.zoomctrl.GetSize()[0]
+        self.statusbar.SetStatusWidths([-2, -1, -1, self.zoombarwidth + 1])
 
         self.notebook = aui.AuiNotebook(self, -1,
             style=(aui.AUI_NB_DEFAULT_STYLE ^ aui.AUI_NB_TAB_MOVE ^
@@ -115,14 +93,13 @@ class MainFrame(wx.Frame):
             aui.AuiPaneInfo().Name("notebook").CenterPane().PaneBorder(False))
 
         self.tree = panes.TreePane(self)
-        self.aui.AddPane(self.tree, aui.AuiPaneInfo().Name("treepane").Caption(_("Bible")).PinButton(True).Left().Layer(1).BestSize((150, -1)))
+        self.aui.AddPane(self.tree, aui.AuiPaneInfo().Name("tree_pane").Caption(_("Bible")).Left().Layer(1).BestSize((150, -1)))
 
         self.search = panes.SearchPane(self)
-        self.aui.AddPane(self.search, aui.AuiPaneInfo().Name("searchpane").Caption(_("Search")).PinButton(True).Right().Layer(1).BestSize((300, -1)))
-        panes.search.books = [book.replace(" ", "").lower() for book in self.books]
+        self.aui.AddPane(self.search, aui.AuiPaneInfo().Name("search_pane").Caption(_("Search")).MaximizeButton(True).Right().Layer(1).BestSize((300, -1)))
 
         self.notes = panes.NotesPane(self)
-        self.aui.AddPane(self.notes, aui.AuiPaneInfo().Name("notespane").Caption(_("Notes")).PinButton(True).Bottom().Layer(0).BestSize((-1, 220)))
+        self.aui.AddPane(self.notes, aui.AuiPaneInfo().Name("notes_pane").Caption(_("Notes")).MaximizeButton(True).Bottom().Layer(0).BestSize((-1, 220)))
 
         filename = os.path.join(app.userdatadir, "layout.dat")
         if os.path.isfile(filename):
@@ -136,10 +113,10 @@ class MainFrame(wx.Frame):
             self.statusbar.SetStatusText(browser.description, 1)
         browser.SetFocus()
 
-        self.menubar.View.Check(self.menubar.ID_MAIN_TOOLBAR, self.aui.GetPane("main_toolbar").IsShown())
-        self.menubar.View.Check(self.menubar.ID_CHAPTER_TOOLBAR, self.aui.GetPane("chapter_toolbar").IsShown())
-        for pane in ("treepane", "searchpane", "notespane"):
-            self.menubar.View.Check(getattr(self.menubar, "ID_%s" % pane.upper()), self.aui.GetPane(pane).IsShown())
+        self.menubar.Check(self.menubar.toolbar_item.GetId(),
+            self.aui.GetPane("toolbar").IsShown())
+        for pane in ("tree_pane", "search_pane", "notes_pane"):
+            self.menubar.Check(getattr(self.menubar, "%s_item" % pane).GetId(), self.aui.GetPane(pane).IsShown())
         self.aui.Update()
         if app.settings["MaximizeState"]:
             self.Maximize()
@@ -167,27 +144,27 @@ class MainFrame(wx.Frame):
         browser.LoadChapter(book, chapter, verse)
         tab = self.notebook.GetSelection()
         version = self.notebook.GetPageText(tab)
-        self.SetTitle("Berean - %s %d (%s)" % (self.books[book - 1], chapter, version))
+        self.SetTitle("Berean - %s %d (%s)" % (BOOK_NAMES[book - 1], chapter, version))
         if verse == -1:
-            reference = "%s %d" % (self.books[book - 1], chapter)
+            reference = "%s %d" % (BOOK_NAMES[book - 1], chapter)
         else:
-            reference = "%s %d:%d" % (self.books[book - 1], chapter, verse)
-        if reference not in self.main_toolbar.history:
-            self.main_toolbar.history = self.main_toolbar.history[:self.main_toolbar.current + 1]
-            self.main_toolbar.history.append(reference)
-            if len(self.main_toolbar.history) > 16:  # Only 15 visible items, since current one is hidden
-                self.main_toolbar.history.pop(0)
-            self.main_toolbar.SetCurrent(-1)
+            reference = "%s %d:%d" % (BOOK_NAMES[book - 1], chapter, verse)
+        if reference not in self.toolbar.verse_history:
+            self.toolbar.verse_history = self.toolbar.verse_history[:self.toolbar.history_item + 1]
+            self.toolbar.verse_history.append(reference)
+            if len(self.toolbar.verse_history) > 16:  # Only 15 visible items, since current one is hidden
+                self.toolbar.verse_history.pop(0)
+            self.toolbar.set_history_item(-1)
         elif history:
-            self.main_toolbar.SetCurrent(self.main_toolbar.history.index(reference))
+            self.toolbar.set_history_item(self.toolbar.verse_history.index(reference))
         else:
-            self.main_toolbar.history.remove(reference)
-            self.main_toolbar.history.append(reference)
-            self.main_toolbar.SetCurrent(-1)
+            self.toolbar.verse_history.remove(reference)
+            self.toolbar.verse_history.append(reference)
+            self.toolbar.set_history_item(-1)
         self.skipevents = True
         if book != self.reference[0]:
             self.tree.ExpandItem(book)
-        if self.chapters[book - 1] > 1:
+        if CHAPTER_LENGTHS[book - 1] > 1:
             item = self.tree.root_nodes[book - 1]
             child, cookie = self.tree.GetFirstChild(item)
             i = 1
@@ -205,7 +182,7 @@ class MainFrame(wx.Frame):
             page = self.notes.GetPage(i)
             page.SaveText()
             page.LoadText(book, chapter)
-        self.statusbar.SetStatusText("%s %d (%s)" % (self.books[book - 1], chapter, version), 0)
+        self.statusbar.SetStatusText("%s %d (%s)" % (BOOK_NAMES[book - 1], chapter, version), 0)
         if tab < len(self.versions):
             self.statusbar.SetStatusText(_("%d verses") % (len(browser.Bible[book][chapter]) - 1), 2)
         else:
@@ -228,21 +205,19 @@ class MainFrame(wx.Frame):
 
     def Zoom(self, zoom):
         if zoom != 0:
-            self.zoom += zoom
+            self.zoom_level += zoom
         else:
-            self.zoom = 0
+            self.zoom_level = 0
         self.GetBrowser().LoadChapter(*self.reference)
-        self.chapter_toolbar.EnableTool(wx.ID_ZOOM_IN, self.zoom < 7)
-        self.chapter_toolbar.EnableTool(wx.ID_ZOOM_OUT, self.zoom > 1)
-        self.menubar.Enable(wx.ID_ZOOM_IN, self.zoom < 7)
-        self.menubar.Enable(wx.ID_ZOOM_OUT, self.zoom > 1)
+        self.zoombar.EnableTool(wx.ID_ZOOM_OUT, self.zoom_level > 1)
+        if self.zoomctrl.GetValue() != self.zoom_level:
+            self.zoomctrl.SetValue(self.zoom_level)
+        self.zoombar.EnableTool(wx.ID_ZOOM_IN, self.zoom_level < 7)
+        self.menubar.Enable(wx.ID_ZOOM_IN, self.zoom_level < 7)
+        self.menubar.Enable(wx.ID_ZOOM_OUT, self.zoom_level > 1)
 
-    def ShowMainToolBar(self, show=True):
-        self.aui.GetPane("main_toolbar").Show(show)
-        self.aui.Update()
-
-    def ShowChapterToolBar(self, show=True):
-        self.aui.GetPane("chapter_toolbar").Show(show)
+    def ShowToolbar(self, show=True):
+        self.aui.GetPane("toolbar").Show(show)
         self.aui.Update()
 
     def ShowTreePane(self, show=True):
@@ -261,30 +236,23 @@ class MainFrame(wx.Frame):
         if show:
             wx.CallAfter(self.notes.editor.SetFocus)
 
-    def MultiverseSearch(self, references=None):
-        from dialogs import multiverse
-        dialog = multiverse.MultiverseDialog(self, references)
-        dialog.Show()
-
-    def Preferences(self):
-        from dialogs import preferences
-        dialog = preferences.PreferenceDialog(self)
-        dialog.Show()
+    def OnZoomCtrl(self, event):
+        self.Zoom(event.GetPosition() - self.zoom_level)
 
     def OnAuiNotebookPageChanged(self, event):
         new = event.GetSelection()
         browser = self.GetBrowser()
         browser.LoadChapter(*self.reference)
         version = self.notebook.GetPageText(new)
-        self.SetTitle("Berean - %s %d (%s)" % (self.books[self.reference[0] - 1], self.reference[1], version))
-        self.statusbar.SetStatusText("%s %d (%s)" % (self.books[self.reference[0] - 1], self.reference[1], version), 0)
+        self.SetTitle("Berean - %s %d (%s)" % (BOOK_NAMES[self.reference[0] - 1], self.reference[1], version))
+        self.statusbar.SetStatusText("%s %d (%s)" % (BOOK_NAMES[self.reference[0] - 1], self.reference[1], version), 0)
         if new < len(self.versions):
             self.search.version.SetSelection(new)
             self.statusbar.SetStatusText(browser.description, 1)
         wx.CallAfter(browser.SetFocus)
 
     def OnAuiPaneClose(self, event):
-        self.menubar.View.Check(getattr(self.menubar, "ID_%s" % event.GetPane().name.upper()), False)
+        self.menubar.Check(getattr(self.menubar, "%s_item" % event.GetPane().name).GetId(), False)
 
     def OnMove(self, event):
         if self.HasCapture():
@@ -292,7 +260,9 @@ class MainFrame(wx.Frame):
         event.Skip()
 
     def OnSize(self, event):
-        if self.aui.GetPane("notespane").IsShown(): # Refresh overflow state of notes pane toolbars if visible
+        x, y, width, height = self.statusbar.GetFieldRect(3)
+        self.zoombar.SetRect(wx.Rect(x, (y + height - 19) / 2 - self.zoombar.GetToolSeparation(), self.zoombarwidth, -1))
+        if self.aui.GetPane("notespane").IsShown(): # Refresh overflow state of notes pane toolbar if visible
             wx.CallAfter(self.notes.GetCurrentPage().GetSizer().Layout)
         if self.HasCapture():
             self.rect = wx.RectPS(self.GetPosition(), self.GetSize())
@@ -311,6 +281,35 @@ class MainFrame(wx.Frame):
         layout.write(self.aui.SavePerspective())
         layout.close()
         self.aui.UnInit()
-        del self.helper
+        del self.help
         del self.printer
         self._app.Exit()
+
+
+class TaskBarIcon(wx.TaskBarIcon):
+    def __init__(self, frame):
+        super(TaskBarIcon, self).__init__()
+        self._frame = frame
+        self.SetIcon(wx.Icon(os.path.join(frame._app.cwd, "berean.ico"),
+            wx.BITMAP_TYPE_ICO), frame.GetTitle())
+        self.Bind(wx.EVT_TASKBAR_LEFT_DOWN, self.OnRestore)
+
+    def OnRestore(self, event):
+        self._frame.Iconize(False)
+        self._frame.Show()
+        self._frame.Raise()
+        self.RemoveIcon()
+        wx.CallAfter(self._frame.GetBrowser().SetFocus)
+        del self._frame.trayicon
+
+    def OnExit(self, event):
+        wx.CallAfter(self._frame.Close)
+        self.OnRestore(event)
+
+    def CreatePopupMenu(self):
+        menu = wx.Menu()
+        menu.Append(wx.ID_DEFAULT, _("&Restore"))
+        self.Bind(wx.EVT_MENU, self.OnRestore, id=wx.ID_DEFAULT)
+        menu.Append(wx.ID_EXIT, _("E&xit"))
+        self.Bind(wx.EVT_MENU, self.OnExit, id=wx.ID_EXIT)
+        return menu

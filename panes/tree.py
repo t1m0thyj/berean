@@ -1,6 +1,8 @@
-"""tree.py - tree pane class for Berean"""
+"""tree.py - tree pane class"""
 
 import wx
+
+from info import *
 
 _ = wx.GetTranslation
 
@@ -15,8 +17,8 @@ class TreePane(wx.TreeCtrl):
         root = self.AddRoot("")
         self.root_nodes = []
         for i in range(66):
-            self.root_nodes.append(self.AppendItem(root, parent.books[i]))
-            if parent.chapters[i] > 1:
+            self.root_nodes.append(self.AppendItem(root, BOOK_NAMES[i]))
+            if CHAPTER_LENGTHS > 1:
                 self.SetItemHasChildren(self.root_nodes[-1], True)
         self.ExpandItem(parent.reference[0])
 
@@ -26,9 +28,8 @@ class TreePane(wx.TreeCtrl):
 
     def ExpandItem(self, book):
         item = self.root_nodes[book - 1]
-        if (not self.GetChildrenCount(item)) and \
-                self._parent.chapters[book - 1] > 1:
-            for i in range(self._parent.chapters[book - 1]):
+        if (not self.GetChildrenCount(item)) and CHAPTER_LENGTHS[book - 1] > 1:
+            for i in range(CHAPTER_LENGTHS[book - 1]):
                 self.AppendItem(item, str(i + 1))
             self.Expand(item)
 
@@ -38,8 +39,7 @@ class TreePane(wx.TreeCtrl):
     def OnItemExpanding(self, event):
         item = event.GetItem()
         if not self.GetChildrenCount(item):
-            self.ExpandItem(
-                self._parent.books.index(self.GetItemText(item)) + 1)
+            self.ExpandItem(BOOK_NAMES.index(self.GetItemText(item)) + 1)
 
     def CollapseOtherItems(self, selected):
         for i in range(66):
@@ -49,15 +49,14 @@ class TreePane(wx.TreeCtrl):
     def OnSelChanged(self, event):
         item = event.GetItem()
         if self.ItemHasChildren(item):
-            self.ExpandItem(
-                self._parent.books.index(self.GetItemText(item)) + 1)
+            self.ExpandItem(BOOK_NAMES.index(self.GetItemText(item)) + 1)
         else:
             parent = self.GetItemParent(item)
             if parent != self.GetRootItem():
-                book = self._parent.books.index(self.GetItemText(parent)) + 1
+                book = BOOK_NAMES.index(self.GetItemText(parent)) + 1
                 chapter = int(self.GetItemText(item))
             else:
-                book = self._parent.books.index(self.GetItemText(item)) + 1
+                book = BOOK_NAMES.index(self.GetItemText(item)) + 1
                 chapter = 1
             self.CollapseOtherItems(book)
             if not self.skipevents:

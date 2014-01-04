@@ -7,7 +7,7 @@ import glob
 import os
 import shutil
 
-VERSION = "1.5.0"
+VERSION = "1.4.7"
 manifest = """<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0">
     <assemblyIdentity version="0.64.1.0" processorArchitecture="x86"
@@ -39,7 +39,7 @@ class Target:
         self.name = "Berean"
         self.version = VERSION
         self.company_name = "Timothy Johnson"
-        self.copyright = "Copyright \xa9 2011-2013 Timothy Johnson. " \
+        self.copyright = "Copyright \xa9 2011-2014 Timothy Johnson. " \
             "All rights reserved."
         self.description = self.name
         self.icon_resources = [(1, "berean.ico")]

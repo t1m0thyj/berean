@@ -8,6 +8,8 @@ import wx
 import wx.lib.dragscroller
 from wx import html
 
+from info import *
+
 _ = wx.GetTranslation
 
 class BaseHtmlWindow(html.HtmlWindow):
@@ -108,8 +110,8 @@ class ChapterWindow(HtmlWindow):
                 if i == verse:
                     items[-1] = "<b>%s</b>" % items[-1]
         else:
-            items = [_("<font color=gray>%s %d is not in the %s.</font>") % (self._frame.books[book - 1], chapter, self.version)]
-        return body % (self._frame.zoom, "\n  <br />\n  ".join(items))
+            items = [_("<font color=gray>%s %d is not in the %s.</font>") % (BOOK_NAMES[book - 1], chapter, self.version)]
+        return body % (self._frame.zoom_level, "\n  <br />\n  ".join(items))
 
 
 def download(version, versiondir):

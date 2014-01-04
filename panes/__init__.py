@@ -1,4 +1,4 @@
-"""__init__.py - pane classes for Berean"""
+"""__init__.py - pane classes"""
 
 from notes import *
 from search import *

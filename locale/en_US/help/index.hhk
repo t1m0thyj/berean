@@ -9,10 +9,6 @@
 			<param name="Local" value="favorites-menu.html#AddToFavorites">
 		</object>
 	<li><object type="text/sitemap">
-			<param name="Name" value="Chapter toolbar">
-			<param name="Local" value="view-menu.html#ChapterToolbar">
-		</object>
-	<li><object type="text/sitemap">
 			<param name="Name" value="Copy">
 			<param name="Local" value="edit-menu.html#Copy">
 		</object>
@@ -45,10 +41,6 @@
 			<param name="Local" value="help-menu.html">
 		</object>
 	<li><object type="text/sitemap">
-			<param name="Name" value="Main toolbar">
-			<param name="Local" value="view-menu.html#MainToolbar">
-		</object>
-	<li><object type="text/sitemap">
 			<param name="Name" value="Manage favorites">
 			<param name="Local" value="favorites-menu.html#ManageFavorites">
 		</object>
@@ -69,7 +61,7 @@
 			<param name="Local" value="file-menu.html#PageSetup">
 		</object>
 	<li><object type="text/sitemap">
-			<param name="Name" value="Preferences dialog">
+			<param name="Name" value="Preferences">
 			<param name="Local" value="tools-menu.html#Preferences">
 		</object>
 	<li><object type="text/sitemap">
@@ -87,6 +79,10 @@
 	<li><object type="text/sitemap">
 			<param name="Name" value="Search pane">
 			<param name="Local" value="view-menu.html#SearchPane">
+		</object>
+	<li><object type="text/sitemap">
+			<param name="Name" value="Toolbar">
+			<param name="Local" value="view-menu.html#Toolbar">
 		</object>
 	<li><object type="text/sitemap">
 			<param name="Name" value="Tools menu">

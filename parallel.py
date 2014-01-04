@@ -61,7 +61,7 @@ class ParallelWindow(HtmlWindow):
         self.SetDescription(versions)
         if wx.VERSION_STRING >= "2.9.4.0":
             self._frame.notebook.SetPageToolTip(len(self._frame.versions), self.description)
-        return body % (self._frame.zoom, "\n    ".join(items))
+        return body % (self._frame.zoom_level, "\n    ".join(items))
 
     def LoadChapter(self, book, chapter, verse=-1):
         self.SetPage(self.GetPage(book, chapter, verse))
