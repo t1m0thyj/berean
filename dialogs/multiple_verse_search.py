@@ -1,28 +1,28 @@
-"""multiverse.py - multiple verse search dialog for Berean"""
+"""multiverse.py - multiple verse search dialog class"""
 
 import re
 
 import wx
-from wx import aui, html
+from wx import html
 
 from htmlwin import BaseHtmlWindow
-from panes.search import refalize2
+from info import *
+from refalize import refalize2
 
 _ = wx.GetTranslation
 
-class MultiverseDialog(wx.Dialog):
+class MultipleVerseSearchDialog(wx.Dialog):
     def __init__(self, parent, references=None):
         wx.Dialog.__init__(self, parent, -1, _("Multiple Verse Search"),
             size=(600, 440), style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER)
         self._parent = parent
 
         self.html = ""
-        self.lastversion = None
+        self.last_version = None
 
-        style = aui.AUI_TB_DEFAULT_STYLE | aui.AUI_TB_OVERFLOW | \
-            aui.AUI_TB_HORZ_TEXT
-        self.toolbar = aui.AuiToolBar(self, -1, (-1, -1), (-1, -1), style)
-        self.toolbar.AddLabel(-1, _("Version:"))
+        self.toolbar = wx.ToolBar(self, -1,
+            style=wx.TB_FLAT | wx.TB_NODIVIDER | wx.TB_HORZ_TEXT)
+        self.toolbar.AddControl(wx.StaticText(self.toolbar, -1, _("Version:")))
         self.version = wx.Choice(self.toolbar, -1, choices=parent.versions)
         tab = parent.notebook.GetSelection()
         if tab < len(parent.versions):
@@ -31,43 +31,38 @@ class MultiverseDialog(wx.Dialog):
             self.version.SetSelection(0)
         self.toolbar.AddControl(self.version)
         self.toolbar.AddSeparator()
-        ID_SEARCH = wx.NewId()
-        self.toolbar.AddTool(ID_SEARCH, _("Search"), parent.Bitmap("search"),
-            _("Search (Ctrl+Enter)"))
-        self.toolbar.AddTool(wx.ID_PRINT, _("Print"), parent.Bitmap("print"),
-            _("Print Search Results"))
-        self.toolbar.SetToolDropDown(wx.ID_PRINT, True)
+        search_item = self.toolbar.AddLabelTool(-1, _("Search"),
+            parent.Bitmap("search"), shortHelp=_("Search (Ctrl+Enter)"))
+        self.Bind(wx.EVT_MENU, self.OnSearch, search_item)
+        self.toolbar.AddLabelTool(wx.ID_PRINT, _("Print"),
+            parent.Bitmap("print"), shortHelp=_("Print Search Results"))
         self.toolbar.EnableTool(wx.ID_PRINT, False)
-        self.toolbar.AddTool(wx.ID_COPY, _("Copy"), parent.Bitmap("copy"),
-            _("Copy with Formatting"))
+        self.Bind(wx.EVT_MENU, self.OnPrint, id=wx.ID_PRINT)
+        self.toolbar.AddLabelTool(wx.ID_COPY, _("Copy"),
+            parent.Bitmap("copy"), shortHelp=_("Copy with Formatting"))
         self.toolbar.EnableTool(wx.ID_COPY, False)
         self.toolbar.Realize()
-        self.splitter = wx.SplitterWindow(self, -1)
+        self.splitter_window = wx.SplitterWindow(self, -1)
         if not references:
             references = parent._app.settings["LastVerses"]
         else:
             wx.CallAfter(self.OnSearch, None)
-        self.references = wx.TextCtrl(self.splitter, -1, references,
+        self.references = wx.TextCtrl(self.splitter_window, -1, references,
             style=wx.TE_MULTILINE)
         self.references.SetAcceleratorTable(wx.AcceleratorTable([
-            (wx.ACCEL_CTRL, wx.WXK_RETURN, ID_SEARCH),
-            (wx.ACCEL_CTRL, ord("A"), wx.ID_SELECTALL)]))
-        self.results = BaseHtmlWindow(self.splitter)
-        self.splitter.SplitHorizontally(self.references, self.results, 60)
+            (wx.ACCEL_CTRL, wx.WXK_RETURN, search_item.GetId())]))
+        self.results = BaseHtmlWindow(self.splitter_window)
+        self.splitter_window.SplitHorizontally(self.references, self.results,
+            60)
         # Needed because Gnome 3 doesn't have close button on dialogs
         self.close = wx.Button(self, wx.ID_CLOSE)
 
         sizer = wx.BoxSizer(wx.VERTICAL)
-        sizer.Add(self.toolbar, 0)
-        sizer.Add(self.splitter, 1, (wx.ALL ^ wx.TOP) | wx.EXPAND, 2)
-        sizer.Add(self.close, 0, wx.ALL | wx.ALIGN_RIGHT, 3)
+        sizer.Add(self.toolbar, 0, (wx.ALL ^ wx.BOTTOM) | wx.EXPAND, 5)
+        sizer.Add(self.splitter_window, 1, wx.ALL | wx.EXPAND, 5)
+        sizer.Add(self.close, 0, wx.ALL | wx.ALIGN_RIGHT, 5)
         self.SetSizer(sizer)
 
-        self.Bind(wx.EVT_MENU, self.OnSearch, id=ID_SEARCH)
-        for id in (wx.ID_PRINT, wx.ID_PAGE_SETUP, wx.ID_PREVIEW):
-            self.Bind(wx.EVT_MENU, self.OnPrintMenu, id=id)
-        self.toolbar.Bind(aui.EVT_AUITOOLBAR_TOOL_DROPDOWN,
-            self.OnPrintDropdown, id=wx.ID_PRINT)
         self.results.Bind(html.EVT_HTML_LINK_CLICKED, self.OnHtmlLinkClicked)
         # EVT_CONTEXT_MENU doesn't work for wxHtmlWindow in 2.8
         self.results.Bind(wx.EVT_RIGHT_UP, self.OnContextMenu)
@@ -82,9 +77,9 @@ class MultiverseDialog(wx.Dialog):
             data = refalize2(self.references.GetValue(), browser.Bible)
             results = []
             if self._parent._app.settings["AbbrevSearchResults"]:
-                books = self._parent.abbrevs
+                books = BOOK_ABBREVS
             else:
-                books = self._parent.books
+                books = BOOK_NAMES
             for start, stop in data:
                 b1, c1, v1 = start
                 b2, c2, v2 = stop
@@ -111,7 +106,7 @@ class MultiverseDialog(wx.Dialog):
                         if not len(result):
                             raise AssertionError
                 except:
-                    wx.MessageBox(_("%s %d:%d is not a valid reference.\n\nMake sure that it exists (i.e., is not like Mark 17 or Psalms 1:66).") % (self._parent.books[b1 - 1], c1, v1), "Berean", wx.ICON_EXCLAMATION | wx.OK)
+                    wx.MessageBox(_("%s %d:%d is not a valid reference.\n\nMake sure that it exists (i.e., is not like Mark 17 or Psalms 1:66).") % (BOOK_NAMES[b1 - 1], c1, v1), "Berean", wx.ICON_EXCLAMATION | wx.OK)
                     return
                 if start != stop:
                     if b1 == b2 and c1 == c2:
@@ -120,46 +115,28 @@ class MultiverseDialog(wx.Dialog):
                         results.append("<p><a href='%d.%d.%d'>%s %d:%d-%d:%d</a><br />%s</p>" % (b1, c1, v1, books[b1 - 1], c1, v1, c2, v2, " ".join(result)))
                     else:
                         results.append("<p><a href='%d.%d.%d'>%s %d:%d - %s %d:%d</a><br />%s</p>" % (b1, c1, v1, books[b1 - 1], c1, v1, books[b2 - 1], c2, v2, " ".join(result)))
-            self.html = "<html><body><font size=%d>%s</font></body></html>" % (self._parent.zoom, "".join(results))
+            self.html = "<html><body><font size=%d>%s</font></body></html>" % (self._parent.zoom_level, "".join(results))
             self.results.SetPage(self.html)
             self.toolbar.EnableTool(wx.ID_PRINT, True)
             ##self.toolbar.EnableTool(wx.ID_COPY, True)
             self.toolbar.Refresh(False)
-            self.lastversion = version
+            self.last_version = version
             wx.CallAfter(self.results.SetFocus)
         except:
             wx.MessageBox(_("Sorry, but I cannot understand all of those references.\nMake sure that they exist\n(i.e., are not like Mark 17 or Psalms 1:66).\n\nIf you think that Berean should accept them,\nplease email <timothysw@objectmail.com>."), "Berean", wx.ICON_EXCLAMATION | wx.OK)
 
-    def OnPrintMenu(self, event):
-        id = event.GetId()
-        if id != wx.ID_PAGE_SETUP:
-            text = self.html.replace("</b></a>", " (%s)</b></a>" %
-                self.lastversion, 1)
-            if wx.VERSION_STRING >= "2.8.11.0":
-                self._parent.printer.SetName(_("Search Results"))
-            if id == wx.ID_PRINT:
-                self._parent.printer.PrintText(text)
-            elif id == wx.ID_PREVIEW:
-                self._parent.printer.PreviewText(text)
-        else:
-            self._parent.printer.PageSetup()
-
-    def OnPrintDropdown(self, event):
-        if event.IsDropDownClicked():
-            self.toolbar.SetToolSticky(wx.ID_PRINT, True)
-            menu = wx.Menu()
-            menu.Append(wx.ID_PRINT, _("&Print..."))
-            menu.Append(wx.ID_PAGE_SETUP, _("Page Set&up..."))
-            menu.Append(wx.ID_PREVIEW, _("Print Previe&w..."))
-            self.toolbar.PopupMenu(menu,
-                self._parent.main_toolbar.GetPopupPos(self.toolbar, wx.ID_PRINT))
-            self.toolbar.SetToolSticky(wx.ID_PRINT, False)
+    def OnPrint(self, event):
+        if wx.VERSION_STRING >= "2.8.11.0":
+            self._parent.printer.SetName(_("Search Results"))
+        text = self.html.replace("</b></a>", " (%s)</b></a>" %
+            self.last_version, 1)
+        self._parent.printer.PreviewText(text)
 
     def OnHtmlLinkClicked(self, event):
         if self._parent.notebook.GetPageText(
-                self._parent.notebook.GetSelection()) != self.lastversion:
+                self._parent.notebook.GetSelection()) != self.last_version:
             self._parent.notebook.SetSelection(
-                self._parent.versions.index(self.lastversion))
+                self._parent.versions.index(self.last_version))
         self._parent.LoadChapter(*[int(item) for item in \
             event.GetLinkInfo().GetHref().split(".")])
 

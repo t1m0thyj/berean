@@ -1,4 +1,4 @@
-"""helper.py - help system for Berean"""
+"""help.py - help system class"""
 
 import os.path
 
@@ -32,28 +32,29 @@ class HelpSystem(html.HtmlHelpController):
         self.SetTitleFormat("%s")
         self.UseConfig(self.config)
 
-        book = os.path.join(frame._app.cwd, "locale", frame._app.locale.GetCanonicalName(), "help", "header.hhp")
-        if not os.path.isfile(book):
-            book = os.path.join(frame._app.cwd, "locale", "en_US", "help", "header.hhp")
-        self.AddBook(book)
+        filename = os.path.join(frame._app.cwd, "locale", frame._app.locale.GetCanonicalName(), "help", "header.hhp")
+        if not os.path.isfile(filename):
+            filename = os.path.join(frame._app.cwd, "locale", "en_US", "help", "header.hhp")
+        self.AddBook(filename)
 
-    def ShowHelpFrame(self):
+    def show_help_window(self):
         self.DisplayContents()
-        self.GetHelpWindow().Bind(html.EVT_HTML_LINK_CLICKED, self.OnHelpHtmlLinkClicked)
+        self.GetHelpWindow().Bind(html.EVT_HTML_LINK_CLICKED,
+            self.OnHtmlLinkClicked)
 
-    def OnHelpHtmlLinkClicked(self, event):
-        href = event.GetLinkInfo().GetHref()
-        if href.startswith("http:"):
-            wx.LaunchDefaultBrowser(href)
+    def OnHtmlLinkClicked(self, event):
+        link = event.GetLinkInfo().GetHref()
+        if link.startswith("http://"):
+            wx.LaunchDefaultBrowser(link)
         else:
             event.Skip()
 
-    def ShowAboutBox(self):
+    def show_about_box(self):
         info = wx.AboutDialogInfo()
         info.SetName("Berean")
         info.SetVersion(VERSION)
-        info.SetCopyright("Copyright (C) 2011-2013 Timothy Johnson. All rights reserved.")
-        info.SetDescription(_("A Bible study tool that is free, cross-platform, and open-source."))
+        info.SetCopyright("Copyright (C) 2011-2014 Timothy Johnson")
+        info.SetDescription(_("A free, cross-platform, and open-source Bible study tool"))
         info.SetWebSite("http://berean.sf.net")
         info.SetLicense(license)
         wx.AboutBox(info)
