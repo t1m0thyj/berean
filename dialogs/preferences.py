@@ -1,4 +1,4 @@
-"""preferences.py - preference dialog class for Berean"""
+"""preferences.py - preferences dialog class"""
 
 import os
 
@@ -6,16 +6,19 @@ import wx
 
 _ = wx.GetTranslation
 
-class PreferenceDialog(wx.Dialog):
+class PreferencesDialog(wx.Dialog):
     def __init__(self, parent):
-        wx.Dialog.__init__(self, parent, title=_("Preferences"), size=(600, 440))
+        wx.Dialog.__init__(self, parent, title=_("Preferences"),
+            size=(600, 440), style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER)
         self._parent = parent
 
-        self.abbrevs = ("ASV", "KJV", "WBS", "WEB", "WNT", "YLT", "DSV", "LSG", "RVA")
+        self.abbrevs = ("ASV", "KJV", "WBS", "WEB", "WNT", "YLT", "DSV", "LSG",
+            "RVA")
         self.titles = ("American Standard Version", "King James Version",
                        "Webster's Bible", "World English Bible",
                        "Wycliffe New Testament", "Young's Literal Translation",
-                       "Dutch Statenvertaling [Dutch]", "Louis Segond [French]",
+                       "Dutch Statenvertaling [Dutch]",
+                       "Louis Segond [French]",
                        "Reina-Valera Antigua [Spanish]")
 
         self.listbook = wx.Listbook(self, -1)
@@ -25,15 +28,18 @@ class PreferenceDialog(wx.Dialog):
         self.listbook.AssignImageList(images)
 
         self.general = wx.Panel(self.listbook, -1)
-        self.MinimizeToTray = wx.CheckBox(self.general, -1, _("Minimize to system tray"))
+        self.MinimizeToTray = wx.CheckBox(self.general, -1,
+            _("Minimize to system tray"))
         self.MinimizeToTray.SetValue(parent._app.settings["MinimizeToTray"])
-        self.AbbrevSearchResults = wx.CheckBox(self.general, -1, _("Abbreviate book names in search results"))
-        self.AbbrevSearchResults.SetValue(parent._app.settings["AbbrevSearchResults"])
+        self.AbbrevSearchResults = wx.CheckBox(self.general, -1,
+            _("Abbreviate book names in search results"))
+        self.AbbrevSearchResults.SetValue(
+            parent._app.settings["AbbrevSearchResults"])
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add(self.MinimizeToTray, 0, wx.ALL, 2)
         sizer.Add(self.AbbrevSearchResults, 0, wx.ALL, 2)
         self.general.SetSizer(sizer)
-        self.listbook.AddPage(self.general, _("General"), imageId=0)
+        self.listbook.AddPage(self.general, _("General"), True, 0)
 
         self.versions = wx.Panel(self.listbook, -1)
         self.VersionList = wx.CheckListBox(self.versions, -1)
@@ -45,13 +51,14 @@ class PreferenceDialog(wx.Dialog):
         sizer = wx.BoxSizer()
         sizer.Add(self.VersionList, 1, wx.EXPAND)
         self.versions.SetSizer(sizer)
-        self.listbook.AddPage(self.versions, _("Versions*"), imageId=1)
+        self.listbook.AddPage(self.versions, _("Versions*"), False, 1)
 
         sizer = wx.BoxSizer(wx.VERTICAL)
-        sizer.Add(self.listbook, 1, wx.ALL | wx.EXPAND, 2)
-        statictext = wx.StaticText(self, -1, _("*Takes effect after you restart Berean"))
+        sizer.Add(self.listbook, 1, wx.ALL | wx.EXPAND, 5)
+        statictext = wx.StaticText(self, -1,
+            _("*Takes effect after you restart Berean"))
         statictext.SetForegroundColour("#808080")
-        sizer.Add(statictext, 0, wx.LEFT | wx.RIGHT | wx.EXPAND, 5)
+        sizer.Add(statictext, 0, wx.LEFT | wx.RIGHT, 5)
         sizer2 = wx.StdDialogButtonSizer()
         sizer2.AddButton(wx.Button(self, wx.ID_OK))
         sizer2.AddButton(wx.Button(self, wx.ID_CANCEL))
@@ -74,7 +81,9 @@ class PreferenceDialog(wx.Dialog):
                     break
             if not selections:
                 self.VersionList.Check(item)
-                wx.MessageBox(_("You must have at least one version selected."), _("Berean"), wx.ICON_EXCLAMATION | wx.OK)
+                wx.MessageBox(
+                    _("You must have at least one version selected."),
+                    _("Berean"), wx.ICON_EXCLAMATION | wx.OK)
 
     def OnOk(self, event):
         self.OnApply(None)
@@ -84,8 +93,10 @@ class PreferenceDialog(wx.Dialog):
         self.Destroy()
 
     def OnApply(self, event):
-        self._parent._app.settings["MinimizeToTray"] = self.MinimizeToTray.GetValue()
-        self._parent._app.settings["AbbrevSearchResults"] = self.AbbrevSearchResults.GetValue()
+        self._parent._app.settings["MinimizeToTray"] = \
+            self.MinimizeToTray.GetValue()
+        self._parent._app.settings["AbbrevSearchResults"] = \
+            self.AbbrevSearchResults.GetValue()
         versions = []
         for i in range(len(self.abbrevs)):
             if self.VersionList.IsChecked(i):
@@ -93,5 +104,7 @@ class PreferenceDialog(wx.Dialog):
         if versions != self._parent.versions:
             for version in self._parent.versions:   # Delete old indexes
                 if version not in versions:
-                    wx.CallAfter(os.remove, os.path.join(self._parent._app.userdatadir, "indexes", "%s.idx" % version))
+                    wx.CallAfter(os.remove, os.path.join(
+                        self._parent._app.userdatadir, "indexes",
+                        "%s.idx" % version))
             self._parent.versions = versions

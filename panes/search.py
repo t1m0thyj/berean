@@ -1,135 +1,48 @@
-"""search.py - search functions and pane class for Berean"""
+"""search.py - search pane class"""
 
 import cPickle
 import os
 import re
 
 import wx
-from wx import aui, html
+from wx import html
 
-import dialogs.index as indexer
 from htmlwin import BaseHtmlWindow
+from info import *
+from refalize import validate
 
 _ = wx.GetTranslation
 
-def refalize(reference):
-    groups = re.match(r'((?:[1-3]\s?|i{1,3}\s)?[A-Za-z]+)\s*(\d+)?\W*(\d+)?', reference.lstrip(), flags=re.IGNORECASE).groups()
-    abbrev = groups[0].replace(" ", "").lower()
-    if abbrev not in abbrevs:
-        for i in range(len(books)):
-            if books[i].startswith(abbrev):
-                book = i + 1
-                break
-    else:
-        book = abbrevs[abbrev]
-    if groups[2]:
-        return (book, int(groups[1]), int(groups[2]))
-    elif not groups[1]:
-        return (book, 1, -1)
-    elif book not in (31, 57, 63, 64, 65):
-        return (book, int(groups[1]), -1)
-    else:
-        return (book, 1, int(groups[1]))
 
-
-def refalize2(references, Bible):
-    references = filter(None, [reference.lstrip() for reference in re.split(r'[,;\n]', references)])
-    pattern = re.compile(r'((?:[1-3]\s?|i{1,3}\s)?[A-Za-z]+)?\s*(\d+)?\W*(\d+)?', flags=re.IGNORECASE)
-    style = 1   # 0 = full reference, 1 = reference with no verse, 2 = reference with no chapter
-    for i in range(len(references)):
-        if "-" in references[i]:
-            first, last = references[i].split("-")
-        else:
-            first = references[i]
-            last = None
-        match = pattern.match(first)
-        groups = match.groups()
-        if groups[0] and (groups[0].lower() not in ("c", "ch", "chap", "v", "ver", "vv")):
-            abbrev = groups[0].replace(" ", "").lower()
-            if abbrev not in abbrevs:
-                for j in range(len(books)):
-                    if books[j].startswith(abbrev):
-                        book = j + 1
-                        break
-            else:
-                book = abbrevs[abbrev]
-        else:
-            book = references[i - 1][1][0]
-        if groups[2]:
-            chapter = int(groups[1])
-            verse = int(groups[2])
-            style = 0
-        elif book in (31, 57, 63, 64, 65):
-            chapter = 1
-            verse = int(groups[1])
-            style = 2
-        elif style != 1 and ((not groups[0]) or groups[0].lower() in ("v", "ver", "vv")):
-            chapter = references[i - 1][1][1]
-            verse = int(groups[1])
-            style = 2
-        else:
-            chapter = int(groups[1])
-            verse = 1
-            style = 1
-        first = (book, chapter, verse)
-        if last:
-            match2 = pattern.match(last.lstrip())
-            if match2:
-                groups2 = match2.groups()
-                if groups2[0] and (groups2[0].lower() not in ("c", "ch", "chap", "v", "ver", "vv")):
-                    abbrev = groups2[0].replace(" ", "").lower()
-                    if abbrev not in abbrevs:
-                        for j in range(len(books)):
-                            if books[j].startswith(abbrev):
-                                book = j + 1
-                                break
-                    else:
-                        book = abbrevs[abbrev]
-                else:
-                    book = first[0]
-                if groups2[1] and groups2[2]:
-                    chapter = int(groups2[1])
-                    verse = int(groups2[2])
-                    style = 0
-                elif groups2[1] and not groups2[2]:
-                    if book in (31, 57, 63, 64, 65):
-                        chapter = 1
-                        verse = int(groups2[1])
-                    elif style != 1:
-                        chapter = first[1]
-                        verse = int(groups2[1])
-                    else:
-                        chapter = int(groups2[1])
-                        verse = len(Bible[book][chapter]) - 1
-                last = (book, chapter, verse)
-            else:
-                last = None
-        elif re.search(r'\W*ff', references[i][match.end(len(groups)):], flags=re.IGNORECASE):  # Recognize 'ff'
-            if style != 1:
-                last = (book, chapter, len(Bible[book][chapter]) - 1)
-            else:
-                last = (book, len(Bible[book]) - 1, len(Bible[book][-1]) - 1)
-        if not last:
-            last = first
-            if style == 1:
-                last = (last[0], last[1], len(Bible[last[0]][last[1]]) - 1)
-        references[i] = (first, last)
-    return references
-
-
-def validate(reference, numbers=False):
-    reference = reference.strip()
-    if reference[-1].isdigit():
-        return True
-    if not numbers:
-        book = reference.replace(" ", "").lower()
-        if book not in abbrevs:
-            for i in range(len(books)):
-                if books[i].startswith(book):
-                    return True
-        else:
-            return True
-    return False
+def index_version(Bible, version, indexdir):
+    dialog = wx.ProgressDialog(_("Indexing"),
+        _("Please wait, indexing the %s...") % version, 70,
+        style=wx.PD_AUTO_HIDE | wx.PD_ELAPSED_TIME | wx.PD_REMAINING_TIME)
+    punctuation = re.compile(r'((?<=^)\W+|\W+(?=$))')
+    index = {}
+    for b in range(1, len(Bible)):
+        for c in range(1, len(Bible[b])):
+            for v in range(1, len(Bible[b][c])):
+                verse = Bible[b][c][v]
+                if "<div" in verse:
+                    verse = verse[:verse.index("<div")]
+                words = []
+                for word in verse.split():
+                    word = punctuation.sub(r'', word)
+                    if word not in words:
+                        if word not in index:
+                            index[word] = []
+                        index[word].append("".join([chr(int(i) + 32) for i in (b, c, v)]))
+                        words.append(word)
+        dialog.Update(b)
+    for word in index:
+        index[word] = "".join(index[word])
+    dialog.Update(68)
+    fileobj = open(os.path.join(indexdir, "%s.idx" % version), 'wb')
+    cPickle.dump(index, fileobj, -1)
+    fileobj.close()
+    dialog.Destroy()
+    return index
 
 
 class SearchPane(wx.Panel):
@@ -156,7 +69,7 @@ class SearchPane(wx.Panel):
                 self.indexes.append(cPickle.load(index))
                 index.close()
             else:
-                self.indexes.append(indexer.index(parent._app, parent.GetBrowser(i).Bible, parent.versions[i]))
+                self.indexes.append(index_version(parent.GetBrowser(i).Bible, parent.versions[i], indexdir))
         for option in ("AllWords", "ExactMatch", "Phrase"):
             if parent._app.settings[option] >= wx.CHK_UNDETERMINED:
                 state = parent._app.settings[option] - wx.CHK_UNDETERMINED
@@ -167,15 +80,13 @@ class SearchPane(wx.Panel):
 
         self.text = wx.ComboBox(self, -1, choices=parent._app.settings["SearchHistory"], style=wx.TE_PROCESS_ENTER)
         self.text.SetValue(parent._app.settings["LastSearch"])
-        style = aui.AUI_TB_DEFAULT_STYLE
-        if wx.VERSION_STRING >= "2.9.5.0":
-            style |= aui.AUI_TB_PLAIN_BACKGROUND
-        self.toolbar = aui.AuiToolBar(self, -1, (-1, -1), (-1, -1), style)
-        self.ID_SEARCH = wx.NewId()
-        self.toolbar.AddTool(self.ID_SEARCH, "", parent.Bitmap("search"), _("Search"))
-        self.toolbar.AddTool(wx.ID_PRINT, "", parent.Bitmap("print"), _("Print Search Results"))
-        self.toolbar.SetToolDropDown(wx.ID_PRINT, True)
+        self.text.Bind(wx.EVT_TEXT_ENTER, self.OnSearch)
+        self.toolbar = wx.ToolBar(self, -1, style=wx.TB_FLAT | wx.TB_NODIVIDER)
+        search_item = self.toolbar.AddLabelTool(-1, "", parent.Bitmap("search"), shortHelp=_("Search"))
+        self.toolbar.Bind(wx.EVT_MENU, self.OnSearch, search_item)
+        self.toolbar.AddLabelTool(wx.ID_PRINT, "", parent.Bitmap("print"), shortHelp=_("Print Search Results"))
         self.toolbar.EnableTool(wx.ID_PRINT, False)
+        self.toolbar.Bind(wx.EVT_MENU, self.OnPrint, id=wx.ID_PRINT)
         self.toolbar.Realize()
         self.results = BaseHtmlWindow(self)
         self.optionspane = wx.CollapsiblePane(self, -1, _("Options"), style=wx.CP_DEFAULT_STYLE | wx.CP_NO_TLW_RESIZE)
@@ -190,10 +101,10 @@ class SearchPane(wx.Panel):
         self.version = wx.Choice(optionspane, -1, choices=parent.versions)
         self.rangechoice = wx.Choice(optionspane, -1, choices=ranges)
         self.rangechoice.SetSelection(0)
-        self.start = wx.Choice(optionspane, -1, choices=parent.books)
+        self.start = wx.Choice(optionspane, -1, choices=BOOK_NAMES)
         self.start.SetSelection(0)
         self.rangetext = wx.StaticText(optionspane, -1, _("to"))
-        self.stop = wx.Choice(optionspane, -1, choices=parent.books)
+        self.stop = wx.Choice(optionspane, -1, choices=BOOK_NAMES)
         self.stop.SetSelection(65)
         for item in (self.start, self.rangetext, self.stop):
             item.Disable()
@@ -201,7 +112,7 @@ class SearchPane(wx.Panel):
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer2 = wx.BoxSizer(wx.HORIZONTAL)
         sizer2.Add(self.text, 1, wx.ALL ^ wx.RIGHT, 2)
-        sizer2.Add(self.toolbar, 0, wx.ALIGN_CENTER_VERTICAL)
+        sizer2.Add(self.toolbar, 0, wx.LEFT | wx.RIGHT | wx.ALIGN_CENTER_VERTICAL, 2)
         sizer.Add(sizer2, 0, wx.EXPAND)
         sizer.Add(self.results, 1, wx.EXPAND)
         sizer3 = wx.BoxSizer(wx.VERTICAL)
@@ -229,11 +140,6 @@ class SearchPane(wx.Panel):
         else:
             self.version.SetSelection(0)
 
-        self.text.Bind(wx.EVT_TEXT_ENTER, self.OnSearch)
-        self.toolbar.Bind(wx.EVT_MENU, self.OnSearch, id=self.ID_SEARCH)
-        for id in (wx.ID_PRINT, wx.ID_PAGE_SETUP, wx.ID_PREVIEW):
-            self.Bind(wx.EVT_MENU, self.OnPrintMenu, id=id)
-        self.toolbar.Bind(aui.EVT_AUITOOLBAR_TOOL_DROPDOWN, self.OnPrintDropdown, id=wx.ID_PRINT)
         self.results.Bind(html.EVT_HTML_LINK_CLICKED, self.OnHtmlLinkClicked)
         self.results.Bind(wx.EVT_RIGHT_UP, self.OnContextMenu)  # EVT_CONTEXT_MENU doesn't work for wxHtmlWindow in 2.8
         for option in ("AllWords", "ExactMatch", "Phrase", "RegularExpression"):
@@ -258,7 +164,7 @@ class SearchPane(wx.Panel):
             results.insert(0, _("<font color=gray>%d verses in the %s (%d&nbsp;msec)</font>") % (number, self.lastversion, max(1, wx.GetLocalTimeMillis() - millis)))
         else:
             results.append(_("<font color=gray>0 verses in the %s (%d&nbsp;msec)</font><p></p><b>Suggestions:</b><ul><li> Make your search less specific.<li> Edit the search options.<li> Search in a different version.</ul>") % (self.lastversion, max(1, wx.GetLocalTimeMillis() - millis)))
-        self.html = "<html><body><font size=%d>%s</font></body></html>" % (self._parent.zoom, "".join(results))
+        self.html = "<html><body><font size=%d>%s</font></body></html>" % (self._parent.zoom_level, "".join(results))
         self.results.SetPage(self.html)
         wx.EndBusyCursor()
         if text not in self.text.GetStrings():
@@ -333,9 +239,9 @@ class SearchPane(wx.Panel):
         i = 0
         results = []
         if self._parent._app.settings["AbbrevSearchResults"]:
-            books = self._parent.abbrevs
+            books = BOOK_ABBREVS
         else:
-            books = self._parent.books
+            books = BOOK_NAMES
         if len(matches) <= 1000:
             while i < len(matches):
                 b, c, v = matches[i]
@@ -406,29 +312,12 @@ class SearchPane(wx.Panel):
                         matches += self.FindWord(word2, [False, options[1], True, False, False])
         return matches
 
-    def OnPrintMenu(self, event):
-        id = event.GetId()
-        if id != wx.ID_PAGE_SETUP:
-            header = _("<div align=center><b>Search results for \"%s\" in the %s (%d&nbsp;verses)</b></div>") % (self.text.GetValue(), self.lastversion, self.verses)
-            text = self.html[:12] + header + self.html[self.html.index("</font>") + 7:]
-            if wx.VERSION_STRING >= "2.8.11.0":
-                self._parent.printer.SetName(_("Search Results"))
-            if id == wx.ID_PRINT:
-                self._parent.printer.PrintText(text)
-            elif id == wx.ID_PREVIEW:
-                self._parent.printer.PreviewText(text)
-        else:
-            self._parent.printer.PageSetup()
-
-    def OnPrintDropdown(self, event):
-        if event.IsDropDownClicked():
-            self.toolbar.SetToolSticky(wx.ID_PRINT, True)
-            menu = wx.Menu()
-            menu.Append(wx.ID_PRINT, _("&Print..."))
-            menu.Append(wx.ID_PAGE_SETUP, _("Page Set&up..."))
-            menu.Append(wx.ID_PREVIEW, _("Print Previe&w..."))
-            self.toolbar.PopupMenu(menu, self._parent.main_toolbar.GetPopupPos(self.toolbar, wx.ID_PRINT))
-            self.toolbar.SetToolSticky(wx.ID_PRINT, False)
+    def OnPrint(self, event):
+        header = _("<div align=center><b>Search results for \"%s\" in the %s (%d&nbsp;verses)</b></div>") % (self.text.GetValue(), self.lastversion, self.verses)
+        text = self.html[:12] + header + self.html[self.html.index("</font>") + 7:]
+        if wx.VERSION_STRING >= "2.8.11.0":
+            self._parent.printer.SetName(_("Search Results"))
+        self._parent.printer.PreviewText(text)
 
     def OnHtmlLinkClicked(self, event):
         if self._parent.notebook.GetPageText(self._parent.notebook.GetSelection()) != self.lastversion:

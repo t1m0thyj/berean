@@ -1,5 +1,5 @@
 """berean.py - main script for Berean
-Copyright (c) 2013 Timothy Johnson <timothysw@objectmail.com>
+Copyright (C) 2014 Timothy Johnson <timothysw@objectmail.com>
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -26,7 +26,7 @@ import wx
 import debug
 import parent
 
-VERSION = debug.VERSION = parent.helper.VERSION = "1.5.0"
+VERSION = debug.VERSION = parent.help.VERSION = "1.4.7"
 # Make ConfigParser work with Unicode
 ConfigParser.str = lambda value: value.encode("utf_8")
 
@@ -66,7 +66,6 @@ class FileConfig(ConfigParser.RawConfigParser):
 class Berean(wx.App):
     def OnInit(self):
         wx.App.__init__(self)
-
         self.SetAppName("Berean")
         options, args = getopt.getopt(sys.argv[1:], "",
             ["datadir=", "systemtray"])
@@ -186,10 +185,10 @@ class Berean(wx.App):
         self.config.set("Main", "MinimizeToTray", str(self.settings["MinimizeToTray"]))
         self.config.set("Main", "SelectedBook", str(self.frame.reference[0]))
         self.config.set("Main", "SelectedChapter", str(self.frame.reference[1]))
-        self.config.set("Main", "ZoomLevel", str(self.frame.zoom))
+        self.config.set("Main", "ZoomLevel", str(self.frame.zoom_level))
         self.config.set("Main", "ActiveVerse", str(self.frame.reference[2]))
         self.config.set("Main", "ActiveTab", str(self.frame.notebook.GetSelection()))
-        self.config.set("Main", "LastReference", self.frame.main_toolbar.reference.GetValue())
+        self.config.set("Main", "LastReference", self.frame.toolbar.verse_entry.GetValue())
         self.config.set("Main", "ActiveNotes", str(self.frame.notes.GetSelection()))
         self.config.setlist("VersionList", None, self.frame.versions)
         parallel = []
@@ -198,9 +197,9 @@ class Berean(wx.App):
                 if choice.GetSelection() > 0 or i == 0:
                     parallel.append(choice.GetStringSelection())
         self.config.setlist("ParallelVersions", None, parallel)
-        self.config.setlist("FavoritesList", None, self.frame.menubar.Favorites.favorites)
-        self.config.setlist("ReferenceHistory", None, self.frame.main_toolbar.reference.GetStrings())
-        self.config.setlist("ChapterHistory", None, self.frame.main_toolbar.history)
+        self.config.setlist("FavoritesList", None, self.frame.menubar.favorites_list)
+        self.config.setlist("ReferenceHistory", None, self.frame.toolbar.verse_entry.GetStrings())
+        self.config.setlist("ChapterHistory", None, self.frame.toolbar.verse_history)
         if not self.config.has_section("Search"):
             self.config.add_section("Search")
         self.config.set("Search", "AbbrevSearchResults", str(self.settings["AbbrevSearchResults"]))
