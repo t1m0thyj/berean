@@ -3,9 +3,9 @@
 import re
 
 import wx
-from wx import html
+from wx import aui, html
 
-from htmlwin import BaseHtmlWindow
+from html import BaseHtmlWindow
 from info import *
 from refalize import refalize2
 
@@ -13,16 +13,18 @@ _ = wx.GetTranslation
 
 class MultipleVerseSearchDialog(wx.Dialog):
     def __init__(self, parent, references=None):
-        wx.Dialog.__init__(self, parent, -1, _("Multiple Verse Search"),
-            size=(600, 440), style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER)
+        super(MultipleVerseSearchDialog, self).__init__(parent, -1,
+            _("Multiple Verse Search"), size=(600, 440),
+            style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER)
         self._parent = parent
 
         self.html = ""
         self.last_version = None
 
-        self.toolbar = wx.ToolBar(self, -1,
-            style=wx.TB_FLAT | wx.TB_NODIVIDER | wx.TB_HORZ_TEXT)
-        self.toolbar.AddControl(wx.StaticText(self.toolbar, -1, _("Version:")))
+        self.toolbar = aui.AuiToolBar(self, -1, (-1, -1), (-1, -1),
+            aui.AUI_TB_DEFAULT_STYLE | aui.AUI_TB_OVERFLOW | \
+            aui.AUI_TB_HORZ_TEXT)
+        self.toolbar.AddLabel(-1, _("Version:"))
         self.version = wx.Choice(self.toolbar, -1, choices=parent.versions)
         tab = parent.notebook.GetSelection()
         if tab < len(parent.versions):
@@ -31,15 +33,15 @@ class MultipleVerseSearchDialog(wx.Dialog):
             self.version.SetSelection(0)
         self.toolbar.AddControl(self.version)
         self.toolbar.AddSeparator()
-        search_item = self.toolbar.AddLabelTool(-1, _("Search"),
-            parent.Bitmap("search"), shortHelp=_("Search (Ctrl+Enter)"))
+        search_item = self.toolbar.AddTool(-1, _("Search"),
+            parent.Bitmap("search"), _("Search (Ctrl+Enter)"))
         self.Bind(wx.EVT_MENU, self.OnSearch, search_item)
-        self.toolbar.AddLabelTool(wx.ID_PRINT, _("Print"),
-            parent.Bitmap("print"), shortHelp=_("Print Search Results"))
+        self.toolbar.AddTool(wx.ID_PRINT, _("Print"), parent.Bitmap("print"),
+            _("Print Search Results"))
         self.toolbar.EnableTool(wx.ID_PRINT, False)
         self.Bind(wx.EVT_MENU, self.OnPrint, id=wx.ID_PRINT)
-        self.toolbar.AddLabelTool(wx.ID_COPY, _("Copy"),
-            parent.Bitmap("copy"), shortHelp=_("Copy with Formatting"))
+        self.toolbar.AddTool(wx.ID_COPY, _("Copy"), parent.Bitmap("copy"),
+            _("Copy with Formatting"))
         self.toolbar.EnableTool(wx.ID_COPY, False)
         self.toolbar.Realize()
         self.splitter_window = wx.SplitterWindow(self, -1)
@@ -54,20 +56,18 @@ class MultipleVerseSearchDialog(wx.Dialog):
         self.results = BaseHtmlWindow(self.splitter_window)
         self.splitter_window.SplitHorizontally(self.references, self.results,
             60)
-        # Needed because Gnome 3 doesn't have close button on dialogs
-        self.close = wx.Button(self, wx.ID_CLOSE)
 
         sizer = wx.BoxSizer(wx.VERTICAL)
-        sizer.Add(self.toolbar, 0, (wx.ALL ^ wx.BOTTOM) | wx.EXPAND, 5)
+        sizer.Add(self.toolbar, 0)
         sizer.Add(self.splitter_window, 1, wx.ALL | wx.EXPAND, 5)
-        sizer.Add(self.close, 0, wx.ALL | wx.ALIGN_RIGHT, 5)
+        button_sizer = self.CreateStdDialogButtonSizer(wx.CLOSE)
+        sizer.Add(button_sizer, 0, wx.ALL | wx.EXPAND, 5)
         self.SetSizer(sizer)
 
         self.results.Bind(html.EVT_HTML_LINK_CLICKED, self.OnHtmlLinkClicked)
         # EVT_CONTEXT_MENU doesn't work for wxHtmlWindow in 2.8
         self.results.Bind(wx.EVT_RIGHT_UP, self.OnContextMenu)
-        self.close.Bind(wx.EVT_BUTTON, self.OnClose)
-        self.Bind(wx.EVT_CLOSE, self.OnClose2)
+        self.Bind(wx.EVT_BUTTON, self.OnClose, id=wx.ID_CLOSE)
 
     def OnSearch(self, event):
         try:
@@ -155,8 +155,5 @@ class MultipleVerseSearchDialog(wx.Dialog):
         self.results.PopupMenu(menu)
 
     def OnClose(self, event):
-        self.Close()
-
-    def OnClose2(self, event):
         self._parent._app.settings["LastVerses"] = self.references.GetValue()
-        event.Skip()
+        self.Close()

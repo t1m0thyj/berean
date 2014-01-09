@@ -10,7 +10,7 @@ _ = wx.GetTranslation
 
 class MainToolBar(aui.AuiToolBar):
     def __init__(self, parent):
-        aui.AuiToolBar.__init__(self, parent, -1, (-1, -1), (-1, -1),
+        super(MainToolBar, self).__init__(parent, -1, (-1, -1), (-1, -1),
             aui.AUI_TB_DEFAULT_STYLE | aui.AUI_TB_OVERFLOW |
             aui.AUI_TB_HORZ_TEXT)
         self._parent = parent
@@ -23,9 +23,8 @@ class MainToolBar(aui.AuiToolBar):
         self.verse_entry.SetValue(parent._app.settings["LastReference"])
         self.verse_entry.Bind(wx.EVT_TEXT_ENTER, self.OnGotoVerse)
         self.AddControl(self.verse_entry)
-        goto_verse_item = self.AddTool(-1, "", parent.Bitmap("goto-verse"),
-            _("Go to Verse (Ctrl+F)"))
-        self.Bind(wx.EVT_MENU, self.OnGotoVerse, id=goto_verse_item.GetId())
+        self.AddTool(parent.menubar.goto_verse_item.GetId(), "",
+            parent.Bitmap("goto-verse"), _("Go to Verse"))
         self.AddSeparator()
         self.AddTool(wx.ID_BACKWARD, _("Back"), parent.Bitmap("go-back"),
             _("Go Back (Alt+Left)"))
@@ -40,12 +39,16 @@ class MainToolBar(aui.AuiToolBar):
         self.Bind(aui.EVT_AUITOOLBAR_TOOL_DROPDOWN, self.OnForwardDropdown,
             id=wx.ID_FORWARD)
         self.AddSeparator()
+        self.AddTool(wx.ID_PRINT, "", parent.Bitmap("print"),
+            _("Print (Ctrl+P)"))
+        self.AddTool(wx.ID_COPY, "", parent.Bitmap("copy"), _("Copy (Ctrl+C)"))
+        self.AddSeparator()
         self.AddTool(parent.menubar.add_to_favorites_item.GetId(), "",
             parent.Bitmap("add-favorite"), _("Add to Favorites (Ctrl+D)"))
         self.AddTool(parent.menubar.manage_favorites_item.GetId(), "",
             parent.Bitmap("manage-favorites"), _("Manage Favorites"))
 
-        self.Realize()
+        self.Refresh(False)
 
     def set_history_item(self, history_item):
         if history_item == -1:
@@ -88,32 +91,35 @@ class MainToolBar(aui.AuiToolBar):
             except:
                 wx.MessageBox(_("'%s' is not a valid reference.\n\nIf you think that Berean should accept it,\nplease email <timothysw@objectmail.com>.") % reference, "Berean", wx.ICON_EXCLAMATION | wx.OK)
         else:
-            if not self._parent.aui.GetPane("searchpane").IsShown():
+            if not self._parent.aui.GetPane("search_pane").IsShown():
                 self._parent.ShowSearchPane()
             self._parent.search.text.SetValue(reference)
             self.verse_entry.SetValue(self.verse_entry.GetString(0))
             self._parent.search.OnSearch(None)
 
     def OnBack(self, event):
-        book, chapter, verse = refalize(self.verse_history[self.history_item - 1])
+        book, chapter, verse = refalize(
+            self.verse_history[self.history_item - 1])
         self._parent.LoadChapter(book, chapter, verse, True)
 
     def OnBackDropdown(self, event):
         if event.IsDropDownClicked():
             self.SetToolSticky(wx.ID_BACKWARD, True)
             menu = wx.Menu()
-            for i in range(self.history_item - 1, -1, -1):
+            for i in reversed(range(0, self.history_item)):
                 menu.Append(wx.ID_HIGHEST + i, self.verse_history[i])
                 self.Bind(wx.EVT_MENU, self.OnHistoryItem, id=wx.ID_HIGHEST + i)
-            self.PopupMenu(menu, self.GetPopupPos(self, wx.ID_BACKWARD))
+            self.PopupMenu(menu, self.get_popup_pos(self, wx.ID_BACKWARD))
             self.SetToolSticky(wx.ID_BACKWARD, False)
 
     def OnHistoryItem(self, event):
-        book, chapter, verse = refalize(self.verse_history[event.GetId() - wx.ID_HIGHEST])
+        book, chapter, verse = refalize(
+            self.verse_history[event.GetId() - wx.ID_HIGHEST])
         self._parent.LoadChapter(book, chapter, verse, True)
 
     def OnForward(self, event):
-        book, chapter, verse = refalize(self.verse_history[self.history_item + 1])
+        book, chapter, verse = refalize(
+            self.verse_history[self.history_item + 1])
         self._parent.LoadChapter(book, chapter, verse, True)
 
     def OnForwardDropdown(self, event):
@@ -123,5 +129,5 @@ class MainToolBar(aui.AuiToolBar):
             for i in range(self.history_item + 1, len(self.verse_history)):
                 menu.Append(wx.ID_HIGHEST + i, self.verse_history[i])
                 self.Bind(wx.EVT_MENU, self.OnHistoryItem, id=wx.ID_HIGHEST + i)
-            self.PopupMenu(menu, self.GetPopupPos(self, wx.ID_FORWARD))
+            self.PopupMenu(menu, self.get_popup_pos(self, wx.ID_FORWARD))
             self.SetToolSticky(wx.ID_FORWARD, False)

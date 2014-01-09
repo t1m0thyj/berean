@@ -10,7 +10,7 @@ from refalize import *
 _ = wx.GetTranslation
 
 
-def find_favorite(self, favorites_list, reference):
+def find_favorite(reference, favorites_list):
     for i in range(len(favorites_list)):
         if refalize(favorites_list[i]) == reference:
             return i
@@ -39,7 +39,7 @@ class MenuBar(wx.MenuBar):
             _("P&rint Preview...\tCtrl+Alt+P"),
             _("Previews a printing of the current chapter"))
         frame.Bind(wx.EVT_MENU, self.OnPrintPreview, id=wx.ID_PREVIEW)
-        if wx.Platform != "__WXMAC__":
+        if '__WXMAC__' not in wx.PlatformInfo:
             self.file_menu.AppendSeparator()
         self.file_menu.Append(wx.ID_EXIT, _("E&xit\tAlt+F4"),
             _("Exits the application"))
@@ -54,7 +54,7 @@ class MenuBar(wx.MenuBar):
 
         self.view_menu = wx.Menu()
         self.goto_verse_item = self.view_menu.Append(-1,
-            _("Go to Verse\tCtrl+F"), _("Goes to the specified verse"))
+            _("&Go to Verse"), _("Goes to the specified verse"))
         frame.Bind(wx.EVT_MENU, self.OnGotoVerse, self.goto_verse_item)
         self.view_menu.Append(wx.ID_BACKWARD, _("Go &Back\tAlt+Left"),
             _("Returns to the previous chapter"))
@@ -80,13 +80,13 @@ class MenuBar(wx.MenuBar):
         frame.Bind(wx.EVT_MENU, self.OnToolbar, self.toolbar_item)
         self.view_menu.AppendSeparator()
         self.tree_pane_item = self.view_menu.AppendCheckItem(-1,
-            _("T&ree Pane\tCtrl+Alt+T"), _("Shows or hides the tree pane"))
+            _("T&ree Pane\tCtrl+Shift+T"), _("Shows or hides the tree pane"))
         frame.Bind(wx.EVT_MENU, self.OnTreePane, self.tree_pane_item)
         self.search_pane_item = self.view_menu.AppendCheckItem(-1,
-            _("&Search Pane\tCtrl+Alt+S"), _("Shows or hides the search pane"))
+            _("&Search Pane\tCtrl+Shift+S"), _("Shows or hides the search pane"))
         frame.Bind(wx.EVT_MENU, self.OnSearchPane, self.search_pane_item)
         self.notes_pane_item = self.view_menu.AppendCheckItem(-1,
-            _("&Notes Pane\tCtrl+Alt+N"), _("Shows or hides the notes pane"))
+            _("&Notes Pane\tCtrl+Shift+N"), _("Shows or hides the notes pane"))
         frame.Bind(wx.EVT_MENU, self.OnNotesPane, self.notes_pane_item)
         self.Append(self.view_menu, _("&View"))
 
@@ -125,8 +125,8 @@ class MenuBar(wx.MenuBar):
         self.Append(self.help_menu, _("&Help"))
 
     def update_favorites(self):
-        for id in range(2, self.favorites_menu.GetMenuItemCount() - 3):
-            self.favorites_menu.Remove(id)
+        for i in range(2, self.favorites_menu.GetMenuItemCount() - 3):
+            self.favorites_menu.Remove(wx.ID_HIGHEST + i - 2)
         if len(self.favorites_list):
             for i in range(len(self.favorites_list)):
                 self.favorites_menu.Insert(i + 3, wx.ID_HIGHEST + i,
@@ -144,28 +144,28 @@ class MenuBar(wx.MenuBar):
         dialog.Show()
 
     def OnSaveAs(self, event):
-        self._frame.printer.SaveAs()
+        self._frame.printer.save_as()
 
     def OnPrint(self, event):
-        self._frame.printer.Print()
+        self._frame.printer.print_chapter()
 
     def OnPageSetup(self, event):
         self._frame.printer.PageSetup()
 
     def OnPrintPreview(self, event):
-        self._frame.printer.Preview()
+        self._frame.printer.preview_chapter()
 
     def OnCopy(self, event):
         self._frame.Copy()
 
     def OnGotoVerse(self, event):
-        self._frame.main_toolbar.OnSearch(event)
+        self._frame.toolbar.OnSearch(event)
 
     def OnBack(self, event):
-        self._frame.main_toolbar.OnBack(event)
+        self._frame.toolbar.OnBack(event)
 
     def OnForward(self, event):
-        self._frame.main_toolbar.OnForward(event)
+        self._frame.toolbar.OnForward(event)
 
     def OnZoomIn(self, event):
         self._frame.Zoom(1)
@@ -177,16 +177,20 @@ class MenuBar(wx.MenuBar):
         self._frame.Zoom(0)
 
     def OnToolbar(self, event):
-        self._frame.ShowToolbar(event.IsChecked())
+        self._frame.aui.GetPane("toolbar").Show(event.IsChecked())
+        self._frame.aui.Update()
 
     def OnTreePane(self, event):
-        self._frame.ShowTreePane(event.IsChecked())
+        self._frame.aui.GetPane("tree_pane").Show(event.IsChecked())
+        self._frame.aui.Update()
 
     def OnSearchPane(self, event):
-        self._frame.ShowSearchPane(event.IsChecked())
+        self._frame.aui.GetPane("search_pane").Show(event.IsChecked())
+        self._frame.aui.Update()
 
     def OnNotesPane(self, event):
-        self._frame.ShowNotesPane(event.IsChecked())
+        self._frame.aui.GetPane("notes_pane").Show(event.IsChecked())
+        self._frame.aui.Update()
 
     def OnAddToFavorites(self, event):
         if self._frame.reference[2] == -1:
@@ -195,7 +199,7 @@ class MenuBar(wx.MenuBar):
         else:
             favorite = "%s %s:%s" % (BOOK_NAMES[self._frame.reference[0] - 1],
                 self._frame.reference[1], self._frame.reference[2])
-        if find_favorite(refalize(favorite)) == -1:
+        if find_favorite(refalize(favorite), self.favorites_list) == -1:
             self.favorites_list.append(favorite)
             self.update_favorites()
         else:
@@ -233,7 +237,8 @@ class MenuBar(wx.MenuBar):
 
 class FavoritesManager(wx.Dialog):
     def __init__(self, parent):
-        wx.Dialog.__init__(self, parent, -1, _("Manage Favorites"),
+        super(FavoritesManager, self).__init__(parent, -1,
+            _("Manage Favorites"),
             style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER)
         self._parent = parent
 
@@ -243,11 +248,8 @@ class FavoritesManager(wx.Dialog):
             self.OnListboxEndLabelEdit)
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add(self.listbox, 1, wx.ALL | wx.EXPAND, 5)
-        sizer2 = wx.StdDialogButtonSizer()
-        sizer2.AddButton(wx.Button(self, wx.ID_OK))
-        sizer2.AddButton(wx.Button(self, wx.ID_CANCEL))
-        sizer2.Realize()
-        sizer.Add(sizer2, 0, wx.ALL | wx.EXPAND, 5)
+        button_sizer = self.CreateStdDialogButtonSizer(wx.OK | wx.CANCEL)
+        sizer.Add(button_sizer, 0, wx.ALL | wx.EXPAND, 5)
         self.SetSizer(sizer)
         self.Layout()
         self.Bind(wx.EVT_BUTTON, self.OnOk, id=wx.ID_OK)
@@ -261,7 +263,7 @@ class FavoritesManager(wx.Dialog):
                 wx.MessageBox(_("Sorry, but I do not understand '%s'.\n\nIf you think that Berean should accept it,\nplease email <timothysw@objectmail.com>.") % label, _("Manage Favorites"), wx.ICON_EXCLAMATION | wx.OK)
                 event.Veto()
             else:
-                index = self._parent.menubar.find_favorite(reference, self.listbox.GetStrings())
+                index = find_favorite(reference, self.listbox.GetStrings())
                 if index != -1 and index != event.GetIndex():
                     if reference[2] == -1:
                         wx.MessageBox(_("%s %d is already in the favorites list.") % (BOOK_NAMES[reference[0] - 1], reference[1]), _("Manage Favorites"), wx.ICON_EXCLAMATION | wx.OK)

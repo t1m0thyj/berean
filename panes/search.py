@@ -5,9 +5,9 @@ import os
 import re
 
 import wx
-from wx import html
+from wx import aui, html
 
-from htmlwin import BaseHtmlWindow
+from html import BaseHtmlWindow
 from info import *
 from refalize import validate
 
@@ -15,12 +15,11 @@ _ = wx.GetTranslation
 
 
 def index_version(Bible, version, indexdir):
-    dialog = wx.ProgressDialog(_("Indexing"),
-        _("Please wait, indexing the %s...") % version, 70,
-        style=wx.PD_AUTO_HIDE | wx.PD_ELAPSED_TIME | wx.PD_REMAINING_TIME)
+    dialog = wx.ProgressDialog(_("Indexing %s") % version, "", 70)
     punctuation = re.compile(r'((?<=^)\W+|\W+(?=$))')
     index = {}
     for b in range(1, len(Bible)):
+        dialog.Update(b - 1, _("Processing %s...") % BOOK_NAMES[b - 1])
         for c in range(1, len(Bible[b])):
             for v in range(1, len(Bible[b][c])):
                 verse = Bible[b][c][v]
@@ -34,7 +33,7 @@ def index_version(Bible, version, indexdir):
                             index[word] = []
                         index[word].append("".join([chr(int(i) + 32) for i in (b, c, v)]))
                         words.append(word)
-        dialog.Update(b)
+    dialog.Update(66, _("Saving index..."))
     for word in index:
         index[word] = "".join(index[word])
     dialog.Update(68)
@@ -47,7 +46,7 @@ def index_version(Bible, version, indexdir):
 
 class SearchPane(wx.Panel):
     def __init__(self, parent):
-        wx.Panel.__init__(self, parent, -1)
+        super(SearchPane, self).__init__(parent, -1)
         self._parent = parent
 
         self.frequent = []
@@ -69,7 +68,8 @@ class SearchPane(wx.Panel):
                 self.indexes.append(cPickle.load(index))
                 index.close()
             else:
-                self.indexes.append(index_version(parent.GetBrowser(i).Bible, parent.versions[i], indexdir))
+                self.indexes.append(index_version(parent.GetBrowser(i).Bible,
+                    parent.versions[i], indexdir))
         for option in ("AllWords", "ExactMatch", "Phrase"):
             if parent._app.settings[option] >= wx.CHK_UNDETERMINED:
                 state = parent._app.settings[option] - wx.CHK_UNDETERMINED
@@ -78,24 +78,36 @@ class SearchPane(wx.Panel):
                 state = parent._app.settings[option]
             self.states[option] = state
 
-        self.text = wx.ComboBox(self, -1, choices=parent._app.settings["SearchHistory"], style=wx.TE_PROCESS_ENTER)
+        self.text = wx.ComboBox(self, -1,
+            choices=parent._app.settings["SearchHistory"],
+            style=wx.TE_PROCESS_ENTER)
         self.text.SetValue(parent._app.settings["LastSearch"])
         self.text.Bind(wx.EVT_TEXT_ENTER, self.OnSearch)
-        self.toolbar = wx.ToolBar(self, -1, style=wx.TB_FLAT | wx.TB_NODIVIDER)
-        search_item = self.toolbar.AddLabelTool(-1, "", parent.Bitmap("search"), shortHelp=_("Search"))
+        style = aui.AUI_TB_DEFAULT_STYLE
+        if wx.VERSION_STRING >= "2.9.5.0":
+            style |= aui.AUI_TB_PLAIN_BACKGROUND
+        self.toolbar = aui.AuiToolBar(self, -1, (-1, -1), (-1, -1), style)
+        search_item = self.toolbar.AddTool(-1, "", parent.Bitmap("search"),
+            _("Search"))
         self.toolbar.Bind(wx.EVT_MENU, self.OnSearch, search_item)
-        self.toolbar.AddLabelTool(wx.ID_PRINT, "", parent.Bitmap("print"), shortHelp=_("Print Search Results"))
+        self.toolbar.AddTool(wx.ID_PRINT, "", parent.Bitmap("print"),
+            _("Print Search Results"))
         self.toolbar.EnableTool(wx.ID_PRINT, False)
         self.toolbar.Bind(wx.EVT_MENU, self.OnPrint, id=wx.ID_PRINT)
         self.toolbar.Realize()
         self.results = BaseHtmlWindow(self)
-        self.optionspane = wx.CollapsiblePane(self, -1, _("Options"), style=wx.CP_DEFAULT_STYLE | wx.CP_NO_TLW_RESIZE)
+        self.optionspane = wx.CollapsiblePane(self, -1, _("Options"),
+            style=wx.CP_DEFAULT_STYLE | wx.CP_NO_TLW_RESIZE)
         optionspane = self.optionspane.GetPane()
-        self.AllWords = wx.CheckBox(optionspane, -1, _("All Words in Verse"), style=wx.CHK_3STATE)
+        self.AllWords = wx.CheckBox(optionspane, -1, _("All Words in Verse"),
+            style=wx.CHK_3STATE)
         self.CaseSensitive = wx.CheckBox(optionspane, -1, _("Case Sensitive"))
-        self.ExactMatch = wx.CheckBox(optionspane, -1, _("Exact Match Needed"), style=wx.CHK_3STATE)
-        self.Phrase = wx.CheckBox(optionspane, -1, _("Phrase in Order"), style=wx.CHK_3STATE)
-        self.RegularExpression = wx.CheckBox(optionspane, -1, _("Regular Expression"))
+        self.ExactMatch = wx.CheckBox(optionspane, -1, _("Exact Match Needed"),
+            style=wx.CHK_3STATE)
+        self.Phrase = wx.CheckBox(optionspane, -1, _("Phrase in Order"),
+            style=wx.CHK_3STATE)
+        self.RegularExpression = wx.CheckBox(optionspane, -1,
+            _("Regular Expression"))
         for option in self.options:
             getattr(self, option).Set3StateValue(parent._app.settings[option])
         self.version = wx.Choice(optionspane, -1, choices=parent.versions)
@@ -112,7 +124,7 @@ class SearchPane(wx.Panel):
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer2 = wx.BoxSizer(wx.HORIZONTAL)
         sizer2.Add(self.text, 1, wx.ALL ^ wx.RIGHT, 2)
-        sizer2.Add(self.toolbar, 0, wx.LEFT | wx.RIGHT | wx.ALIGN_CENTER_VERTICAL, 2)
+        sizer2.Add(self.toolbar, 0, wx.ALIGN_CENTER_VERTICAL)
         sizer.Add(sizer2, 0, wx.EXPAND)
         sizer.Add(self.results, 1, wx.EXPAND)
         sizer3 = wx.BoxSizer(wx.VERTICAL)

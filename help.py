@@ -23,7 +23,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 class HelpSystem(html.HtmlHelpController):
     def __init__(self, frame):
-        html.HtmlHelpController.__init__(self, parentWindow=frame)
+        super(HelpSystem, self).__init__(parentWindow=frame)
         self._frame = frame
 
         self.config = wx.FileConfig(localFilename=os.path.join(frame._app.userdatadir, "help.cfg"))
@@ -54,7 +54,7 @@ class HelpSystem(html.HtmlHelpController):
         info.SetName("Berean")
         info.SetVersion(VERSION)
         info.SetCopyright("Copyright (C) 2011-2014 Timothy Johnson")
-        info.SetDescription(_("A free, cross-platform, and open-source Bible study tool"))
+        info.SetDescription(_("A free, open source, cross-platform Bible study tool"))
         info.SetWebSite("http://berean.sf.net")
         info.SetLicense(license)
         wx.AboutBox(info)

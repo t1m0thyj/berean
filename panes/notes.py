@@ -12,7 +12,7 @@ _ = wx.GetTranslation
 
 class NotesPanel(wx.Panel):
     def __init__(self, parent, name):
-        wx.Panel.__init__(self, parent, -1)
+        super(NotesPanel, self).__init__(parent, -1)
         self._frame = parent._parent
 
         self.foreground = wx.SystemSettings.GetColour(
@@ -61,7 +61,7 @@ class NotesPanel(wx.Panel):
         self.font_name.SetSelection(0)
         self.toolbar.AddControl(self.font_name)
         self.font_name.Bind(wx.EVT_CHOICE, self.OnFontName)
-        if wx.Platform != "__WXGTK__":
+        if '__WXGTK__' not in wx.PlatformInfo:
             self.font_size = wx.ComboBox(self.toolbar, -1, "10", choices=sizes,
                 style=wx.TE_PROCESS_ENTER)
         else:
@@ -75,11 +75,11 @@ class NotesPanel(wx.Panel):
             self._frame.Bitmap("font-color"), _("Font Color"))
         self.Bind(wx.EVT_MENU, self.OnFontColor, id=self.ID_FONT_COLOR)
         self.toolbar.AddSeparator()
-        self.toolbar.AddTool(wx.ID_BOLD, "",
-            self._frame.Bitmap("bold"), _("Bold (Ctrl+B)"), wx.ITEM_CHECK)
+        self.toolbar.AddTool(wx.ID_BOLD, "", self._frame.Bitmap("bold"),
+            _("Bold (Ctrl+B)"), wx.ITEM_CHECK)
         self.Bind(wx.EVT_MENU, self.OnBold, id=wx.ID_BOLD)
-        self.toolbar.AddTool(wx.ID_ITALIC, "",
-            self._frame.Bitmap("italic"), _("Italic (Ctrl+I)"), wx.ITEM_CHECK)
+        self.toolbar.AddTool(wx.ID_ITALIC, "", self._frame.Bitmap("italic"),
+            _("Italic (Ctrl+I)"), wx.ITEM_CHECK)
         self.Bind(wx.EVT_MENU, self.OnItalic, id=wx.ID_ITALIC)
         self.toolbar.AddTool(wx.ID_UNDERLINE, "",
             self._frame.Bitmap("underline"), _("Underline (Ctrl+U)"),
@@ -119,7 +119,7 @@ class NotesPanel(wx.Panel):
 
         self.editor = richtext.RichTextCtrl(self, -1, style=wx.BORDER_NONE |
             wx.WANTS_CHARS)
-        if wx.Platform != "__WXGTK__":
+        if '__WXGTK__' not in wx.PlatformInfo:
             self.editor.SetFont(wx.Font(10, wx.DEFAULT, wx.NORMAL, wx.NORMAL,
                 faceName="Arial"))
         else:
@@ -233,7 +233,6 @@ class NotesPanel(wx.Panel):
             self.BeginStyle(style)
 
     def OnFontColor(self, event):
-        self.toolbar.SetToolSticky(self.ID_FONT_COLOR, True)
         style = richtext.RichTextAttr()
         style.SetFlags(wx.TEXT_ATTR_TEXT_COLOUR)
         data = wx.ColourData()
@@ -245,19 +244,8 @@ class NotesPanel(wx.Panel):
         data.SetColour(color)
         data.SetCustomColour(0, self.foreground)
         dialog = wx.ColourDialog(self._frame, data)
-        pos = list(self.toolbar.ClientToScreen(
-            self._frame.main_toolbar.GetPopupPos(self.toolbar,
-            self.ID_FONT_COLOR)))
-        width, height = dialog.GetSize()
-        display = wx.GetDisplaySize()
-        if pos[0] + width > display[0]:
-            pos[0] -= (width - self.toolbar.GetToolRect(self.ID_FONT_COLOR)[2] +
-                wx.SystemSettings.GetMetric(wx.SYS_FRAMESIZE_X) * 2 - 1)
-        if pos[1] + height > display[1]:
-            pos[1] -= (height + self.toolbar.GetToolRect(self.ID_FONT_COLOR)[3] +
-                wx.SystemSettings.GetMetric(wx.SYS_FRAMESIZE_Y) * 2 - 1)
-        dialog.SetPosition(pos)
         dialog.SetTitle(_("Font Color"))
+        dialog.Center()
         if dialog.ShowModal() == wx.ID_OK:
             color = dialog.GetColourData().GetColour()
             style.SetTextColour(color)
@@ -268,7 +256,6 @@ class NotesPanel(wx.Panel):
                 self.editor.SetStyle(self.editor.GetSelectionRange(), style)
             self.foreground = color.GetAsString(wx.C2S_HTML_SYNTAX)
         dialog.Destroy()
-        self.toolbar.SetToolSticky(self.ID_FONT_COLOR, False)
 
     def OnBold(self, event):
         # Toolbar item needs to be toggled if hotkey was used
@@ -441,7 +428,7 @@ class NotesPanel(wx.Panel):
 
 class NotesPane(aui.AuiNotebook):
     def __init__(self, parent):
-        aui.AuiNotebook.__init__(self, parent, -1,
+        super(NotesPane, self).__init__(parent, -1,
             style=(aui.AUI_NB_DEFAULT_STYLE ^ aui.AUI_NB_CLOSE_ON_ACTIVE_TAB ^
                 aui.AUI_NB_MIDDLE_CLICK_CLOSE) | wx.BORDER_NONE)
         self._parent = parent
@@ -449,14 +436,6 @@ class NotesPane(aui.AuiNotebook):
         self.AddPage(NotesPanel(self, _("Study Notes")), _("Study Notes"))
         self.AddPage(NotesPanel(self, _("Topic Notes")), _("Topic Notes"))
         self.SetSelection(parent._app.settings["ActiveNotes"])
-
-        self.Bind(aui.EVT_AUINOTEBOOK_PAGE_CHANGED,
-            self.OnAuiNotebookPageChanged)
-
-    def OnAuiNotebookPageChanged(self, event):
-        page = self.GetPage(event.GetSelection())
-        page.GetSizer().Layout()    # Refresh overflow state of toolbars
-        wx.CallAfter(self.GetCurrentPage().editor.SetFocus)
 
 
 sizes = ["8", "9", "10", "11", "12", "14", "16", "18", "20", "22", "24", "26",
