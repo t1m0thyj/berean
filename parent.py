@@ -6,11 +6,10 @@ import wx
 from wx import aui
 
 import help
-import htmlwin
+import html
 import menu
 import panes
 import parallel
-import printing
 import toolbar
 from info import *
 
@@ -18,12 +17,12 @@ _ = wx.GetTranslation
 
 class MainFrame(wx.Frame):
     def __init__(self, app):
-        wx.Frame.__init__(self, None, -1, "Berean", app.settings["WindowPos"],
-            app.settings["WindowSize"])
+        super(MainFrame, self).__init__(None, -1, "Berean",
+            app.settings["WindowPos"], app.settings["WindowSize"])
         self._app = app
 
         self.help = help.HelpSystem(self)
-        self.printer = printing.Printer(self)
+        self.printer = html.Printer(self)
         self.rect = wx.RectPS(app.settings["WindowPos"],
             app.settings["WindowSize"])
         self.reference = (app.settings["SelectedBook"],
@@ -31,7 +30,7 @@ class MainFrame(wx.Frame):
         self.versions = app.settings["VersionList"]
         self.zoom_level = app.settings["ZoomLevel"]
 
-        self.SetIcons(wx.IconBundleFromFile(os.path.join(app.cwd,
+        self.SetIcons(wx.IconBundleFromFile(os.path.join(app.cwd, "images",
             "berean.ico"), wx.BITMAP_TYPE_ICO))
         versiondir = os.path.join(app.userdatadir, "versions")
         if not os.path.isdir(versiondir):
@@ -67,7 +66,7 @@ class MainFrame(wx.Frame):
                 aui.AUI_NB_WINDOWLIST_BUTTON)
         v = 0
         while v < len(self.versions):
-            window = htmlwin.ChapterWindow(self.notebook, self.versions[v])
+            window = html.ChapterWindow(self.notebook, self.versions[v])
             if hasattr(window, "Bible"):
                 self.notebook.AddPage(window, self.versions[v],
                     v == app.settings["ActiveTab"])
@@ -93,7 +92,7 @@ class MainFrame(wx.Frame):
             aui.AuiPaneInfo().Name("notebook").CenterPane().PaneBorder(False))
 
         self.tree = panes.TreePane(self)
-        self.aui.AddPane(self.tree, aui.AuiPaneInfo().Name("tree_pane").Caption(_("Bible")).Left().Layer(1).BestSize((150, -1)))
+        self.aui.AddPane(self.tree, aui.AuiPaneInfo().Name("tree_pane").Caption(_("Tree")).Left().Layer(1).BestSize((150, -1)))
 
         self.search = panes.SearchPane(self)
         self.aui.AddPane(self.search, aui.AuiPaneInfo().Name("search_pane").Caption(_("Search")).MaximizeButton(True).Right().Layer(1).BestSize((300, -1)))
@@ -216,26 +215,6 @@ class MainFrame(wx.Frame):
         self.menubar.Enable(wx.ID_ZOOM_IN, self.zoom_level < 7)
         self.menubar.Enable(wx.ID_ZOOM_OUT, self.zoom_level > 1)
 
-    def ShowToolbar(self, show=True):
-        self.aui.GetPane("toolbar").Show(show)
-        self.aui.Update()
-
-    def ShowTreePane(self, show=True):
-        self.aui.GetPane("treepane").Show(show)
-        self.aui.Update()
-
-    def ShowSearchPane(self, show=True):
-        self.aui.GetPane("searchpane").Show(show)
-        self.aui.Update()
-        if show:
-            wx.CallAfter(self.search.results.SetFocus)
-
-    def ShowNotesPane(self, show=True):
-        self.aui.GetPane("notespane").Show(show)
-        self.aui.Update()
-        if show:
-            wx.CallAfter(self.notes.editor.SetFocus)
-
     def OnZoomCtrl(self, event):
         self.Zoom(event.GetPosition() - self.zoom_level)
 
@@ -262,8 +241,6 @@ class MainFrame(wx.Frame):
     def OnSize(self, event):
         x, y, width, height = self.statusbar.GetFieldRect(3)
         self.zoombar.SetRect(wx.Rect(x, (y + height - 19) / 2 - self.zoombar.GetToolSeparation(), self.zoombarwidth, -1))
-        if self.aui.GetPane("notespane").IsShown(): # Refresh overflow state of notes pane toolbar if visible
-            wx.CallAfter(self.notes.GetCurrentPage().GetSizer().Layout)
         if self.HasCapture():
             self.rect = wx.RectPS(self.GetPosition(), self.GetSize())
 
@@ -290,7 +267,7 @@ class TaskBarIcon(wx.TaskBarIcon):
     def __init__(self, frame):
         super(TaskBarIcon, self).__init__()
         self._frame = frame
-        self.SetIcon(wx.Icon(os.path.join(frame._app.cwd, "berean.ico"),
+        self.SetIcon(wx.Icon(os.path.join(frame._app.cwd, "images", "berean.ico"),
             wx.BITMAP_TYPE_ICO), frame.GetTitle())
         self.Bind(wx.EVT_TASKBAR_LEFT_DOWN, self.OnRestore)
 

@@ -8,7 +8,7 @@ _ = wx.GetTranslation
 
 class TreePane(wx.TreeCtrl):
     def __init__(self, parent):
-        wx.TreeCtrl.__init__(self, parent, -1, style=wx.TR_DEFAULT_STYLE |
+        super(TreePane, self).__init__(parent, -1, style=wx.TR_DEFAULT_STYLE |
             wx.BORDER_NONE | wx.TR_HIDE_ROOT)
         self._parent = parent
 

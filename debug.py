@@ -64,7 +64,7 @@ def LogError(exception):
                               ", ".join(wx.PlatformInfo),
                               wx.GetDefaultPyEncoding(), VERSION,
                               hasattr(sys, "frozen"))
-            if wx.Platform != "__WXMAC__":
+            if '__WXMAC__' not in wx.PlatformInfo:
                 message = urllib2.quote(message)
             wx.LaunchDefaultBrowser("mailto:timothysw@objectmail.com" \
                 "?subject=Berean Error Report&body=%s" % \

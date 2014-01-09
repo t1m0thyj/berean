@@ -65,7 +65,7 @@ class FileConfig(ConfigParser.RawConfigParser):
 
 class Berean(wx.App):
     def OnInit(self):
-        wx.App.__init__(self)
+        super(Berean, self).__init__()
         self.SetAppName("Berean")
         options, args = getopt.getopt(sys.argv[1:], "",
             ["datadir=", "systemtray"])
@@ -81,7 +81,7 @@ class Berean(wx.App):
                 self.userdatadir = os.path.join(self.cwd, self.userdatadir)
         elif os.path.isfile(os.path.join(self.cwd, "portable.ini")):
             self.userdatadir = self.cwd
-        elif wx.Platform != "__WXGTK__":
+        elif '__WXGTK__' not in wx.PlatformInfo:
             self.userdatadir = os.path.join(wx.StandardPaths.Get(). \
                 GetUserDataDir(), "Berean")
         else:

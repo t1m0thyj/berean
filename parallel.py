@@ -2,7 +2,7 @@
 
 import wx
 
-from htmlwin import HtmlWindow
+from html import HtmlWindow
 
 _ = wx.GetTranslation
 
@@ -73,7 +73,7 @@ class ParallelWindow(HtmlWindow):
 
 class ParallelPanel(wx.Panel):
     def __init__(self, parent):
-        wx.Panel.__init__(self, parent, -1)
+        super(ParallelPanel, self).__init__(parent, -1)
         self._frame = parent.GetParent()
 
         self.choicedata = wx.CustomDataObject("ParallelPanel")
@@ -135,7 +135,7 @@ class ParallelPanel(wx.Panel):
 
 class ChoiceDropTarget(wx.DropTarget):
     def __init__(self, panel, index):
-        wx.DropTarget.__init__(self)
+        super(ChoiceDropTarget, self).__init__()
         self._panel = panel
 
         self.index = index

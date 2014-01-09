@@ -8,26 +8,23 @@ _ = wx.GetTranslation
 
 class PreferencesDialog(wx.Dialog):
     def __init__(self, parent):
-        wx.Dialog.__init__(self, parent, title=_("Preferences"),
+        super(PreferencesDialog, self).__init__(parent, title=_("Preferences"),
             size=(600, 440), style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER)
         self._parent = parent
 
-        self.abbrevs = ("ASV", "KJV", "WBS", "WEB", "WNT", "YLT", "DSV", "LSG",
-            "RVA")
-        self.titles = ("American Standard Version", "King James Version",
-                       "Webster's Bible", "World English Bible",
-                       "Wycliffe New Testament", "Young's Literal Translation",
-                       "Dutch Statenvertaling [Dutch]",
-                       "Louis Segond [French]",
-                       "Reina-Valera Antigua [Spanish]")
+        self.version_abbrevs = ("ASV", "DSV", "KJV", "LSG", "RV1909",
+            "Webster", "WEB", "Wycliffe", "YLT")
+        self.version_names = ("American Standard Version",
+            "Dutch Statenvertaling", "King James Version",
+            "Louis Segond (French)", "Reina Valera 1909 (Spanish)",
+            "Webster's Bible", "World English Bible", "Wycliffe New Testament",
+            "Young's Literal Translation")
 
-        self.listbook = wx.Listbook(self, -1)
-        images = wx.ImageList(24, 24)
-        for name in ("general", "versions"):
-            images.Add(parent.Bitmap(name))
-        self.listbook.AssignImageList(images)
+        self.notebook = wx.Notebook(self, -1)
+        if '__WXMSW__' in wx.PlatformInfo:
+            wx.CallAfter(self.notebook.Refresh)
 
-        self.general = wx.Panel(self.listbook, -1)
+        self.general = wx.Panel(self.notebook, -1)
         self.MinimizeToTray = wx.CheckBox(self.general, -1,
             _("Minimize to system tray"))
         self.MinimizeToTray.SetValue(parent._app.settings["MinimizeToTray"])
@@ -39,32 +36,29 @@ class PreferencesDialog(wx.Dialog):
         sizer.Add(self.MinimizeToTray, 0, wx.ALL, 2)
         sizer.Add(self.AbbrevSearchResults, 0, wx.ALL, 2)
         self.general.SetSizer(sizer)
-        self.listbook.AddPage(self.general, _("General"), True, 0)
+        self.notebook.AddPage(self.general, _("General"))
 
-        self.versions = wx.Panel(self.listbook, -1)
+        self.versions = wx.Panel(self.notebook, -1)
         self.VersionList = wx.CheckListBox(self.versions, -1)
-        for i in range(len(self.abbrevs)):
-            self.VersionList.Append("%s (%s)" % (self.titles[i], self.abbrevs[i]))
-            if self.abbrevs[i] in parent.versions:
+        for i in range(len(self.version_abbrevs)):
+            self.VersionList.Append("%s - %s" % (self.version_names[i],
+                self.version_abbrevs[i]))
+            if self.version_abbrevs[i] in parent.versions:
                 self.VersionList.Check(i)
         self.VersionList.Bind(wx.EVT_CHECKLISTBOX, self.OnVersionList)
         sizer = wx.BoxSizer()
         sizer.Add(self.VersionList, 1, wx.EXPAND)
         self.versions.SetSizer(sizer)
-        self.listbook.AddPage(self.versions, _("Versions*"), False, 1)
+        self.notebook.AddPage(self.versions, _("Versions*"))
 
         sizer = wx.BoxSizer(wx.VERTICAL)
-        sizer.Add(self.listbook, 1, wx.ALL | wx.EXPAND, 5)
+        sizer.Add(self.notebook, 1, wx.ALL | wx.EXPAND, 5)
         statictext = wx.StaticText(self, -1,
             _("*Takes effect after you restart Berean"))
         statictext.SetForegroundColour("#808080")
         sizer.Add(statictext, 0, wx.LEFT | wx.RIGHT, 5)
-        sizer2 = wx.StdDialogButtonSizer()
-        sizer2.AddButton(wx.Button(self, wx.ID_OK))
-        sizer2.AddButton(wx.Button(self, wx.ID_CANCEL))
-        sizer2.AddButton(wx.Button(self, wx.ID_APPLY))
-        sizer2.Realize()
-        sizer.Add(sizer2, 0, wx.ALL | wx.EXPAND, 5)
+        button_sizer = self.CreateStdDialogButtonSizer(wx.OK | wx.CANCEL | wx.APPLY)
+        sizer.Add(button_sizer, 0, wx.ALL | wx.EXPAND, 5)
         self.SetSizer(sizer)
 
         self.Bind(wx.EVT_BUTTON, self.OnOk, id=wx.ID_OK)
@@ -98,9 +92,9 @@ class PreferencesDialog(wx.Dialog):
         self._parent._app.settings["AbbrevSearchResults"] = \
             self.AbbrevSearchResults.GetValue()
         versions = []
-        for i in range(len(self.abbrevs)):
+        for i in range(len(self.version_abbrevs)):
             if self.VersionList.IsChecked(i):
-                versions.append(self.abbrevs[i])
+                versions.append(self.version_abbrevs[i])
         if versions != self._parent.versions:
             for version in self._parent.versions:   # Delete old indexes
                 if version not in versions:

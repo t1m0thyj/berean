@@ -42,7 +42,7 @@ class Target:
         self.copyright = "Copyright \xa9 2011-2014 Timothy Johnson. " \
             "All rights reserved."
         self.description = self.name
-        self.icon_resources = [(1, "berean.ico")]
+        self.icon_resources = [(1, "images\\berean.ico")]
         self.bitmap_resources = []
         self.other_resources = [(24, 1, manifest % self.name)]
         self.script = "berean.py"
