@@ -159,7 +159,7 @@ class MenuBar(wx.MenuBar):
         self._frame.Copy()
 
     def OnGotoVerse(self, event):
-        self._frame.toolbar.OnSearch(event)
+        self._frame.toolbar.OnGotoVerse(event)
 
     def OnBack(self, event):
         self._frame.toolbar.OnBack(event)

@@ -30,8 +30,12 @@ class MainFrame(wx.Frame):
         self.versions = app.settings["VersionList"]
         self.zoom_level = app.settings["ZoomLevel"]
 
-        self.SetIcons(wx.IconBundleFromFile(os.path.join(app.cwd, "images",
-            "berean.ico"), wx.BITMAP_TYPE_ICO))
+        icons = wx.IconBundle()
+        icons.AddIconFromFile(os.path.join(app.cwd, "images", "berean-16.png"),
+            wx.BITMAP_TYPE_PNG)
+        icons.AddIconFromFile(os.path.join(app.cwd, "images", "berean-32.png"),
+            wx.BITMAP_TYPE_PNG)
+        self.SetIcons(icons)
         versiondir = os.path.join(app.userdatadir, "versions")
         if not os.path.isdir(versiondir):
             os.mkdir(versiondir)
@@ -46,7 +50,7 @@ class MainFrame(wx.Frame):
         self.aui.AddPane(self.toolbar,
             aui.AuiPaneInfo().Name("toolbar").Caption("Main Toolbar").ToolbarPane().Top())
 
-        self.statusbar = self.CreateStatusBar(4)
+        self.statusbar = self.CreateStatusBar(2)
         self.zoombar = wx.ToolBar(self.statusbar, -1, style=wx.TB_FLAT | wx.TB_NODIVIDER)
         self.zoombar.AddLabelTool(wx.ID_ZOOM_OUT, "", self.Bitmap("zoom-out"), shortHelp=_("Zoom Out (Ctrl+-)"))
         self.zoombar.EnableTool(wx.ID_ZOOM_OUT, self.zoom_level > 1)
@@ -57,7 +61,10 @@ class MainFrame(wx.Frame):
         self.zoombar.EnableTool(wx.ID_ZOOM_IN, self.zoom_level < 7)
         self.zoombar.Realize()
         self.zoombarwidth = (self.zoombar.GetToolSize()[0] + self.zoombar.GetToolSeparation()) * 2 + self.zoomctrl.GetSize()[0]
-        self.statusbar.SetStatusWidths([-2, -1, -1, self.zoombarwidth + 1])
+        if wx.VERSION_STRING >= "2.9.0.0":
+            self.statusbar.SetStatusWidths([-1, self.zoombarwidth - 8])
+        else:
+            self.statusbar.SetStatusWidths([-1, self.zoombarwidth + 1])
 
         self.notebook = aui.AuiNotebook(self, -1,
             style=(aui.AUI_NB_DEFAULT_STYLE ^ aui.AUI_NB_TAB_MOVE ^
@@ -107,10 +114,6 @@ class MainFrame(wx.Frame):
             layout.close()
 
         self.LoadChapter(self.reference[0], self.reference[1], self.reference[2], True)
-        browser = self.GetBrowser()
-        if app.settings["ActiveTab"] < len(self.versions):
-            self.statusbar.SetStatusText(browser.description, 1)
-        browser.SetFocus()
 
         self.menubar.Check(self.menubar.toolbar_item.GetId(),
             self.aui.GetPane("toolbar").IsShown())
@@ -181,15 +184,12 @@ class MainFrame(wx.Frame):
             page = self.notes.GetPage(i)
             page.SaveText()
             page.LoadText(book, chapter)
-        self.statusbar.SetStatusText("%s %d (%s)" % (BOOK_NAMES[book - 1], chapter, version), 0)
-        if tab < len(self.versions):
-            self.statusbar.SetStatusText(_("%d verses") % (len(browser.Bible[book][chapter]) - 1), 2)
-        else:
-            self.statusbar.SetStatusText(_("%d verses") % browser.verses, 2)
+        self.statusbar.SetStatusText("%s %d (%s)" % (BOOK_NAMES[book - 1], chapter, browser.description), 0)
         self.reference = (book, chapter, verse)
         for i in range(self.notebook.GetPageCount()):
             if i != tab:
                 self.GetBrowser(i).verse = verse
+        wx.CallAfter(browser.SetFocus)
 
     def Copy(self):
         focus = self.FindFocus()
@@ -224,11 +224,9 @@ class MainFrame(wx.Frame):
         browser.LoadChapter(*self.reference)
         version = self.notebook.GetPageText(new)
         self.SetTitle("Berean - %s %d (%s)" % (BOOK_NAMES[self.reference[0] - 1], self.reference[1], version))
-        self.statusbar.SetStatusText("%s %d (%s)" % (BOOK_NAMES[self.reference[0] - 1], self.reference[1], version), 0)
+        self.statusbar.SetStatusText("%s %d (%s)" % (BOOK_NAMES[self.reference[0] - 1], self.reference[1], browser.description), 0)
         if new < len(self.versions):
             self.search.version.SetSelection(new)
-            self.statusbar.SetStatusText(browser.description, 1)
-        wx.CallAfter(browser.SetFocus)
 
     def OnAuiPaneClose(self, event):
         self.menubar.Check(getattr(self.menubar, "%s_item" % event.GetPane().name).GetId(), False)
@@ -239,14 +237,14 @@ class MainFrame(wx.Frame):
         event.Skip()
 
     def OnSize(self, event):
-        x, y, width, height = self.statusbar.GetFieldRect(3)
+        x, y, width, height = self.statusbar.GetFieldRect(1)
         self.zoombar.SetRect(wx.Rect(x, (y + height - 19) / 2 - self.zoombar.GetToolSeparation(), self.zoombarwidth, -1))
         if self.HasCapture():
             self.rect = wx.RectPS(self.GetPosition(), self.GetSize())
 
     def OnIconize(self, event):
-        if self._app.settings["MinimizeToTray"] and event.Iconized() and not hasattr(self, "trayicon"):
-            self.trayicon = menu.TaskBarIcon(self)
+        if self._app.settings["MinimizeToTray"] and event.Iconized() and not hasattr(self, "taskbaricon"):
+            self.taskbaricon = TaskBarIcon(self)
             self.Hide()
         event.Skip()
 
@@ -267,8 +265,8 @@ class TaskBarIcon(wx.TaskBarIcon):
     def __init__(self, frame):
         super(TaskBarIcon, self).__init__()
         self._frame = frame
-        self.SetIcon(wx.Icon(os.path.join(frame._app.cwd, "images", "berean.ico"),
-            wx.BITMAP_TYPE_ICO), frame.GetTitle())
+        self.SetIcon(wx.Icon(os.path.join(frame._app.cwd, "images",
+            "berean-16.png"), wx.BITMAP_TYPE_PNG), frame.GetTitle())
         self.Bind(wx.EVT_TASKBAR_LEFT_DOWN, self.OnRestore)
 
     def OnRestore(self, event):
@@ -277,7 +275,7 @@ class TaskBarIcon(wx.TaskBarIcon):
         self._frame.Raise()
         self.RemoveIcon()
         wx.CallAfter(self._frame.GetBrowser().SetFocus)
-        del self._frame.trayicon
+        del self._frame.taskbaricon
 
     def OnExit(self, event):
         wx.CallAfter(self._frame.Close)

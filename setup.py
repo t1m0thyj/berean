@@ -7,7 +7,7 @@ import glob
 import os
 import shutil
 
-VERSION = "1.4.7"
+VERSION = "1.4.8"
 manifest = """<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0">
     <assemblyIdentity version="0.64.1.0" processorArchitecture="x86"
@@ -42,11 +42,15 @@ class Target:
         self.copyright = "Copyright \xa9 2011-2014 Timothy Johnson. " \
             "All rights reserved."
         self.description = self.name
-        self.icon_resources = [(1, "images\\berean.ico")]
+        self.icon_resources = [(1, "berean.ico")]
         self.bitmap_resources = []
         self.other_resources = [(24, 1, manifest % self.name)]
         self.script = "berean.py"
 
+for imagedir in ("images", "images\\flags"):
+    thumbs = "%s\\Thumbs.db" % imagedir
+    if os.path.isfile(thumbs):
+        os.remove(thumbs)
 if os.path.isdir("dist"):
     shutil.rmtree("dist")
 
@@ -54,8 +58,6 @@ setup(data_files=[("images", glob.glob("images\\*.*")),
         ("images\\flags", glob.glob("images\\flags\\*.*")),
         ("locale\\en_US", glob.glob("locale\\en_US\\*.*")),
         ("locale\\en_US\\help", glob.glob("locale\\en_US\\help\\*.*")),
-        ("locale\\en_US\\help\\images",
-            glob.glob("locale\\en_US\\help\\images\\*.*")),
         ("versions", ["versions\\KJV.bbl", "versions\\WEB.bbl"]),
         ("", ["license.txt"])],
     options={"py2exe": {"optimize": 2,

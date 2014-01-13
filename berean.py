@@ -26,7 +26,7 @@ import wx
 import debug
 import parent
 
-VERSION = debug.VERSION = parent.help.VERSION = "1.4.7"
+VERSION = debug.VERSION = parent.help.VERSION = "1.4.8"
 # Make ConfigParser work with Unicode
 ConfigParser.str = lambda value: value.encode("utf_8")
 
