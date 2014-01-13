@@ -31,7 +31,7 @@ class NotesPanel(wx.Panel):
             (wx.ACCEL_CTRL, ord("E"), wx.ID_JUSTIFY_CENTER),
             (wx.ACCEL_CTRL, ord("R"), wx.ID_JUSTIFY_RIGHT)]))
         filename = os.path.join(self._frame._app.userdatadir,
-            _("%s.notes") % name)
+            "%s.notes" % name)
         if not os.path.isfile(filename):
             new = open(filename, 'wb')
             cPickle.dump({}, new, -1)
@@ -197,7 +197,7 @@ class NotesPanel(wx.Panel):
 
     def OnPrint(self, event):
         if wx.VERSION_STRING >= "2.8.11.0":
-            self._frame.printer.SetName(self.name)
+            self._frame.printer.SetName(_(self.name))
         stream = cStringIO.StringIO()
         richtext.RichTextXMLHandler().SaveStream(self.editor.GetBuffer(),
             stream)
@@ -433,8 +433,8 @@ class NotesPane(aui.AuiNotebook):
                 aui.AUI_NB_MIDDLE_CLICK_CLOSE) | wx.BORDER_NONE)
         self._parent = parent
 
-        self.AddPage(NotesPanel(self, _("Study Notes")), _("Study Notes"))
-        self.AddPage(NotesPanel(self, _("Topic Notes")), _("Topic Notes"))
+        self.AddPage(NotesPanel(self, "Study Notes"), _("Study Notes"))
+        self.AddPage(NotesPanel(self, "Topic Notes"), _("Topic Notes"))
         self.SetSelection(parent._app.settings["ActiveNotes"])
 
 

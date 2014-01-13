@@ -17,8 +17,8 @@ class BaseHtmlWindow(html.HtmlWindow):
         super(BaseHtmlWindow, self).__init__(parent)
 
         self.dragscroller = wx.lib.dragscroller.DragScroller(self)
-
-        self.SetAcceleratorTable(wx.AcceleratorTable([(wx.ACCEL_CTRL, ord("A"), wx.ID_SELECTALL)]))
+        self.SetAcceleratorTable(wx.AcceleratorTable([
+            (wx.ACCEL_CTRL, ord("A"), wx.ID_SELECTALL)]))
 
         self.Bind(wx.EVT_MENU, self.OnSelectAll, id=wx.ID_SELECTALL)
         self.Bind(wx.EVT_MIDDLE_DOWN, self.OnMiddleDown)

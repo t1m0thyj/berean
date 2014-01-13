@@ -3,6 +3,7 @@
 import wx
 
 from html import HtmlWindow
+from info import *
 
 _ = wx.GetTranslation
 
@@ -10,8 +11,6 @@ class ParallelWindow(HtmlWindow):
     def __init__(self, parent):
         super(ParallelWindow, self).__init__(parent, parent.GetGrandParent())
         self._parent = parent
-
-        self.verses = 0
 
         self.SetDescription(self._frame._app.settings["ParallelVersions"])
 
@@ -57,15 +56,14 @@ class ParallelWindow(HtmlWindow):
                     else:
                         items.append("    <td></td>")
                 items.append("  </tr>")
-            self.verses = i
         self.SetDescription(versions)
-        if wx.VERSION_STRING >= "2.9.4.0":
-            self._frame.notebook.SetPageToolTip(len(self._frame.versions), self.description)
         return body % (self._frame.zoom_level, "\n    ".join(items))
 
     def LoadChapter(self, book, chapter, verse=-1):
         self.SetPage(self.GetPage(book, chapter, verse))
-        self._frame.statusbar.SetStatusText(self.description, 1)
+        if wx.VERSION_STRING >= "2.9.4.0":
+            self._frame.notebook.SetPageToolTip(len(self._frame.versions), self.description)
+        self._frame.statusbar.SetStatusText("%s %d (%s)" % (BOOK_NAMES[book - 1], chapter, self.description), 0)
         if verse > 1:
             wx.CallAfter(self.ScrollToAnchor, str(verse))
             self.verse = -1

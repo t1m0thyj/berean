@@ -57,13 +57,12 @@ class PreferencesDialog(wx.Dialog):
             _("*Takes effect after you restart Berean"))
         statictext.SetForegroundColour("#808080")
         sizer.Add(statictext, 0, wx.LEFT | wx.RIGHT, 5)
-        button_sizer = self.CreateStdDialogButtonSizer(wx.OK | wx.CANCEL | wx.APPLY)
+        button_sizer = self.CreateStdDialogButtonSizer(wx.OK | wx.CANCEL)
         sizer.Add(button_sizer, 0, wx.ALL | wx.EXPAND, 5)
         self.SetSizer(sizer)
 
         self.Bind(wx.EVT_BUTTON, self.OnOk, id=wx.ID_OK)
         self.Bind(wx.EVT_BUTTON, self.OnCancel, id=wx.ID_CANCEL)
-        self.Bind(wx.EVT_BUTTON, self.OnApply, id=wx.ID_APPLY)
 
     def OnVersionList(self, event):
         item = event.GetInt()
@@ -80,13 +79,6 @@ class PreferencesDialog(wx.Dialog):
                     _("Berean"), wx.ICON_EXCLAMATION | wx.OK)
 
     def OnOk(self, event):
-        self.OnApply(None)
-        self.Destroy()
-
-    def OnCancel(self, event):
-        self.Destroy()
-
-    def OnApply(self, event):
         self._parent._app.settings["MinimizeToTray"] = \
             self.MinimizeToTray.GetValue()
         self._parent._app.settings["AbbrevSearchResults"] = \
@@ -102,3 +94,7 @@ class PreferencesDialog(wx.Dialog):
                         self._parent._app.userdatadir, "indexes",
                         "%s.idx" % version))
             self._parent.versions = versions
+        self.Destroy()
+
+    def OnCancel(self, event):
+        self.Destroy()
