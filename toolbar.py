@@ -24,29 +24,30 @@ class MainToolBar(aui.AuiToolBar):
         self.verse_entry.Bind(wx.EVT_TEXT_ENTER, self.OnGotoVerse)
         self.AddControl(self.verse_entry)
         self.AddTool(parent.menubar.goto_verse_item.GetId(), "",
-            parent.Bitmap("goto-verse"), _("Go to Verse"))
+            parent.get_bitmap("goto-verse"), _("Go to Verse"))
         self.AddSeparator()
-        self.AddTool(wx.ID_BACKWARD, _("Back"), parent.Bitmap("go-back"),
+        self.AddTool(wx.ID_BACKWARD, _("Back"), parent.get_bitmap("go-back"),
             _("Go Back (Alt+Left)"))
         self.SetToolDropDown(wx.ID_BACKWARD, True)
         self.Bind(wx.EVT_MENU, self.OnBack, id=wx.ID_BACKWARD)
         self.Bind(aui.EVT_AUITOOLBAR_TOOL_DROPDOWN, self.OnBackDropdown,
             id=wx.ID_BACKWARD)
-        self.AddTool(wx.ID_FORWARD, _("Forward"), parent.Bitmap("go-forward"),
-            _("Go Forward (Alt+Right)"))
+        self.AddTool(wx.ID_FORWARD, _("Forward"),
+            parent.get_bitmap("go-forward"), _("Go Forward (Alt+Right)"))
         self.SetToolDropDown(wx.ID_FORWARD, True)
         self.Bind(wx.EVT_MENU, self.OnForward, id=wx.ID_FORWARD)
         self.Bind(aui.EVT_AUITOOLBAR_TOOL_DROPDOWN, self.OnForwardDropdown,
             id=wx.ID_FORWARD)
         self.AddSeparator()
-        self.AddTool(wx.ID_PRINT, "", parent.Bitmap("print"),
+        self.AddTool(wx.ID_PRINT, "", parent.get_bitmap("print"),
             _("Print (Ctrl+P)"))
-        self.AddTool(wx.ID_COPY, "", parent.Bitmap("copy"), _("Copy (Ctrl+C)"))
+        self.AddTool(wx.ID_COPY, "", parent.get_bitmap("copy"),
+            _("Copy (Ctrl+C)"))
         self.AddSeparator()
         self.AddTool(parent.menubar.add_to_favorites_item.GetId(), "",
-            parent.Bitmap("add-favorite"), _("Add to Favorites (Ctrl+D)"))
+            parent.get_bitmap("add-favorite"), _("Add to Favorites (Ctrl+D)"))
         self.AddTool(parent.menubar.manage_favorites_item.GetId(), "",
-            parent.Bitmap("manage-favorites"), _("Manage Favorites"))
+            parent.get_bitmap("manage-favorites"), _("Manage Favorites"))
 
         self.Refresh(False)
 
@@ -83,7 +84,7 @@ class MainToolBar(aui.AuiToolBar):
                 elif (not 1 <= verse < len(Bible[book][chapter])) and verse != -1:
                     wx.MessageBox(_("%s chapter %d has only %d verses.") % (BOOK_NAMES[book - 1], chapter, len(Bible[book][chapter]) - 1), "Berean", wx.ICON_EXCLAMATION | wx.OK)
                     return
-                self._parent.LoadChapter(book, chapter, verse)
+                self._parent.load_chapter(book, chapter, verse)
                 if reference not in self.verse_entry.GetStrings():
                     self.verse_entry.Insert(reference, 0)
                     if self.verse_entry.GetCount() > 10:
@@ -100,34 +101,36 @@ class MainToolBar(aui.AuiToolBar):
     def OnBack(self, event):
         book, chapter, verse = refalize(
             self.verse_history[self.history_item - 1])
-        self._parent.LoadChapter(book, chapter, verse, True)
+        self._parent.load_chapter(book, chapter, verse, True)
 
     def OnBackDropdown(self, event):
         if event.IsDropDownClicked():
             self.SetToolSticky(wx.ID_BACKWARD, True)
             menu = wx.Menu()
             for i in reversed(range(0, self.history_item)):
-                menu.Append(wx.ID_HIGHEST + i, self.verse_history[i])
-                self.Bind(wx.EVT_MENU, self.OnHistoryItem, id=wx.ID_HIGHEST + i)
+                menu.Append(wx.ID_HIGHEST + i + 1, self.verse_history[i])
+                self.Bind(wx.EVT_MENU, self.OnHistoryItem, id=wx.ID_HIGHEST +
+                    i + 1)
             self.PopupMenu(menu, self.get_popup_pos(self, wx.ID_BACKWARD))
             self.SetToolSticky(wx.ID_BACKWARD, False)
 
     def OnHistoryItem(self, event):
         book, chapter, verse = refalize(
-            self.verse_history[event.GetId() - wx.ID_HIGHEST])
-        self._parent.LoadChapter(book, chapter, verse, True)
+            self.verse_history[event.GetId() - wx.ID_HIGHEST - 1])
+        self._parent.load_chapter(book, chapter, verse, True)
 
     def OnForward(self, event):
         book, chapter, verse = refalize(
             self.verse_history[self.history_item + 1])
-        self._parent.LoadChapter(book, chapter, verse, True)
+        self._parent.load_chapter(book, chapter, verse, True)
 
     def OnForwardDropdown(self, event):
         if event.IsDropDownClicked():
             self.SetToolSticky(wx.ID_FORWARD, True)
             menu = wx.Menu()
             for i in range(self.history_item + 1, len(self.verse_history)):
-                menu.Append(wx.ID_HIGHEST + i, self.verse_history[i])
-                self.Bind(wx.EVT_MENU, self.OnHistoryItem, id=wx.ID_HIGHEST + i)
+                menu.Append(wx.ID_HIGHEST + i + 1, self.verse_history[i])
+                self.Bind(wx.EVT_MENU, self.OnHistoryItem, id=wx.ID_HIGHEST +
+                    i + 1)
             self.PopupMenu(menu, self.get_popup_pos(self, wx.ID_FORWARD))
             self.SetToolSticky(wx.ID_FORWARD, False)

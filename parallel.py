@@ -2,16 +2,15 @@
 
 import wx
 
-from html import HtmlWindow
+from html import BaseChapterWindow
 from info import *
 
 _ = wx.GetTranslation
 
-class ParallelWindow(HtmlWindow):
+class ParallelWindow(BaseChapterWindow):
     def __init__(self, parent):
         super(ParallelWindow, self).__init__(parent, parent.GetGrandParent())
         self._parent = parent
-
         self.SetDescription(self._frame._app.settings["ParallelVersions"])
 
     def SetDescription(self, versions):
@@ -42,24 +41,20 @@ class ParallelWindow(HtmlWindow):
             items.append("  </tr>")
             for i in range(1, max([len(Bible[book][chapter]) for Bible in Bibles])):
                 items.append("  <tr>")
-                if i < len(Bibles[0][book][chapter]):
-                    items.append("    <td><font size=-1>%d&nbsp;</font>%s<a name=\"%d\"></a></td>" % (i, Bibles[0][book][chapter][i].replace("[", "<i>").replace("]", "</i>"), i + 1))
-                    if i == verse:
-                        items[-1] = "<b>%s</b>" % items[-1]
-                else:
-                    items.append("    <td><a name=\"%d\"></a></td>" % (i + 1))
-                for j in range(1, len(Bibles)):
+                for j in range(len(Bibles)):
                     if i < len(Bibles[j][book][chapter]) and len(Bibles[j][book][chapter][i]):
                         items.append("    <td><font size=-1>%d&nbsp;</font>%s</td>" % (i, Bibles[j][book][chapter][i].replace("[", "<i>").replace("]", "</i>")))
                         if i == verse:
-                            items[-1] = "<b>%s</b>" % items[-1]
+                            items[-1] = "    <td><b>%s</b></td>" % items[-1][8:-5]
                     else:
                         items.append("    <td></td>")
+                    if j == 0:
+                        items[-1] = items[-1][:8] + "<a name=\"%d\"></a>" % i + items[-1][8:]
                 items.append("  </tr>")
         self.SetDescription(versions)
         return body % (self._frame.zoom_level, "\n    ".join(items))
 
-    def LoadChapter(self, book, chapter, verse=-1):
+    def load_chapter(self, book, chapter, verse=-1):
         self.SetPage(self.GetPage(book, chapter, verse))
         if wx.VERSION_STRING >= "2.9.4.0":
             self._frame.notebook.SetPageToolTip(len(self._frame.versions), self.description)
@@ -127,7 +122,7 @@ class ParallelPanel(wx.Panel):
                     self.choices[i + 1].Disable()
         elif index < len(self.choices) - 1:
             self.choices[index + 1].Enable()
-        self._frame.parallel.LoadChapter(*self._frame.reference)
+        self._frame.parallel.load_chapter(*self._frame.reference)
         wx.CallAfter(self._frame.parallel.SetFocus)
 
 
@@ -152,7 +147,7 @@ class ChoiceDropTarget(wx.DropTarget):
             old = self._panel.choices[self.index].GetSelection()
             self._panel.choices[self.index].SetSelection(new)
             self._panel.choices[index].SetSelection(old)
-            self._panel._frame.parallel.LoadChapter(*self._panel._frame.reference)
+            self._panel._frame.parallel.load_chapter(*self._panel._frame.reference)
         return default
 
 body = """<html>

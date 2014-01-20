@@ -43,7 +43,7 @@ def LogError(exception):
     if error:
         return
     error = True
-    details = "".join(traceback.format_exception(*exception))
+    details = "".join(traceback.format_exception(*exception)).rstrip()
     if wx.VERSION_STRING >= "2.9.3.0":
         dialog = wx.MessageDialog(None,
             _("An error occurred in the application."), _("Error"),

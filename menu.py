@@ -5,6 +5,7 @@ import os
 import wx
 from wx import gizmos
 
+from info import *
 from refalize import *
 
 _ = wx.GetTranslation
@@ -126,16 +127,16 @@ class MenuBar(wx.MenuBar):
 
     def update_favorites(self):
         for i in range(2, self.favorites_menu.GetMenuItemCount() - 3):
-            self.favorites_menu.Remove(wx.ID_HIGHEST + i - 2)
+            self.favorites_menu.Remove(wx.ID_HIGHEST + i - 1)
         if len(self.favorites_list):
             for i in range(len(self.favorites_list)):
-                self.favorites_menu.Insert(i + 3, wx.ID_HIGHEST + i,
+                self.favorites_menu.Insert(i + 3, wx.ID_HIGHEST + i + 1,
                     self.favorites_list[i])
                 self._frame.Bind(wx.EVT_MENU, self.OnFavorite,
-                    id=wx.ID_HIGHEST + i)
+                    id=wx.ID_HIGHEST + i + 1)
         else:
-            empty_item = self.favorites_menu.Insert(3, -1, _("(Empty)"))
-            self.favorites_menu.Enable(empty_item.GetId(), False)
+            self.favorites_menu.Insert(3, wx.ID_HIGHEST + 1, _("(Empty)"))
+            self.favorites_menu.Enable(wx.ID_HIGHEST + 1, False)
 
     def multiple_verse_search(self, references=None):
         from dialogs import multiple_verse_search
@@ -185,8 +186,7 @@ class MenuBar(wx.MenuBar):
         self._frame.aui.Update()
 
     def OnSearchPane(self, event):
-        self._frame.aui.GetPane("search_pane").Show(event.IsChecked())
-        self._frame.aui.Update()
+        self._frame.ShowSearchPane(event.IsChecked())
 
     def OnNotesPane(self, event):
         self._frame.aui.GetPane("notes_pane").Show(event.IsChecked())
@@ -211,9 +211,9 @@ class MenuBar(wx.MenuBar):
         dialog.Show()
 
     def OnFavorite(self, event):
-        reference = self.favorites_list[wx.ID_HIGHEST - event.GetId()]
+        reference = self.favorites_list[event.GetId() - wx.ID_HIGHEST - 1]
         try:
-            self._frame.LoadChapter(*refalize(reference))
+            self._frame.load_chapter(*refalize(reference))
         except:
             wx.MessageBox(_("Sorry, but I do not understand '%s'.\n\nIf you think that Berean should accept it,\nplease email <timothysw@objectmail.com>.") % reference, "Berean", wx.ICON_EXCLAMATION | wx.OK)
 

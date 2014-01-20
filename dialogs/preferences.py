@@ -13,9 +13,9 @@ class PreferencesDialog(wx.Dialog):
         self._parent = parent
 
         self.version_abbrevs = ("ASV", "DSV", "KJV", "LSG", "RV1909",
-            "Webster", "WEB", "Wycliffe", "YLT")
+            "WEB", "Webster", "Wycliffe", "YLT")
         self.version_names = ("American Standard Version",
-            "Dutch Statenvertaling", "King James Version",
+            "Dutch Statenvertaling (Dutch)", "King James Version",
             "Louis Segond (French)", "Reina Valera 1909 (Spanish)",
             "Webster's Bible", "World English Bible", "Wycliffe New Testament",
             "Young's Literal Translation")
