@@ -87,10 +87,10 @@ class SearchPane(wx.Panel):
         if wx.VERSION_STRING >= "2.9.5.0":
             style |= aui.AUI_TB_PLAIN_BACKGROUND
         self.toolbar = aui.AuiToolBar(self, -1, (-1, -1), (-1, -1), style)
-        search_item = self.toolbar.AddTool(-1, "", parent.Bitmap("search"),
+        search_item = self.toolbar.AddTool(-1, "", parent.get_bitmap("search"),
             _("Search"))
         self.toolbar.Bind(wx.EVT_MENU, self.OnSearch, search_item)
-        self.toolbar.AddTool(wx.ID_PRINT, "", parent.Bitmap("print"),
+        self.toolbar.AddTool(wx.ID_PRINT, "", parent.get_bitmap("print"),
             _("Print Search Results"))
         self.toolbar.EnableTool(wx.ID_PRINT, False)
         self.toolbar.Bind(wx.EVT_MENU, self.OnPrint, id=wx.ID_PRINT)
@@ -111,6 +111,13 @@ class SearchPane(wx.Panel):
         for option in self.options:
             getattr(self, option).Set3StateValue(parent._app.settings[option])
         self.version = wx.Choice(optionspane, -1, choices=parent.versions)
+        ranges = map(_, ("Entire Bible", "Old Testament",
+            "Pentateuch (Gen - Deut)", "History (Josh - Esth)",
+            "Wisdom (Job - Song)", "Major Prophets (Isa - Dan)",
+            "Minor Prophets (Hos - Mal)", "New Testament",
+            "Gospels & Acts (Matt - Acts)", "Paul's Letters (Rom - Heb)",
+            "General Letters (Jas - Jude)", "Apocalypse (Rev)",
+            "Just Current Book", "Custom..."))
         self.rangechoice = wx.Choice(optionspane, -1, choices=ranges)
         self.rangechoice.SetSelection(0)
         self.start = wx.Choice(optionspane, -1, choices=BOOK_NAMES)
@@ -164,7 +171,7 @@ class SearchPane(wx.Panel):
         text = self.text.GetValue()
         if not len(text):
             return
-        elif validate(text, True):
+        elif validate(text, False):
             self.text.SetValue(self.text.GetString(0))
             self._parent.toolbar.reference.SetValue(text)
             self._parent.toolbar.OnSearch(None)
@@ -334,7 +341,7 @@ class SearchPane(wx.Panel):
     def OnHtmlLinkClicked(self, event):
         if self._parent.notebook.GetPageText(self._parent.notebook.GetSelection()) != self.lastversion:
             self._parent.notebook.SetSelection(self._parent.versions.index(self.lastversion))
-        self._parent.LoadChapter(*[int(item) for item in event.GetLinkInfo().GetHref().split(".")])
+        self._parent.load_chapter(*[int(item) for item in event.GetLinkInfo().GetHref().split(".")])
 
     def OnKeyDown(self, event):
         if wx.MOD_CONTROL & event.GetModifiers() and event.GetKeyCode() == ord("A"):
@@ -422,15 +429,3 @@ class SearchPane(wx.Panel):
 
     def OnCollapsiblePaneChanged(self, event):
         self.Layout()
-
-abbrevs = {"jdg": 7, "1kgs": 11, "2kgs": 12, "ca": 22, "can": 22, "cant": 22,
-    "canti": 22, "cantic": 22, "canticl": 22, "canticle": 22, "canticles": 22,
-    "mk": 41, "mrk": 41, "lk": 42, "jh": 43, "jhn": 43, "php": 50, "phm": 57,
-    "jas": 59, "1jh": 62, "1jhn": 62, "2jh": 63, "2jhn": 63, "3jh": 64,
-    "3jhn": 64, "jde": 65}
-ranges = map(_, ["Entire Bible", "Old Testament", "Pentateuch (Gen - Deut)",
-    "History (Josh - Esth)", "Wisdom (Job - Song)", "Major Prophets (Isa - Dan)",
-    "Minor Prophets (Hos - Mal)", "New Testament",
-    "Gospels & Acts (Matt - Acts)", "Paul's Letters (Rom - Heb)",
-    "General Letters (Jas - Jude)", "Apocalypse (Rev)", "Just Current Book",
-    "Custom..."])

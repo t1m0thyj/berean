@@ -54,7 +54,7 @@ class HelpSystem(html.HtmlHelpController):
         info.SetName("Berean")
         info.SetVersion(VERSION)
         info.SetCopyright("Copyright (C) 2011-2014 Timothy Johnson")
-        info.SetDescription(_("A free, open source, cross-platform Bible study tool"))
+        info.SetDescription(_("An open source, cross-platform Bible study tool"))
         info.SetWebSite("http://berean.sf.net")
         info.SetLicense(license)
         wx.AboutBox(info)

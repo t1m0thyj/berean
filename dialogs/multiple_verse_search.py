@@ -34,13 +34,13 @@ class MultipleVerseSearchDialog(wx.Dialog):
         self.toolbar.AddControl(self.version)
         self.toolbar.AddSeparator()
         search_item = self.toolbar.AddTool(-1, _("Search"),
-            parent.Bitmap("search"), _("Search (Ctrl+Enter)"))
+            parent.get_bitmap("search"), _("Search (Ctrl+Enter)"))
         self.Bind(wx.EVT_MENU, self.OnSearch, search_item)
-        self.toolbar.AddTool(wx.ID_PRINT, _("Print"), parent.Bitmap("print"),
-            _("Print Search Results"))
+        self.toolbar.AddTool(wx.ID_PRINT, _("Print"),
+            parent.get_bitmap("print"), _("Print Search Results"))
         self.toolbar.EnableTool(wx.ID_PRINT, False)
         self.Bind(wx.EVT_MENU, self.OnPrint, id=wx.ID_PRINT)
-        self.toolbar.AddTool(wx.ID_COPY, _("Copy"), parent.Bitmap("copy"),
+        self.toolbar.AddTool(wx.ID_COPY, _("Copy"), parent.get_bitmap("copy"),
             _("Copy with Formatting"))
         self.toolbar.EnableTool(wx.ID_COPY, False)
         self.toolbar.Realize()
@@ -137,7 +137,7 @@ class MultipleVerseSearchDialog(wx.Dialog):
                 self._parent.notebook.GetSelection()) != self.last_version:
             self._parent.notebook.SetSelection(
                 self._parent.versions.index(self.last_version))
-        self._parent.LoadChapter(*[int(item) for item in \
+        self._parent.load_chapter(*[int(item) for item in \
             event.GetLinkInfo().GetHref().split(".")])
 
     def OnContextMenu(self, event):
