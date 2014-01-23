@@ -153,7 +153,7 @@ class NotesPanel(wx.Panel):
         self.toolbar.EnableTool(wx.ID_CUT, self.editor.CanCut())
         self.toolbar.EnableTool(wx.ID_COPY, self.editor.CanCopy())
         style = richtext.RichTextAttr()
-        style.SetFlags(wx.TEXT_ATTR_FONT_FACE | wx.TEXT_ATTR_FONT_SIZE)
+        style.SetFlags(wx.TEXT_ATTR_FONT)
         if self.editor.GetStyle(self.editor.GetInsertionPoint(), style):
             font = style.GetFont()
             self.font_name.SetStringSelection(font.GetFaceName())
@@ -407,9 +407,8 @@ class NotesPanel(wx.Panel):
 
 class NotesPane(aui.AuiNotebook):
     def __init__(self, parent):
-        super(NotesPane, self).__init__(parent, -1,
-            style=(aui.AUI_NB_DEFAULT_STYLE ^ aui.AUI_NB_CLOSE_ON_ACTIVE_TAB ^
-                aui.AUI_NB_MIDDLE_CLICK_CLOSE) | wx.BORDER_NONE)
+        super(NotesPane, self).__init__(parent, -1, style=wx.BORDER_NONE |
+            aui.AUI_NB_TOP | aui.AUI_NB_TAB_SPLIT | aui.AUI_NB_SCROLL_BUTTONS)
         self.AddPage(NotesPanel(self, "Study Notes"), _("Study Notes"))
         self.AddPage(NotesPanel(self, "Topic Notes"), _("Topic Notes"))
         self.SetSelection(parent._app.settings["ActiveNotes"])

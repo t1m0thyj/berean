@@ -77,7 +77,7 @@ class MainToolBar(aui.AuiToolBar):
         if validate(reference):
             try:
                 book, chapter, verse = refalize(reference)
-                Bible = self._parent.GetBrowser(0).Bible
+                Bible = self._parent.get_htmlwindow(0).Bible
                 if not 1 <= chapter < len(Bible[book]):
                     wx.MessageBox(_("The book of %s has only %d chapters.") % (BOOK_NAMES[book - 1], len(Bible[book]) - 1), "Berean", wx.ICON_EXCLAMATION | wx.OK)
                     return
