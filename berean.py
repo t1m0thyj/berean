@@ -36,22 +36,22 @@ class FileConfig(ConfigParser.RawConfigParser):
 
         self.optionxform = str  # Don't make option names lowercase
 
-    def get_unicode(self, section, option):
+    def getunicode(self, section, option):
         return self.get(section, option).decode("utf_8")
 
-    def get_list(self, section, option=None):
+    def getlist(self, section, option=None):
         if option:
             section = "%s\\%s" % (section, option)
         option = "Item1"
         sequence = []
         i = 1
         while self.has_option(section, option):
-            sequence.append(self.get_unicode(section, option))
+            sequence.append(self.getunicode(section, option))
             i += 1
             option = "Item%d" % i
         return sequence
 
-    def set_list(self, section, option, value):
+    def setlist(self, section, option, value):
         if option:
             section = "%s\\%s" % (section, option)
         if not self.has_section(section):
@@ -138,9 +138,9 @@ class Berean(wx.App):
             "ExactMatch": False, "Phrase": False, "RegularExpression": False,
             "SearchHistory": [], "LastVerses": ""}
         if self.config.has_option("Main", "WindowPos"):
-            self.settings["WindowPos"] = map(int, self.config.get_unicode("Main", "WindowPos").split(","))
+            self.settings["WindowPos"] = map(int, self.config.getunicode("Main", "WindowPos").split(","))
         if self.config.has_option("Main", "WindowSize"):
-            self.settings["WindowSize"] = map(int, self.config.get_unicode("Main", "WindowSize").split(","))
+            self.settings["WindowSize"] = map(int, self.config.getunicode("Main", "WindowSize").split(","))
         if not (0 - self.settings["WindowSize"][0] < self.settings["WindowPos"][0] < display_size[0] and 0 - self.settings["WindowSize"][1] < self.settings["WindowPos"][1] < display_size[1]):
             self.settings["WindowPos"] = wx.DefaultPosition
             self.settings["WindowSize"] = best_size
@@ -151,30 +151,30 @@ class Berean(wx.App):
             if self.config.has_option("Main", option):
                 self.settings[option] = self.config.getint("Main", option)
         if self.config.has_option("Main", "LastReference"):
-            self.settings["LastReference"] = self.config.get_unicode("Main", "LastReference")
+            self.settings["LastReference"] = self.config.getunicode("Main", "LastReference")
         if self.config.has_section("VersionList"):
-            self.settings["VersionList"] = self.config.get_list("VersionList")
+            self.settings["VersionList"] = self.config.getlist("VersionList")
         if self.config.has_section("ParallelVersions"):
-            self.settings["ParallelVersions"] = self.config.get_list("ParallelVersions")
+            self.settings["ParallelVersions"] = self.config.getlist("ParallelVersions")
         if self.config.has_section("FavoritesList"):
-            self.settings["FavoritesList"] = self.config.get_list("FavoritesList")
+            self.settings["FavoritesList"] = self.config.getlist("FavoritesList")
         if self.config.has_section("ReferenceHistory"):
-            self.settings["ReferenceHistory"] = self.config.get_list("ReferenceHistory")
+            self.settings["ReferenceHistory"] = self.config.getlist("ReferenceHistory")
         if self.config.has_section("ChapterHistory"):
-            self.settings["ChapterHistory"] = self.config.get_list("ChapterHistory")
+            self.settings["ChapterHistory"] = self.config.getlist("ChapterHistory")
         if self.config.has_option("Search", "AbbrevSearchResults"):
             self.settings["AbbrevSearchResults"] = self.config.getboolean("Search", "AbbrevSearchResults")
         if self.config.has_option("Search", "LastSearch"):
-            self.settings["LastSearch"] = self.config.get_unicode("Search", "LastSearch")
+            self.settings["LastSearch"] = self.config.getunicode("Search", "LastSearch")
         if self.config.has_option("Search", "OptionsPane"):
             self.settings["OptionsPane"] = self.config.getboolean("Search", "OptionsPane")
         for option in ("AllWords", "CaseSensitive", "ExactMatch", "Phrase", "RegularExpression"):
             if self.config.has_option("Search", option):
                 self.settings[option] = self.config.getint("Search", option)
         if self.config.has_option("Search", "LastVerses"):
-            self.settings["LastVerses"] = self.config.get_unicode("Search", "LastVerses")
+            self.settings["LastVerses"] = self.config.getunicode("Search", "LastVerses")
         if self.config.has_section("Search\\SearchHistory"):
-            self.settings["SearchHistory"] = self.config.get_list("Search", "SearchHistory")
+            self.settings["SearchHistory"] = self.config.getlist("Search", "SearchHistory")
 
     def save_settings(self):
         if not self.config.has_section("Main"):
@@ -190,20 +190,23 @@ class Berean(wx.App):
         self.config.set("Main", "ActiveTab", str(self.frame.notebook.GetSelection()))
         self.config.set("Main", "LastReference", self.frame.toolbar.verse_entry.GetValue())
         self.config.set("Main", "ActiveNotes", str(self.frame.notes.GetSelection()))
-        self.config.set_list("VersionList", None, self.frame.versions)
-        parallel = []
-        if hasattr(self.frame, "parallel") and len(self.frame.versions) > 1:
-            for i, choice in enumerate(self.frame.parallel._parent.choices):
-                if choice.GetSelection() > 0 or i == 0:
-                    parallel.append(choice.GetStringSelection())
-        self.config.set_list("ParallelVersions", None, parallel)
-        self.config.set_list("FavoritesList", None, self.frame.menubar.favorites_list)
-        self.config.set_list("ReferenceHistory", None, self.frame.toolbar.verse_entry.GetStrings())
-        self.config.set_list("ChapterHistory", None, self.frame.toolbar.verse_history)
+        self.config.setlist("VersionList", None, self.frame.versions)
+        ParallelVersions = []
+        if hasattr(self.frame, "parallel"):
+            for i, choice in enumerate(self.frame.parallel.choices):
+                if i > 0 and choice.GetSelection() == 0:
+                    continue
+                version = choice.GetStringSelection()
+                if version in self.frame.versions:
+                    ParallelVersions.append(version)
+        self.config.setlist("ParallelVersions", None, ParallelVersions)
+        self.config.setlist("FavoritesList", None, self.frame.menubar.favorites_list)
+        self.config.setlist("ReferenceHistory", None, self.frame.toolbar.verse_entry.GetStrings())
+        self.config.setlist("ChapterHistory", None, self.frame.toolbar.verse_history)
         if not self.config.has_section("Search"):
             self.config.add_section("Search")
         self.config.set("Search", "AbbrevSearchResults", str(self.settings["AbbrevSearchResults"]))
-        self.config.set_list("Search", "SearchHistory", self.frame.search.text.GetStrings())
+        self.config.setlist("Search", "SearchHistory", self.frame.search.text.GetStrings())
         self.config.set("Search", "LastSearch", self.frame.search.text.GetValue())
         self.config.set("Search", "OptionsPane", str(self.frame.search.optionspane.IsExpanded()))
         for option in self.frame.search.options:

@@ -72,7 +72,7 @@ class MultipleVerseSearchDialog(wx.Dialog):
     def OnSearch(self, event):
         try:
             version = self.version.GetStringSelection()
-            browser = self._parent.GetBrowser(
+            browser = self._parent.get_htmlwindow(
                 self._parent.versions.index(version))
             data = refalize2(self.references.GetValue(), browser.Bible)
             results = []
@@ -100,7 +100,7 @@ class MultipleVerseSearchDialog(wx.Dialog):
                                         elif not v:
                                             result.append("<p><a href='%d.%d.-1'>%s %d</a></p>" % (b, c, books[b - 1], c))
                                         elif len(browser.Bible[b][c][v]):
-                                            result.append("<font size=-1><a href='%d.%d.%d'>%d</a>&nbsp;</font>%s" % (b, c, v, v, browser.Bible[b][c][v]))
+                                            result.append("<font size=\"-1\"><a href='%d.%d.%d'>%d</a>&nbsp;</font>%s" % (b, c, v, v, browser.Bible[b][c][v]))
                                         else:
                                             result.append("")
                         if not len(result):
@@ -115,7 +115,7 @@ class MultipleVerseSearchDialog(wx.Dialog):
                         results.append("<p><a href='%d.%d.%d'>%s %d:%d-%d:%d</a><br />%s</p>" % (b1, c1, v1, books[b1 - 1], c1, v1, c2, v2, " ".join(result)))
                     else:
                         results.append("<p><a href='%d.%d.%d'>%s %d:%d - %s %d:%d</a><br />%s</p>" % (b1, c1, v1, books[b1 - 1], c1, v1, books[b2 - 1], c2, v2, " ".join(result)))
-            self.html = "<html><body><font size=%d>%s</font></body></html>" % (self._parent.zoom_level, "".join(results))
+            self.html = "<html><body><font size=\"%d\">%s</font></body></html>" % (self._parent.zoom_level, "".join(results))
             self.results.SetPage(self.html)
             self.toolbar.EnableTool(wx.ID_PRINT, True)
             ##self.toolbar.EnableTool(wx.ID_COPY, True)

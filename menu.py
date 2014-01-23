@@ -5,6 +5,7 @@ import os
 import wx
 from wx import gizmos
 
+import html
 from info import *
 from refalize import *
 
@@ -145,7 +146,7 @@ class MenuBar(wx.MenuBar):
         dialog.Show()
 
     def OnSaveAs(self, event):
-        self._frame.printer.save_as()
+        html.save_as(self._frame)
 
     def OnPrint(self, event):
         self._frame.printer.print_chapter()

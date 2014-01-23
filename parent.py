@@ -63,35 +63,34 @@ class MainFrame(wx.Frame):
         else:
             self.statusbar.SetStatusWidths([-1, self.zoombarwidth + 1])
 
-        self.notebook = aui.AuiNotebook(self, -1,
-            style=(aui.AUI_NB_DEFAULT_STYLE ^ aui.AUI_NB_TAB_MOVE ^
-                aui.AUI_NB_CLOSE_ON_ACTIVE_TAB ^
-                aui.AUI_NB_MIDDLE_CLICK_CLOSE) | wx.BORDER_NONE |
-                aui.AUI_NB_WINDOWLIST_BUTTON)
+        self.notebook = aui.AuiNotebook(self, -1, style=wx.BORDER_NONE |
+            aui.AUI_NB_TOP | aui.AUI_NB_TAB_SPLIT | aui.AUI_NB_SCROLL_BUTTONS |
+            aui.AUI_NB_WINDOWLIST_BUTTON)
         versiondir = os.path.join(app.userdatadir, "versions")
         if not os.path.isdir(versiondir):
             os.mkdir(versiondir)
-        v = 0
-        while v < len(self.versions):
-            window = html.ChapterWindow(self.notebook, self.versions[v])
+        i = 0
+        while i < len(self.versions):
+            window = html.ChapterWindow(self.notebook, self.versions[i])
             if hasattr(window, "Bible"):
-                self.notebook.AddPage(window, self.versions[v],
-                    v == app.settings["ActiveTab"])
-                self.notebook.SetPageBitmap(v,
-                    self.get_bitmap(os.path.join("flags", window.flag)))
+                self.notebook.AddPage(window, self.versions[i],
+                    i == app.settings["ActiveTab"])
+                self.notebook.SetPageBitmap(i,
+                    self.get_bitmap(os.path.join("flags", window.flag_name)))
                 if wx.VERSION_STRING >= "2.9.4.0":
-                    self.notebook.SetPageToolTip(v, window.description)
-                v += 1
+                    self.notebook.SetPageToolTip(i, window.description)
+                i += 1
             else:
-                self.versions.pop(v)
-                if 0 < app.settings["ActiveTab"] <= v:
+                self.versions.pop(i)
+                if 0 < app.settings["ActiveTab"] <= i:
                     app.settings["ActiveTab"] -= 1
         if len(self.versions) > 1:
-            self.notebook.AddPage(parallel.ParallelPanel(self.notebook),
-                _("Parallel"), app.settings["ActiveTab"] == len(self.versions))
+            self.parallel = parallel.ParallelPanel(self.notebook)
+            self.notebook.AddPage(self.parallel, _("Parallel"),
+                app.settings["ActiveTab"] == len(self.versions))
             if wx.VERSION_STRING >= "2.9.4.0":
                 self.notebook.SetPageToolTip(len(self.versions),
-                    self.parallel.description)
+                    self.parallel.htmlwindow.description)
         else:
             self.notebook.SetTabCtrlHeight(0)
         self.notebook.Bind(aui.EVT_AUINOTEBOOK_PAGE_CHANGED,
@@ -136,15 +135,15 @@ class MainFrame(wx.Frame):
         return wx.Bitmap(os.path.join(self._app.cwd, "images", "%s.png" %
             name), wx.BITMAP_TYPE_PNG)
 
-    def GetBrowser(self, tab=-1):
+    def get_htmlwindow(self, tab=-1):
         if tab == -1:
             tab = self.notebook.GetSelection()
         if tab == len(self.versions) and len(self.versions) > 1:
-            return self.parallel
+            return self.parallel.htmlwindow
         return self.notebook.GetPage(tab)
 
     def load_chapter(self, book, chapter, verse=-1, history=False):
-        browser = self.GetBrowser()
+        browser = self.get_htmlwindow()
         browser.load_chapter(book, chapter, verse)
         tab = self.notebook.GetSelection()
         version = self.notebook.GetPageText(tab)
@@ -177,7 +176,7 @@ class MainFrame(wx.Frame):
         self.reference = (book, chapter, verse)
         for i in range(self.notebook.GetPageCount()):
             if i != tab:
-                self.GetBrowser(i).verse = verse
+                self.get_htmlwindow(i).current_verse = verse
         wx.CallAfter(browser.SetFocus)
 
     def Copy(self):
@@ -200,7 +199,7 @@ class MainFrame(wx.Frame):
             self.zoom_level += zoom
         else:
             self.zoom_level = 0
-        self.GetBrowser().load_chapter(*self.reference)
+        self.get_htmlwindow().load_chapter(*self.reference)
         self.zoombar.EnableTool(wx.ID_ZOOM_OUT, self.zoom_level > 1)
         if self.zoomctrl.GetValue() != self.zoom_level:
             self.zoomctrl.SetValue(self.zoom_level)
@@ -212,17 +211,18 @@ class MainFrame(wx.Frame):
         self.Zoom(event.GetPosition() - self.zoom_level)
 
     def OnAuiNotebookPageChanged(self, event):
-        new = event.GetSelection()
-        browser = self.GetBrowser()
+        selection = event.GetSelection()
+        browser = self.get_htmlwindow()
         browser.load_chapter(*self.reference)
-        version = self.notebook.GetPageText(new)
+        version = self.notebook.GetPageText(selection)
         self.SetTitle("Berean - %s %d (%s)" % (BOOK_NAMES[self.reference[0] - 1], self.reference[1], version))
         self.statusbar.SetStatusText("%s %d (%s)" % (BOOK_NAMES[self.reference[0] - 1], self.reference[1], browser.description), 0)
-        if new < len(self.versions):
-            self.search.version.SetSelection(new)
+        if selection < len(self.versions):
+            self.search.version.SetSelection(selection)
 
     def OnAuiPaneClose(self, event):
-        self.menubar.Check(getattr(self.menubar, "%s_item" % event.GetPane().name).GetId(), False)
+        self.menubar.Check(getattr(self.menubar, "%s_item" %
+            event.GetPane().name).GetId(), False)
 
     def OnMove(self, event):
         if self.HasCapture():
@@ -231,12 +231,14 @@ class MainFrame(wx.Frame):
 
     def OnSize(self, event):
         x, y, width, height = self.statusbar.GetFieldRect(1)
-        self.zoombar.SetRect(wx.Rect(x, (y + height - 19) / 2 - self.zoombar.GetToolSeparation(), self.zoombarwidth, -1))
+        self.zoombar.SetRect(wx.Rect(x, (y + height - 19) / 2 -
+            self.zoombar.GetToolSeparation(), self.zoombarwidth, -1))
         if self.HasCapture():
             self.rect = wx.RectPS(self.GetPosition(), self.GetSize())
 
     def OnIconize(self, event):
-        if self._app.settings["MinimizeToTray"] and event.Iconized() and not hasattr(self, "taskbaricon"):
+        if self._app.settings["MinimizeToTray"] and event.Iconized() and \
+                not hasattr(self, "taskbaricon"):
             self.taskbaricon = TaskBarIcon(self)
             self.Hide()
         event.Skip()
@@ -268,7 +270,7 @@ class TaskBarIcon(wx.TaskBarIcon):
         self._frame.Show()
         self._frame.Raise()
         self.RemoveIcon()
-        wx.CallAfter(self._frame.GetBrowser().SetFocus)
+        wx.CallAfter(self._frame.get_htmlwindow().SetFocus)
         del self._frame.taskbaricon
 
     def OnExit(self, event):

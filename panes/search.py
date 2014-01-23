@@ -68,7 +68,7 @@ class SearchPane(wx.Panel):
                 self.indexes.append(cPickle.load(index))
                 index.close()
             else:
-                self.indexes.append(index_version(parent.GetBrowser(i).Bible,
+                self.indexes.append(index_version(parent.get_htmlwindow(i).Bible,
                     parent.versions[i], indexdir))
         for option in ("AllWords", "ExactMatch", "Phrase"):
             if parent._app.settings[option] >= wx.CHK_UNDETERMINED:
@@ -183,7 +183,7 @@ class SearchPane(wx.Panel):
             results.insert(0, _("<font color=gray>%d verses in the %s (%d&nbsp;msec)</font>") % (number, self.lastversion, max(1, wx.GetLocalTimeMillis() - millis)))
         else:
             results.append(_("<font color=gray>0 verses in the %s (%d&nbsp;msec)</font><p></p><b>Suggestions:</b><ul><li> Make your search less specific.<li> Edit the search options.<li> Search in a different version.</ul>") % (self.lastversion, max(1, wx.GetLocalTimeMillis() - millis)))
-        self.html = "<html><body><font size=%d>%s</font></body></html>" % (self._parent.zoom_level, "".join(results))
+        self.html = "<html><body><font size=\"%d\">%s</font></body></html>" % (self._parent.zoom_level, "".join(results))
         self.results.SetPage(self.html)
         wx.EndBusyCursor()
         if text not in self.text.GetStrings():
@@ -201,7 +201,7 @@ class SearchPane(wx.Panel):
         if not options[1]:  # not Case Sensitive
             flags |= re.IGNORECASE
         self.lastversion = self.version.GetStringSelection()
-        browser = self._parent.GetBrowser(self._parent.versions.index(self.lastversion))
+        browser = self._parent.get_htmlwindow(self._parent.versions.index(self.lastversion))
         start = self.start.GetSelection() + 1
         stop = self.stop.GetSelection() + 1
         if not options[4]:  # not Regular Expression
@@ -283,7 +283,7 @@ class SearchPane(wx.Panel):
                     results.append("<p><a href='%d.%d.%d'>%s %d:%d</a><br />%s</p>" % (b, c, v, books[b - 1], c, v, verses[0]))
                 else:
                     for j in range(len(verses)):
-                        verses[j] = "<font size=-1><a href='%d.%d.%d'>%d</a>&nbsp;</font>%s" % (b, c, v + j, v + j, verses[j])
+                        verses[j] = "<font size=\"-1\"><a href='%d.%d.%d'>%d</a>&nbsp;</font>%s" % (b, c, v + j, v + j, verses[j])
                     results.append("<p><a href='%d.%d.%d'>%s %d:%d-%d</a><br />%s</p>" % (b, c, v, books[b - 1], c, v, v + len(verses) - 1, " ".join(verses)))
         else:
             lastbook = 0
