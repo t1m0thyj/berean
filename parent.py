@@ -43,25 +43,11 @@ class MainFrame(wx.Frame):
         self.aui.AddPane(self.toolbar, aui.AuiPaneInfo().Name("toolbar").
             Caption("Main Toolbar").ToolbarPane().Top())
         self.statusbar = self.CreateStatusBar(2)
-        self.zoombar = wx.ToolBar(self.statusbar, -1, style=wx.TB_FLAT |
-            wx.TB_NODIVIDER)
-        self.zoombar.AddLabelTool(wx.ID_ZOOM_OUT, "",
-            self.get_bitmap("zoom-out"), shortHelp=_("Zoom Out (Ctrl+-)"))
-        self.zoombar.EnableTool(wx.ID_ZOOM_OUT, self.zoom_level > 1)
-        self.zoomctrl = wx.Slider(self.zoombar, -1, self.zoom_level, 1, 7,
-            size=(100, -1))
-        self.zoomctrl.Bind(wx.EVT_SCROLL_CHANGED, self.OnZoomCtrl)
-        self.zoombar.AddControl(self.zoomctrl)
-        self.zoombar.AddLabelTool(wx.ID_ZOOM_IN, "",
-            self.get_bitmap("zoom-in"), shortHelp=_("Zoom In (Ctrl++)"))
-        self.zoombar.EnableTool(wx.ID_ZOOM_IN, self.zoom_level < 7)
-        self.zoombar.Realize()
-        self.zoombarwidth = (self.zoombar.GetToolSize()[0] +
-            self.zoombar.GetToolSeparation()) * 2 + self.zoomctrl.GetSize()[0]
+        self.zoombar = toolbar.ZoomBar(self.statusbar, self)
         if wx.VERSION_STRING >= "2.9.0.0":
-            self.statusbar.SetStatusWidths([-1, self.zoombarwidth - 8])
+            self.statusbar.SetStatusWidths([-1, self.zoombar.width - 8])
         else:
-            self.statusbar.SetStatusWidths([-1, self.zoombarwidth + 1])
+            self.statusbar.SetStatusWidths([-1, self.zoombar.width + 1])
 
         self.notebook = aui.AuiNotebook(self, -1, style=wx.BORDER_NONE |
             aui.AUI_NB_TOP | aui.AUI_NB_TAB_SPLIT | aui.AUI_NB_SCROLL_BUTTONS |
@@ -143,23 +129,26 @@ class MainFrame(wx.Frame):
         return self.notebook.GetPage(tab)
 
     def load_chapter(self, book, chapter, verse=-1, history=False):
-        browser = self.get_htmlwindow()
-        browser.load_chapter(book, chapter, verse)
-        tab = self.notebook.GetSelection()
-        version = self.notebook.GetPageText(tab)
-        self.SetTitle("Berean - %s %d (%s)" % (BOOK_NAMES[book - 1], chapter, version))
+        htmlwindow = self.get_htmlwindow()
+        htmlwindow.load_chapter(book, chapter, verse)
+        selection = self.notebook.GetSelection()
+        version = self.notebook.GetPageText(selection)
+        self.SetTitle("Berean - %s %d (%s)" % (BOOK_NAMES[book - 1], chapter,
+            version))
         if verse == -1:
             reference = "%s %d" % (BOOK_NAMES[book - 1], chapter)
         else:
             reference = "%s %d:%d" % (BOOK_NAMES[book - 1], chapter, verse)
         if reference not in self.toolbar.verse_history:
-            self.toolbar.verse_history = self.toolbar.verse_history[:self.toolbar.history_item + 1]
+            self.toolbar.verse_history = \
+                self.toolbar.verse_history[:self.toolbar.history_item + 1]
             self.toolbar.verse_history.append(reference)
-            if len(self.toolbar.verse_history) > 16:  # Only 15 visible items, since current one is hidden
+            if len(self.toolbar.verse_history) >= 15:
                 self.toolbar.verse_history.pop(0)
             self.toolbar.set_history_item(-1)
         elif history:
-            self.toolbar.set_history_item(self.toolbar.verse_history.index(reference))
+            self.toolbar.set_history_item(self.toolbar.verse_history.index(
+                reference))
         else:
             self.toolbar.verse_history.remove(reference)
             self.toolbar.verse_history.append(reference)
@@ -172,51 +161,38 @@ class MainFrame(wx.Frame):
             page = self.notes.GetPage(i)
             page.save_text()
             page.load_text(book, chapter)
-        self.statusbar.SetStatusText("%s %d (%s)" % (BOOK_NAMES[book - 1], chapter, browser.description), 0)
+        self.statusbar.SetStatusText("%s %d (%s)" % (BOOK_NAMES[book - 1],
+            chapter, htmlwindow.description), 0)
         self.reference = (book, chapter, verse)
         for i in range(self.notebook.GetPageCount()):
-            if i != tab:
+            if i != selection:
                 self.get_htmlwindow(i).current_verse = verse
-        wx.CallAfter(browser.SetFocus)
+        wx.CallAfter(htmlwindow.SetFocus)
 
-    def Copy(self):
-        window = self.FindFocus()
-        if not isinstance(window, html.BaseHtmlWindow):
-            return
-        data = wx.TextDataObject()
-        data.SetText(window.SelectionToText())
-        if wx.TheClipboard.Open():
-            wx.TheClipboard.SetData(data)
-            wx.TheClipboard.Flush()
-            wx.TheClipboard.Close()
+    def set_zoom(self, zoom):
+        self.zoom_level = zoom
+        self.get_htmlwindow().load_chapter(*self.reference)
+        if self.zoombar.slider.GetValue() != zoom:
+            self.zoombar.slider.SetValue(zoom)
+        self.zoombar.EnableTool(wx.ID_ZOOM_OUT, zoom > 1)
+        self.zoombar.EnableTool(wx.ID_ZOOM_IN, zoom < 7)
+        self.menubar.Enable(wx.ID_ZOOM_IN, zoom < 7)
+        self.menubar.Enable(wx.ID_ZOOM_OUT, zoom > 1)
 
-    def ShowSearchPane(self, show=True):
+    def show_search_pane(self, show=True):
         self.aui.GetPane("search_pane").Show(show)
         self.aui.Update()
 
-    def Zoom(self, zoom):
-        if zoom != 0:
-            self.zoom_level += zoom
-        else:
-            self.zoom_level = 0
-        self.get_htmlwindow().load_chapter(*self.reference)
-        self.zoombar.EnableTool(wx.ID_ZOOM_OUT, self.zoom_level > 1)
-        if self.zoomctrl.GetValue() != self.zoom_level:
-            self.zoomctrl.SetValue(self.zoom_level)
-        self.zoombar.EnableTool(wx.ID_ZOOM_IN, self.zoom_level < 7)
-        self.menubar.Enable(wx.ID_ZOOM_IN, self.zoom_level < 7)
-        self.menubar.Enable(wx.ID_ZOOM_OUT, self.zoom_level > 1)
-
-    def OnZoomCtrl(self, event):
-        self.Zoom(event.GetPosition() - self.zoom_level)
-
     def OnAuiNotebookPageChanged(self, event):
         selection = event.GetSelection()
-        browser = self.get_htmlwindow()
-        browser.load_chapter(*self.reference)
-        version = self.notebook.GetPageText(selection)
-        self.SetTitle("Berean - %s %d (%s)" % (BOOK_NAMES[self.reference[0] - 1], self.reference[1], version))
-        self.statusbar.SetStatusText("%s %d (%s)" % (BOOK_NAMES[self.reference[0] - 1], self.reference[1], browser.description), 0)
+        htmlwindow = self.get_htmlwindow()
+        htmlwindow.load_chapter(*self.reference)
+        self.SetTitle("Berean - %s %d (%s)" %
+            (BOOK_NAMES[self.reference[0] - 1], self.reference[1],
+            self.notebook.GetPageText(selection)))
+        self.statusbar.SetStatusText("%s %d (%s)" %
+            (BOOK_NAMES[self.reference[0] - 1], self.reference[1],
+            htmlwindow.description), 0)
         if selection < len(self.versions):
             self.search.version.SetSelection(selection)
 
@@ -232,7 +208,7 @@ class MainFrame(wx.Frame):
     def OnSize(self, event):
         x, y, width, height = self.statusbar.GetFieldRect(1)
         self.zoombar.SetRect(wx.Rect(x, (y + height - 19) / 2 -
-            self.zoombar.GetToolSeparation(), self.zoombarwidth, -1))
+            self.zoombar.GetToolSeparation(), self.zoombar.width, -1))
         if self.HasCapture():
             self.rect = wx.RectPS(self.GetPosition(), self.GetSize())
 
@@ -254,6 +230,7 @@ class MainFrame(wx.Frame):
         del self.help
         self.Freeze()
         self.Destroy()
+        del self._app.locale
         self._app.ExitMainLoop()
 
 

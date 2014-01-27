@@ -7,14 +7,57 @@ import os.path
 import wx
 from wx import aui, richtext
 
+from info import *
+
 _ = wx.GetTranslation
 
 
-class NotesPanel(wx.Panel):
+class BookChapterVerseSelector(aui.AuiToolBar):
+    def __init__(self, parent, reference):
+        style = aui.AUI_TB_DEFAULT_STYLE
+        if wx.VERSION_STRING >= "2.9.5.0":
+            style |= aui.AUI_TB_PLAIN_BACKGROUND
+        super(BookChapterVerseSelector, self).__init__(parent, -1, (-1, -1),
+            (-1, -1), style)
+        self._parent = parent
+        self.book = wx.Choice(self, -1, choices=BOOK_NAMES)
+        self.AddControl(self.book)
+        self.chapter = wx.Choice(self, -1, size=(60, -1))
+        self.AddControl(self.chapter)
+        self.verse = wx.Choice(self, -1, size=(60, -1))
+        self.AddControl(self.verse)
+        self.AddTool(wx.ID_DELETE, "", parent._frame.get_bitmap("delete"),
+            _("Delete"))
+        self.Realize()
+        self.set_verse(*reference)
+
+    def set_verse(self, book, chapter, verse=-1):
+        self.book.SetSelection(book - 1)
+        self.chapter.SetItems([str(i) for i in range(1,
+            CHAPTER_LENGTHS[book - 1] + 1)])
+        self.chapter.SetSelection(chapter - 1)
+        self.verse.SetItems(["--"] + [str(i) for i in range(1,
+            VERSE_LENGTHS[book - 1][chapter - 1] + 1)])
+        if verse != -1:
+            self.verse.SetSelection(verse)
+
+
+class TopicSelector(aui.AuiToolBar):
+    def __init__(self, parent, reference):
+        style = aui.AUI_TB_DEFAULT_STYLE
+        if wx.VERSION_STRING >= "2.9.5.0":
+            style |= aui.AUI_TB_PLAIN_BACKGROUND
+        super(TopicSelector, self).__init__(parent, -1, (-1, -1),
+            (-1, -1), style)
+        self._parent = parent
+
+
+class NotesPage(wx.Panel):
     def __init__(self, parent, name):
-        super(NotesPanel, self).__init__(parent, -1)
+        super(NotesPage, self).__init__(parent, -1)
         self._frame = parent.GetParent()
         self.name = name
+        ##self.selector = BookChapterVerseSelector(self, self._frame.reference)
 
         self.toolbar = aui.AuiToolBar(self, -1, (-1, -1), (-1, -1),
             aui.AUI_TB_DEFAULT_STYLE | aui.AUI_TB_OVERFLOW)
@@ -51,10 +94,6 @@ class NotesPanel(wx.Panel):
         self.font_size.Bind(wx.EVT_COMBOBOX, self.OnFontSize)
         self.font_size.Bind(wx.EVT_TEXT_ENTER, self.OnFontSize)
         self.toolbar.AddControl(self.font_size)
-        self.ID_FONT_COLOR = wx.NewId()
-        self.toolbar.AddTool(self.ID_FONT_COLOR, "",
-            self._frame.get_bitmap("font-color"), _("Font Color"))
-        self.Bind(wx.EVT_MENU, self.OnFontColor, id=self.ID_FONT_COLOR)
         self.toolbar.AddSeparator()
         self.toolbar.AddTool(wx.ID_BOLD, "", self._frame.get_bitmap("bold"),
             _("Bold (Ctrl+B)"), wx.ITEM_CHECK)
@@ -97,6 +136,15 @@ class NotesPanel(wx.Panel):
         self.toolbar.AddTool(ID_INCREASE_INDENT, "",
             self._frame.get_bitmap("increase-indent"), _("Increase Indent"))
         self.Bind(wx.EVT_MENU, self.OnIncreaseIndent, id=ID_INCREASE_INDENT)
+        self.toolbar.AddSeparator()
+        self.ID_FONT_COLOR = wx.NewId()
+        self.toolbar.AddTool(self.ID_FONT_COLOR, "",
+            self._frame.get_bitmap("font-color"), _("Font Color"))
+        self.Bind(wx.EVT_MENU, self.OnFontColor, id=self.ID_FONT_COLOR)
+        self.ID_HIGHLIGHTING = wx.NewId()
+        self.toolbar.AddTool(self.ID_HIGHLIGHTING, "",
+            self._frame.get_bitmap("highlighting"), _("Highlighting"))
+        self.Bind(wx.EVT_MENU, self.OnHighlighting, id=self.ID_HIGHLIGHTING)
         self.toolbar.Realize()
         self.SetAcceleratorTable(wx.AcceleratorTable([
             (wx.ACCEL_CTRL, ord("X"), wx.ID_CUT),
@@ -122,6 +170,7 @@ class NotesPanel(wx.Panel):
         self.editor.Bind(wx.EVT_LEFT_UP, self.OnModified)
 
         sizer = wx.BoxSizer(wx.VERTICAL)
+        ##sizer.Add(self.selector, 0)
         sizer.Add(self.toolbar, 0)
         sizer.Add(self.editor, 1, wx.EXPAND)
         self.SetSizer(sizer)
@@ -172,7 +221,7 @@ class NotesPanel(wx.Panel):
 
     def save_text(self):
         key = "%d.%d" % (self._frame.reference[0], self._frame.reference[1])
-        if self.editor.GetLastPosition() > 0:
+        if not self.editor.IsEmpty():
             stream = cStringIO.StringIO()
             richtext.RichTextXMLHandler().SaveStream(self.editor.GetBuffer(),
                 stream)
@@ -189,7 +238,8 @@ class NotesPanel(wx.Panel):
 
     def OnPrint(self, event):
         if wx.VERSION_STRING >= "2.8.11.0":
-            self._frame.printer.SetName(_(self.name))
+            ##self._frame.printer.SetName(_(self.name))
+            self._frame.printer.SetName(self.name)
         stream = cStringIO.StringIO()
         richtext.RichTextHTMLHandler().SaveStream(self.editor.GetBuffer(),
             stream)
@@ -221,20 +271,6 @@ class NotesPanel(wx.Panel):
             self.BeginStyle(style)
         else:
             self.editor.SetStyle(self.editor.GetSelectionRange(), style)
-
-    def OnFontColor(self, event):
-        style = richtext.RichTextAttr()
-        style.SetFlags(wx.TEXT_ATTR_TEXT_COLOUR)
-        color = wx.NullColour
-        if self.editor.GetStyle(self.editor.GetInsertionPoint(), style):
-            color = style.GetTextColour()
-        color = wx.GetColourFromUser(self._frame, color, _("Font Color"))
-        if color.IsOk():
-            if not self.editor.HasSelection():
-                self.editor.BeginTextColour(color)
-            else:
-                style.SetTextColour(color)
-                self.editor.SetStyle(self.editor.GetSelectionRange(), style)
 
     def OnBold(self, event):
         # Toolbar item needs to be toggled if hotkey was used
@@ -325,13 +361,13 @@ class NotesPanel(wx.Panel):
         if not self.editor.HasSelection():
             start = self.editor.XYToPosition(0,
                 self.editor.PositionToXY(self.editor.GetInsertionPoint())[1])
-            selection = (start, start + 1)
+            richtext_range = (start, start + 1)
         else:
-            selection = self.editor.GetSelectionRange()
+            richtext_range = self.editor.GetSelectionRange()
         style = richtext.RichTextAttr()
         style.SetFlags(wx.TEXT_ATTR_LEFT_INDENT | wx.TEXT_ATTR_BULLET_STYLE |
             wx.TEXT_ATTR_BULLET_NAME)
-        if self.editor.GetStyle(selection[0], style):
+        if self.editor.GetStyle(richtext_range[0], style):
             if style.GetBulletStyle() != wx.TEXT_ATTR_BULLET_STYLE_STANDARD:
                 style.SetLeftIndent(50, 50)
                 style.SetBulletStyle(wx.TEXT_ATTR_BULLET_STYLE_STANDARD)
@@ -339,7 +375,7 @@ class NotesPanel(wx.Panel):
             else:
                 style.SetLeftIndent(0, 0)
                 style.SetBulletStyle(wx.TEXT_ATTR_BULLET_STYLE_NONE)
-            self.editor.SetStyle(selection, style)
+            self.editor.SetStyle(richtext_range, style)
 
     def OnDecreaseIndent(self, event):
         pos = self.editor.GetInsertionPoint()
@@ -347,12 +383,12 @@ class NotesPanel(wx.Panel):
         style.SetFlags(wx.TEXT_ATTR_LEFT_INDENT)
         if self.editor.GetStyle(pos, style):
             if not self.editor.HasSelection():
-                selection = (pos, pos + 1)
+                richtext_range = (pos, pos + 1)
             else:
-                selection = self.editor.GetSelectionRange()
+                richtext_range = self.editor.GetSelectionRange()
             if style.GetLeftIndent() >= 100:
                 style.SetLeftIndent(style.GetLeftIndent() - 100)
-                self.editor.SetStyle(selection, style)
+                self.editor.SetStyle(richtext_range, style)
 
     def OnIncreaseIndent(self, event):
         pos = self.editor.GetInsertionPoint()
@@ -360,11 +396,41 @@ class NotesPanel(wx.Panel):
         style.SetFlags(wx.TEXT_ATTR_LEFT_INDENT)
         if self.editor.GetStyle(pos, style):
             if not self.editor.HasSelection():
-                selection = (pos, pos + 1)
+                richtext_range = (pos, pos + 1)
             else:
-                selection = self.editor.GetSelectionRange()
+                richtext_range = self.editor.GetSelectionRange()
             style.SetLeftIndent(style.GetLeftIndent() + 100)
-            self.editor.SetStyle(selection, style)
+            self.editor.SetStyle(richtext_range, style)
+
+    def OnFontColor(self, event):
+        style = richtext.RichTextAttr()
+        style.SetFlags(wx.TEXT_ATTR_TEXT_COLOUR)
+        color = wx.NullColour
+        if self.editor.GetStyle(self.editor.GetInsertionPoint(), style):
+            color = style.GetTextColour()
+        color = wx.GetColourFromUser(self._frame, color, _("Font Color"))
+        if color.IsOk():
+            if not self.editor.HasSelection():
+                self.editor.BeginTextColour(color)
+            else:
+                style.SetTextColour(color)
+                self.editor.SetStyle(self.editor.GetSelectionRange(), style)
+
+    def OnHighlighting(self, event):
+        pos = self.editor.GetInsertionPoint()
+        style = richtext.RichTextAttr()
+        style.SetFlags(wx.TEXT_ATTR_BACKGROUND_COLOUR)
+        color = wx.NullColour
+        if self.editor.GetStyle(self.editor.GetInsertionPoint(), style):
+            color = style.GetBackgroundColour()
+        color = wx.GetColourFromUser(self._frame, color, _("Highlighting"))
+        if color.IsOk():
+            if not self.editor.HasSelection():
+                richtext_range = (pos, pos + 1)
+            else:
+                richtext_range = self.editor.GetSelectionRange()
+            style.SetBackgroundColour(color)
+            self.editor.SetStyle(richtext_range, style)
 
     def OnChar(self, event):
         key = event.GetKeyCode()
@@ -409,6 +475,6 @@ class NotesPane(aui.AuiNotebook):
     def __init__(self, parent):
         super(NotesPane, self).__init__(parent, -1, style=wx.BORDER_NONE |
             aui.AUI_NB_TOP | aui.AUI_NB_TAB_SPLIT | aui.AUI_NB_SCROLL_BUTTONS)
-        self.AddPage(NotesPanel(self, "Study Notes"), _("Study Notes"))
-        self.AddPage(NotesPanel(self, "Topic Notes"), _("Topic Notes"))
+        self.AddPage(NotesPage(self, "Study Notes"), _("Study Notes"))
+        self.AddPage(NotesPage(self, "Topic Notes"), _("Topic Notes"))
         self.SetSelection(parent._app.settings["ActiveNotes"])

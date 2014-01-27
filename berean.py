@@ -30,6 +30,7 @@ VERSION = debug.VERSION = parent.help.VERSION = "1.4.8"
 # Make ConfigParser work with Unicode
 ConfigParser.str = lambda value: value.encode("utf_8")
 
+
 class FileConfig(ConfigParser.RawConfigParser):
     def __init__(self):
         ConfigParser.RawConfigParser.__init__(self)
@@ -42,14 +43,8 @@ class FileConfig(ConfigParser.RawConfigParser):
     def getlist(self, section, option=None):
         if option:
             section = "%s\\%s" % (section, option)
-        option = "Item1"
-        sequence = []
-        i = 1
-        while self.has_option(section, option):
-            sequence.append(self.getunicode(section, option))
-            i += 1
-            option = "Item%d" % i
-        return sequence
+        return [self.getunicode(section, option) for option in
+            self.options(section)]
 
     def setlist(self, section, option, value):
         if option:
@@ -131,7 +126,7 @@ class Berean(wx.App):
             "MinimizeToTray": False, "SelectedBook": 1, "SelectedChapter": 1,
             "ZoomLevel": 3, "ActiveVerse": -1, "ActiveTab": 0,
             "LastReference": "", "ActiveNotes": 0,
-            "VersionList": ["KJV", "WEB"], "ParallelVersions": ["KJV", "WEB"],
+            "VersionList": ["KJV", "WEB"], "ParallelVersions": [],
             "FavoritesList": [], "ReferenceHistory": [], "ChapterHistory": [],
             "AbbrevSearchResults": False, "LastSearch": "",
             "OptionsPane": True, "AllWords": True, "CaseSensitive": False,
@@ -156,6 +151,8 @@ class Berean(wx.App):
             self.settings["VersionList"] = self.config.getlist("VersionList")
         if self.config.has_section("ParallelVersions"):
             self.settings["ParallelVersions"] = self.config.getlist("ParallelVersions")
+        else:
+            self.settings["ParallelVersions"] = self.settings["VersionList"]
         if self.config.has_section("FavoritesList"):
             self.settings["FavoritesList"] = self.config.getlist("FavoritesList")
         if self.config.has_section("ReferenceHistory"):

@@ -72,9 +72,9 @@ class MultipleVerseSearchDialog(wx.Dialog):
     def OnSearch(self, event):
         try:
             version = self.version.GetStringSelection()
-            browser = self._parent.get_htmlwindow(
-                self._parent.versions.index(version))
-            data = refalize2(self.references.GetValue(), browser.Bible)
+            Bible = self._parent.get_htmlwindow(
+                self._parent.versions.index(version)).Bible
+            data = refalize2(self.references.GetValue(), Bible)
             results = []
             if self._parent._app.settings["AbbrevSearchResults"]:
                 books = BOOK_ABBREVS
@@ -85,22 +85,22 @@ class MultipleVerseSearchDialog(wx.Dialog):
                 b2, c2, v2 = stop
                 try:
                     if start == stop:
-                        if len(browser.Bible[b1][c1][v1]):
-                            results.append("<p><a href='%d.%d.%d'>%s %d:%d</a><br />%s</p>" % (b1, c1, v1, books[b1 - 1], c1, v1, browser.Bible[b1][c1][v1]))
+                        if len(Bible[b1][c1][v1]):
+                            results.append("<p><a href='%d.%d.%d'>%s %d:%d</a><br />%s</p>" % (b1, c1, v1, books[b1 - 1], c1, v1, Bible[b1][c1][v1]))
                         else:
                             results.append(_("<p><font color=gray>%s %d:%d is not in the %s.</font></p>") % (books[b1 - 1], c1, v1, version))
                     else:
                         result = []
                         for b in range(b1, b2 + 1):
-                            for c in range(1, len(browser.Bible[b])):
-                                for v in range(0, len(browser.Bible[b][c])):
+                            for c in range(1, len(Bible[b])):
+                                for v in range(0, len(Bible[b][c])):
                                     if (b1, c1, v1) <= (b, c, v) <= (b2, c2, v2):
                                         if c == 1 and not v:
                                             result.append("<hr /><a href='%d.%d.-1'>%s %d</a>" % (b, c, books[b - 1], c))
                                         elif not v:
                                             result.append("<p><a href='%d.%d.-1'>%s %d</a></p>" % (b, c, books[b - 1], c))
-                                        elif len(browser.Bible[b][c][v]):
-                                            result.append("<font size=\"-1\"><a href='%d.%d.%d'>%d</a>&nbsp;</font>%s" % (b, c, v, v, browser.Bible[b][c][v]))
+                                        elif len(Bible[b][c][v]):
+                                            result.append("<font size=\"-1\"><a href='%d.%d.%d'>%d</a>&nbsp;</font>%s" % (b, c, v, v, Bible[b][c][v]))
                                         else:
                                             result.append("")
                         if not len(result):
