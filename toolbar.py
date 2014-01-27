@@ -77,12 +77,11 @@ class MainToolBar(aui.AuiToolBar):
         if validate(reference):
             try:
                 book, chapter, verse = refalize(reference)
-                Bible = self._parent.get_htmlwindow(0).Bible
-                if not 1 <= chapter < len(Bible[book]):
-                    wx.MessageBox(_("The book of %s has only %d chapters.") % (BOOK_NAMES[book - 1], len(Bible[book]) - 1), "Berean", wx.ICON_EXCLAMATION | wx.OK)
+                if chapter > CHAPTER_LENGTHS[book - 1]:
+                    wx.MessageBox(_("The book of %s has only %d chapters.") % (BOOK_NAMES[book - 1], CHAPTER_LENGTHS[book - 1], "Berean", wx.ICON_EXCLAMATION | wx.OK))
                     return
-                elif (not 1 <= verse < len(Bible[book][chapter])) and verse != -1:
-                    wx.MessageBox(_("%s chapter %d has only %d verses.") % (BOOK_NAMES[book - 1], chapter, len(Bible[book][chapter]) - 1), "Berean", wx.ICON_EXCLAMATION | wx.OK)
+                elif verse > VERSE_LENGTHS[book - 1][chapter - 1]:
+                    wx.MessageBox(_("%s chapter %d has only %d verses.") % (BOOK_NAMES[book - 1], chapter, VERSE_LENGTHS[book - 1][chapter - 1]), "Berean", wx.ICON_EXCLAMATION | wx.OK)
                     return
                 self._parent.load_chapter(book, chapter, verse)
                 if reference not in self.verse_entry.GetStrings():
@@ -93,7 +92,7 @@ class MainToolBar(aui.AuiToolBar):
                 wx.MessageBox(_("'%s' is not a valid reference.\n\nIf you think that Berean should accept it,\nplease email <timothysw@objectmail.com>.") % reference, "Berean", wx.ICON_EXCLAMATION | wx.OK)
         else:
             if not self._parent.aui.GetPane("search_pane").IsShown():
-                self._parent.ShowSearchPane()
+                self._parent.show_search_pane()
             self._parent.search.text.SetValue(reference)
             self.verse_entry.SetValue(self.verse_entry.GetString(0))
             self._parent.search.OnSearch(None)
@@ -134,3 +133,26 @@ class MainToolBar(aui.AuiToolBar):
                     i + 1)
             self.PopupMenu(menu, self.get_popup_pos(self, wx.ID_FORWARD))
             self.SetToolSticky(wx.ID_FORWARD, False)
+
+
+class ZoomBar(wx.ToolBar):
+    def __init__(self, parent, frame):
+        super(ZoomBar, self).__init__(parent, -1,
+            style=wx.TB_FLAT | wx.TB_NODIVIDER)
+        self._frame = frame
+        self.AddLabelTool(wx.ID_ZOOM_OUT, "", frame.get_bitmap("zoom-out"),
+            shortHelp=_("Zoom Out (Ctrl+-)"))
+        self.EnableTool(wx.ID_ZOOM_OUT, frame.zoom_level > 1)
+        self.slider = wx.Slider(self, -1, frame.zoom_level, 1, 7,
+            size=(100, -1))
+        self.slider.Bind(wx.EVT_SLIDER, self.OnSlider)
+        self.AddControl(self.slider)
+        self.AddLabelTool(wx.ID_ZOOM_IN, "", frame.get_bitmap("zoom-in"),
+            shortHelp=_("Zoom In (Ctrl++)"))
+        self.EnableTool(wx.ID_ZOOM_IN, frame.zoom_level < 7)
+        self.Realize()
+        self.width = (self.GetToolSize()[0] + self.GetToolSeparation()) * 2 + \
+            self.slider.GetSize()[0]
+
+    def OnSlider(self, event):
+        self._frame.set_zoom(event.GetSelection())

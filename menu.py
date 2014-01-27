@@ -26,10 +26,6 @@ class MenuBar(wx.MenuBar):
         self.favorites_list = frame._app.settings["FavoritesList"]
 
         self.file_menu = wx.Menu()
-        self.file_menu.Append(wx.ID_SAVEAS, _("&Save As...\tCtrl+S"),
-            _("Saves the current chapter as an HTML document"))
-        frame.Bind(wx.EVT_MENU, self.OnSaveAs, id=wx.ID_SAVEAS)
-        self.file_menu.AppendSeparator()
         self.file_menu.Append(wx.ID_PRINT, _("&Print...\tCtrl+P"),
             _("Prints the current chapter"))
         frame.Bind(wx.EVT_MENU, self.OnPrint, id=wx.ID_PRINT)
@@ -39,7 +35,7 @@ class MenuBar(wx.MenuBar):
         frame.Bind(wx.EVT_MENU, self.OnPageSetup, id=wx.ID_PRINT_SETUP)
         self.file_menu.Append(wx.ID_PREVIEW,
             _("P&rint Preview...\tCtrl+Alt+P"),
-            _("Previews a printing of the current chapter"))
+            _("Previews the current chapter"))
         frame.Bind(wx.EVT_MENU, self.OnPrintPreview, id=wx.ID_PREVIEW)
         if '__WXMAC__' not in wx.PlatformInfo:
             self.file_menu.AppendSeparator()
@@ -59,7 +55,7 @@ class MenuBar(wx.MenuBar):
             _("&Go to Verse"), _("Goes to the specified verse"))
         frame.Bind(wx.EVT_MENU, self.OnGotoVerse, self.goto_verse_item)
         self.view_menu.Append(wx.ID_BACKWARD, _("Go &Back\tAlt+Left"),
-            _("Returns to the previous chapter"))
+            _("Goes to the previous chapter"))
         frame.Bind(wx.EVT_MENU, self.OnBack, id=wx.ID_BACKWARD)
         self.view_menu.Append(wx.ID_FORWARD, _("Go &Forward\tAlt+Right"),
             _("Goes to the next chapter"))
@@ -74,7 +70,7 @@ class MenuBar(wx.MenuBar):
         self.view_menu.Enable(wx.ID_ZOOM_OUT, frame.zoom_level > 1)
         frame.Bind(wx.EVT_MENU, self.OnZoomOut, id=wx.ID_ZOOM_OUT)
         self.view_menu.Append(wx.ID_ZOOM_100, _("Reset Zoom\tCtrl+0"),
-            _("Restores the text to the default size"))
+            _("Resets the text size to the default"))
         frame.Bind(wx.EVT_MENU, self.OnZoomDefault, id=wx.ID_ZOOM_100)
         self.view_menu.AppendSeparator()
         self.toolbar_item = self.view_menu.AppendCheckItem(-1, _("&Toolbar"),
@@ -85,7 +81,8 @@ class MenuBar(wx.MenuBar):
             _("T&ree Pane\tCtrl+Shift+T"), _("Shows or hides the tree pane"))
         frame.Bind(wx.EVT_MENU, self.OnTreePane, self.tree_pane_item)
         self.search_pane_item = self.view_menu.AppendCheckItem(-1,
-            _("&Search Pane\tCtrl+Shift+S"), _("Shows or hides the search pane"))
+            _("&Search Pane\tCtrl+Shift+S"),
+            _("Shows or hides the search pane"))
         frame.Bind(wx.EVT_MENU, self.OnSearchPane, self.search_pane_item)
         self.notes_pane_item = self.view_menu.AppendCheckItem(-1,
             _("&Notes Pane\tCtrl+Shift+N"), _("Shows or hides the notes pane"))
@@ -158,7 +155,15 @@ class MenuBar(wx.MenuBar):
         self._frame.printer.preview_chapter()
 
     def OnCopy(self, event):
-        self._frame.Copy()
+        window = self._frame.FindFocus()
+        if not isinstance(window, html.BaseHtmlWindow):
+            return
+        data = wx.TextDataObject()
+        data.SetText(window.SelectionToText())
+        if wx.TheClipboard.Open():
+            wx.TheClipboard.SetData(data)
+            wx.TheClipboard.Flush()
+            wx.TheClipboard.Close()
 
     def OnGotoVerse(self, event):
         self._frame.toolbar.OnGotoVerse(event)
@@ -170,13 +175,13 @@ class MenuBar(wx.MenuBar):
         self._frame.toolbar.OnForward(event)
 
     def OnZoomIn(self, event):
-        self._frame.Zoom(1)
+        self._frame.set_zoom(self._frame.zoom_level + 1)
 
     def OnZoomOut(self, event):
-        self._frame.Zoom(-1)
+        self._frame.set_zoom(self._frame.zoom_level - 1)
 
     def OnZoomDefault(self, event):
-        self._frame.Zoom(0)
+        self._frame.set_zoom(0)
 
     def OnToolbar(self, event):
         self._frame.aui.GetPane("toolbar").Show(event.IsChecked())
@@ -187,7 +192,7 @@ class MenuBar(wx.MenuBar):
         self._frame.aui.Update()
 
     def OnSearchPane(self, event):
-        self._frame.ShowSearchPane(event.IsChecked())
+        self._frame.show_search_pane(event.IsChecked())
 
     def OnNotesPane(self, event):
         self._frame.aui.GetPane("notes_pane").Show(event.IsChecked())

@@ -111,13 +111,13 @@ class SearchPane(wx.Panel):
         for option in self.options:
             getattr(self, option).Set3StateValue(parent._app.settings[option])
         self.version = wx.Choice(optionspane, -1, choices=parent.versions)
-        ranges = map(_, ("Entire Bible", "Old Testament",
-            "Pentateuch (Gen - Deut)", "History (Josh - Esth)",
-            "Wisdom (Job - Song)", "Major Prophets (Isa - Dan)",
-            "Minor Prophets (Hos - Mal)", "New Testament",
-            "Gospels & Acts (Matt - Acts)", "Paul's Letters (Rom - Heb)",
-            "General Letters (Jas - Jude)", "Apocalypse (Rev)",
-            "Just Current Book", "Custom..."))
+        ranges = (_("Entire Bible"), _("Old Testament"),
+            _("Pentateuch (Gen - Deut)"), _("History (Josh - Esth)"),
+            _("Wisdom (Job - Song)"), _("Major Prophets (Isa - Dan)"),
+            _("Minor Prophets (Hos - Mal)"), _("New Testament"),
+            _("Gospels & Acts (Matt - Acts)"), _("Paul's Letters (Rom - Heb)"),
+            _("General Letters (Jas - Jude)"), _("Apocalypse (Rev)"),
+            _("Just Current Book"), _("Custom..."))
         self.rangechoice = wx.Choice(optionspane, -1, choices=ranges)
         self.rangechoice.SetSelection(0)
         self.start = wx.Choice(optionspane, -1, choices=BOOK_NAMES)
@@ -201,7 +201,7 @@ class SearchPane(wx.Panel):
         if not options[1]:  # not Case Sensitive
             flags |= re.IGNORECASE
         self.lastversion = self.version.GetStringSelection()
-        browser = self._parent.get_htmlwindow(self._parent.versions.index(self.lastversion))
+        Bible = self._parent.get_htmlwindow(self._parent.versions.index(self.lastversion)).Bible
         start = self.start.GetSelection() + 1
         stop = self.stop.GetSelection() + 1
         if not options[4]:  # not Regular Expression
@@ -219,19 +219,19 @@ class SearchPane(wx.Panel):
                         longest = r'\b%s\b' % longest
                     for word in words:
                         pattern = re.compile(word, flags)
-                        matches = filter(lambda item: pattern.search(browser.Bible[item[0]][item[1]][item[2]]), matches)
+                        matches = filter(lambda item: pattern.search(Bible[item[0]][item[1]][item[2]]), matches)
                     words.insert(0, longest)
                     pattern = re.compile(r'(%s)' % "|".join(words), flags)
                 elif options[3]:    # Phrase
                     pattern = re.compile(r'\[?\b%s\b\]?' % r'\W+'.join(words), flags)
-                    matches = filter(lambda item: pattern.search(browser.Bible[item[0]][item[1]][item[2]]), matches)
+                    matches = filter(lambda item: pattern.search(Bible[item[0]][item[1]][item[2]]), matches)
             else:
                 matches = []
                 for word in words:
                     matches += self.FindWord(word, options)
                 if options[2]:  # Exact Match
                     pattern = re.compile(r'(%s)' % "|".join([r'\b%s\b' % word for word in words]), flags)
-                    matches = filter(lambda item: pattern.search(browser.Bible[item[0]][item[1]][item[2]]), matches)
+                    matches = filter(lambda item: pattern.search(Bible[item[0]][item[1]][item[2]]), matches)
                 else:
                     pattern = re.compile(r'(%s)' % "|".join(words), flags)
             matches = filter(lambda item: start <= item[0] <= stop, matches)
@@ -248,9 +248,9 @@ class SearchPane(wx.Panel):
             matches = []
             pattern = re.compile(text, flags)
             for b in range(start, stop + 1):
-                for c in range(1, len(browser.Bible[b])):
-                    for v in range(1, len(browser.Bible[b][c])):
-                        verse = browser.Bible[b][c][v]
+                for c in range(1, len(Bible[b])):
+                    for v in range(1, len(Bible[b][c])):
+                        verse = Bible[b][c][v]
                         if "<div" in verse:
                             verse = verse[:verse.index("<div")]
                         if pattern.search(verse):
@@ -267,7 +267,7 @@ class SearchPane(wx.Panel):
                 verses = []
                 while i < len(matches):
                     if matches[i] == [b, c, v + len(verses)]:
-                        verse = browser.Bible[matches[i][0]][matches[i][1]][matches[i][2]]
+                        verse = Bible[matches[i][0]][matches[i][1]][matches[i][2]]
                         if "<div" in verse:
                             verse = verse[:verse.index("<div")]
                         offset = 0

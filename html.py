@@ -12,21 +12,6 @@ from info import *
 _ = wx.GetTranslation
 
 
-def save_as(frame):
-    browser = frame.get_htmlwindow()
-    title = "%s %d (%s)" % (BOOK_NAMES[frame.reference[0] - 1],
-        frame.reference[1], frame.notebook.GetPageText(
-        frame.notebook.GetSelection()))
-    filename = wx.FileSelector(default_filename="%s.html" % title,
-        wildcard=_("HTML Documents (*.html;*.htm)|*.html;*.htm"),
-        flags=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT, parent=frame)
-    if len(filename):
-        html = open(filename, 'w')
-        html.write(browser.get_html(frame.reference[0], frame.reference[1]). \
-            encode("utf_8"))
-        html.close()
-
-
 class Printer(html.HtmlEasyPrinting):
     def __init__(self, frame):
         super(Printer, self).__init__("Berean", frame)
@@ -37,12 +22,12 @@ class Printer(html.HtmlEasyPrinting):
         self.SetFooter(_("<div align=center><font size=\"-1\">Page @PAGENUM@</font></div>"))
 
     def get_chapter(self):
-        browser = self._frame.get_htmlwindow()
-        text = browser.get_html(self._frame.reference[0],
+        htmlwindow = self._frame.get_htmlwindow()
+        text = htmlwindow.get_html(self._frame.reference[0],
             self._frame.reference[1])
         if self._frame.notebook.GetSelection() < len(self._frame.versions):
             pos = text.index("</b>")
-            text = text[:pos] + " (%s)" % browser.version + text[pos:]
+            text = text[:pos] + " (%s)" % htmlwindow.version + text[pos:]
         return text
 
     def print_chapter(self):
@@ -107,7 +92,7 @@ class BaseChapterWindow(BaseHtmlWindow):
 
     def OnFindText(self, event):
         if not self._frame.aui.GetPane("search_pane").IsShown():
-            self._frame.ShowSearchPane()
+            self._frame.show_search_pane()
         self._frame.search.text.SetValue(self.SelectionToText().strip().lstrip("1234567890 "))
         self._frame.search.OnSearch(None)
 
