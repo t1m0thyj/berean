@@ -1,4 +1,4 @@
-"""setup.py - builds executable for Berean"""
+"""setup.py - makes stand-alone executable for Berean"""
 
 from distutils.core import setup
 from py2exe.build_exe import py2exe
@@ -7,31 +7,32 @@ import glob
 import os
 import shutil
 
-VERSION = "1.4.8"
+from globals import VERSION
+
+os.chdir(os.path.dirname(__file__))
 manifest = """<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0">
-    <assemblyIdentity version="0.64.1.0" processorArchitecture="x86"
-    name="Controls" type="win32"/>
-    <description>%s</description>
-    <dependency>
-        <dependentAssembly>
-            <assemblyIdentity type="win32"
-            name="Microsoft.Windows.Common-Controls" version="6.0.0.0"
-            processorArchitecture="X86" publicKeyToken="6595b64144ccf1df"
-            language="*"/>
-        </dependentAssembly>
-    </dependency>
-    <dependency>
-        <dependentAssembly>
-            <assemblyIdentity type="win32"
-            name="Microsoft.VC90.CRT" version="9.0.21022.8"
-            processorArchitecture="x86" publicKeyToken="1fc8b3b9a1e18e3b" />
-        </dependentAssembly>
-    </dependency>
+	<assemblyIdentity version="0.64.1.0" processorArchitecture="x86"
+	name="Controls" type="win32"/>
+	<description>%s</description>
+	<dependency>
+		<dependentAssembly>
+			<assemblyIdentity type="win32"
+			name="Microsoft.Windows.Common-Controls" version="6.0.0.0"
+			processorArchitecture="X86" publicKeyToken="6595b64144ccf1df"
+			language="*"/>
+		</dependentAssembly>
+	</dependency>
+	<dependency>
+		<dependentAssembly>
+			<assemblyIdentity type="win32"
+			name="Microsoft.VC90.CRT" version="9.0.21022.8"
+			processorArchitecture="x86" publicKeyToken="1fc8b3b9a1e18e3b" />
+		</dependentAssembly>
+	</dependency>
 </assembly>
 """
-cwd = os.path.dirname(__file__)
-os.chdir(cwd)
+
 
 class Target:
     def __init__(self):
@@ -47,13 +48,13 @@ class Target:
         self.other_resources = [(24, 1, manifest % self.name)]
         self.script = "berean.py"
 
+
 for imagedir in ("images", "images\\flags"):
     thumbs = "%s\\Thumbs.db" % imagedir
     if os.path.isfile(thumbs):
         os.remove(thumbs)
 if os.path.isdir("dist"):
     shutil.rmtree("dist")
-
 setup(data_files=[("images", glob.glob("images\\*.*")),
         ("images\\flags", glob.glob("images\\flags\\*.*")),
         ("locale\\en_US", glob.glob("locale\\en_US\\*.*")),
@@ -81,6 +82,5 @@ setup(data_files=[("images", glob.glob("images\\*.*")),
     service=[],
     com_server=[],
     ctypes_com_server=[])
-
 if os.path.isdir("build"):
     shutil.rmtree("build")

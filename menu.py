@@ -1,4 +1,4 @@
-"""menu.py - menubar and taskbar icon classes for Berean"""
+"""menu.py - menubar class and favorites management for Berean"""
 
 import os
 
@@ -6,7 +6,7 @@ import wx
 from wx import gizmos
 
 import html
-from info import *
+from globals import *
 from refalize import *
 
 _ = wx.GetTranslation
@@ -23,18 +23,16 @@ class MenuBar(wx.MenuBar):
     def __init__(self, frame):
         super(MenuBar, self).__init__()
         self._frame = frame
-        self.favorites_list = frame._app.settings["FavoritesList"]
+        self.favorites_list = frame._app.config.ReadList("FavoritesList")
 
         self.file_menu = wx.Menu()
         self.file_menu.Append(wx.ID_PRINT, _("&Print...\tCtrl+P"),
             _("Prints the current chapter"))
         frame.Bind(wx.EVT_MENU, self.OnPrint, id=wx.ID_PRINT)
-        self.file_menu.Append(wx.ID_PRINT_SETUP,
-            _("Page &Setup...\tCtrl+Shift+P"),
+        self.file_menu.Append(wx.ID_PRINT_SETUP, _("Page &Setup..."),
             _("Changes page layout settings"))
         frame.Bind(wx.EVT_MENU, self.OnPageSetup, id=wx.ID_PRINT_SETUP)
-        self.file_menu.Append(wx.ID_PREVIEW,
-            _("P&rint Preview...\tCtrl+Alt+P"),
+        self.file_menu.Append(wx.ID_PREVIEW, _("P&rint Preview..."),
             _("Previews the current chapter"))
         frame.Bind(wx.EVT_MENU, self.OnPrintPreview, id=wx.ID_PREVIEW)
         if '__WXMAC__' not in wx.PlatformInfo:
@@ -48,6 +46,11 @@ class MenuBar(wx.MenuBar):
         self.edit_menu.Append(wx.ID_COPY, _("&Copy\tCtrl+C"),
             _("Copies the selected text to the clipboard"))
         frame.Bind(wx.EVT_MENU, self.OnCopy, id=wx.ID_COPY)
+        if '__WXMAC__' not in wx.PlatformInfo:
+            self.edit_menu.AppendSeparator()
+        self.edit_menu.Append(wx.ID_PREFERENCES, _("&Preferences..."),
+            _("Configures program settings"))
+        frame.Bind(wx.EVT_MENU, self.OnPreferences, id=wx.ID_PREFERENCES)
         self.Append(self.edit_menu, _("&Edit"))
 
         self.view_menu = wx.Menu()
@@ -87,6 +90,10 @@ class MenuBar(wx.MenuBar):
         self.notes_pane_item = self.view_menu.AppendCheckItem(-1,
             _("&Notes Pane\tCtrl+Shift+N"), _("Shows or hides the notes pane"))
         frame.Bind(wx.EVT_MENU, self.OnNotesPane, self.notes_pane_item)
+        self.multiple_verse_search_item = self.view_menu.AppendCheckItem(-1,
+            _("&Multiple Verse Search\tCtrl+M"))
+        frame.Bind(wx.EVT_MENU, self.OnMultipleVerseSearch,
+            self.multiple_verse_search_item)
         self.Append(self.view_menu, _("&View"))
 
         self.favorites_menu = wx.Menu()
@@ -104,15 +111,6 @@ class MenuBar(wx.MenuBar):
         frame.Bind(wx.EVT_MENU, self.OnViewAll, view_all_item)
         self.update_favorites()
         self.Append(self.favorites_menu, _("F&avorites"))
-
-        self.tools_menu = wx.Menu()
-        multiple_verse_search_item = self.tools_menu.Append(-1,
-            _("&Multiple Verse Search...\tCtrl+M"))
-        frame.Bind(wx.EVT_MENU, self.OnMultiverse, multiple_verse_search_item)
-        self.tools_menu.Append(wx.ID_PREFERENCES, _("&Preferences..."),
-            _("Configures program settings"))
-        frame.Bind(wx.EVT_MENU, self.OnPreferences, id=wx.ID_PREFERENCES)
-        self.Append(self.tools_menu, _("&Tools"))
 
         self.help_menu = wx.Menu()
         self.help_menu.Append(wx.ID_HELP, _("&Contents...\tF1"),
@@ -136,23 +134,14 @@ class MenuBar(wx.MenuBar):
             self.favorites_menu.Insert(3, wx.ID_HIGHEST + 1, _("(Empty)"))
             self.favorites_menu.Enable(wx.ID_HIGHEST + 1, False)
 
-    def multiple_verse_search(self, references=None):
-        from dialogs import multiple_verse_search
-        dialog = multiple_verse_search.MultipleVerseSearchDialog(self._frame,
-            references)
-        dialog.Show()
-
-    def OnSaveAs(self, event):
-        html.save_as(self._frame)
-
     def OnPrint(self, event):
-        self._frame.printer.print_chapter()
+        self._frame.printing.print_chapter()
 
     def OnPageSetup(self, event):
-        self._frame.printer.PageSetup()
+        self._frame.printing.PageSetup()
 
     def OnPrintPreview(self, event):
-        self._frame.printer.preview_chapter()
+        self._frame.printing.preview_chapter()
 
     def OnCopy(self, event):
         window = self._frame.FindFocus()
@@ -164,6 +153,11 @@ class MenuBar(wx.MenuBar):
             wx.TheClipboard.SetData(data)
             wx.TheClipboard.Flush()
             wx.TheClipboard.Close()
+
+    def OnPreferences(self, event):
+        import preferences
+        dialog = preferences.PreferencesDialog(self._frame)
+        dialog.Show()
 
     def OnGotoVerse(self, event):
         self._frame.toolbar.OnGotoVerse(event)
@@ -198,6 +192,9 @@ class MenuBar(wx.MenuBar):
         self._frame.aui.GetPane("notes_pane").Show(event.IsChecked())
         self._frame.aui.Update()
 
+    def OnMultipleVerseSearch(self, event):
+        self._frame.show_multiple_verse_search(event.IsChecked())
+
     def OnAddToFavorites(self, event):
         if self._frame.reference[2] == -1:
             favorite = "%s %s" % (BOOK_NAMES[self._frame.reference[0] - 1],
@@ -224,21 +221,24 @@ class MenuBar(wx.MenuBar):
             wx.MessageBox(_("Sorry, but I do not understand '%s'.\n\nIf you think that Berean should accept it,\nplease email <timothysw@objectmail.com>.") % reference, "Berean", wx.ICON_EXCLAMATION | wx.OK)
 
     def OnViewAll(self, event):
-        self.multiple_verse_search("\n".join(self.favorites_list))
-
-    def OnMultiverse(self, event):
-        self.multiple_verse_search()
-
-    def OnPreferences(self, event):
-        from dialogs import preferences
-        dialog = preferences.PreferencesDialog(self._frame)
-        dialog.Show()
+        self._frame.show_multiple_verse_search()
+        self._frame.multiple_verse_search.verse_list.SetValue(
+            "\n".join(self.favorites_list))
+        self._frame.multiple_verse_search.OnSearch(None)
 
     def OnHelp(self, event):
         self._frame.help.show_help_window()
 
     def OnAbout(self, event):
-        self._frame.help.show_about_box()
+        info = wx.AboutDialogInfo()
+        info.SetName("Berean")
+        info.SetVersion(VERSION)
+        info.SetCopyright("Copyright (C) 2011-2014 Timothy Johnson")
+        info.SetDescription(
+            _("An open source, cross-platform Bible study tool"))
+        info.SetWebSite("http://berean.sf.net")
+        info.SetLicense(LICENSE)
+        wx.AboutBox(info)
 
 
 class FavoritesManager(wx.Dialog):
@@ -247,20 +247,19 @@ class FavoritesManager(wx.Dialog):
             _("Manage Favorites"),
             style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER)
         self._parent = parent
-
         self.listbox = gizmos.EditableListBox(self, -1, _("Favorites List"))
         self.listbox.SetStrings(parent.menubar.favorites_list)
-        self.listbox.Bind(wx.EVT_LIST_END_LABEL_EDIT,
-            self.OnListboxEndLabelEdit)
+        self.listbox.Bind(wx.EVT_LIST_END_LABEL_EDIT, self.OnListEndLabelEdit)
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add(self.listbox, 1, wx.ALL | wx.EXPAND, 5)
         button_sizer = self.CreateStdDialogButtonSizer(wx.OK | wx.CANCEL)
+        self.Bind(wx.EVT_BUTTON, self.OnOk, id=wx.ID_OK)
         sizer.Add(button_sizer, 0, wx.ALL | wx.EXPAND, 5)
         self.SetSizer(sizer)
-        self.Layout()
-        self.Bind(wx.EVT_BUTTON, self.OnOk, id=wx.ID_OK)
+        self.Fit()
+        self.Center()
 
-    def OnListboxEndLabelEdit(self, event):
+    def OnListEndLabelEdit(self, event):
         if not event.IsEditCancelled():
             label = event.GetLabel()
             try:
@@ -268,18 +267,33 @@ class FavoritesManager(wx.Dialog):
             except:
                 wx.MessageBox(_("Sorry, but I do not understand '%s'.\n\nIf you think that Berean should accept it,\nplease email <timothysw@objectmail.com>.") % label, _("Manage Favorites"), wx.ICON_EXCLAMATION | wx.OK)
                 event.Veto()
-            else:
-                index = find_favorite(reference, self.listbox.GetStrings())
-                if index != -1 and index != event.GetIndex():
-                    if reference[2] == -1:
-                        wx.MessageBox(_("%s %d is already in the favorites list.") % (BOOK_NAMES[reference[0] - 1], reference[1]), _("Manage Favorites"), wx.ICON_EXCLAMATION | wx.OK)
-                    else:
-                        wx.MessageBox(_("%s %d:%d is already in the favorites list.") % (BOOK_NAMES[reference[0] - 1], reference[1], reference[2]), _("Manage Favorites"), wx.ICON_EXCLAMATION | wx.OK)
-                    event.Veto()
+                return
+            index = find_favorite(reference, self.listbox.GetStrings())
+            if index != -1 and index != event.GetIndex():
+                if reference[2] == -1:
+                    wx.MessageBox(_("%s %d is already in the favorites list.") % (BOOK_NAMES[reference[0] - 1], reference[1]), _("Manage Favorites"), wx.ICON_EXCLAMATION | wx.OK)
                 else:
-                    event.Skip()
+                    wx.MessageBox(_("%s %d:%d is already in the favorites list.") % (BOOK_NAMES[reference[0] - 1], reference[1], reference[2]), _("Manage Favorites"), wx.ICON_EXCLAMATION | wx.OK)
+                event.Veto()
+                return
+        event.Skip()
 
     def OnOk(self, event):
         self._parent.menubar.favorites_list = self.listbox.GetStrings()
         self._parent.menubar.update_favorites()
         self.Close()
+
+
+LICENSE = """This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+"""

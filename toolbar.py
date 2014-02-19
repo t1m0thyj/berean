@@ -3,10 +3,11 @@
 import wx
 from wx import aui
 
-from info import *
+from globals import *
 from refalize import *
 
 _ = wx.GetTranslation
+
 
 class MainToolBar(aui.AuiToolBar):
     def __init__(self, parent):
@@ -14,13 +15,13 @@ class MainToolBar(aui.AuiToolBar):
             aui.AUI_TB_DEFAULT_STYLE | aui.AUI_TB_OVERFLOW |
             aui.AUI_TB_HORZ_TEXT)
         self._parent = parent
-        self.history_item = len(parent._app.settings["ChapterHistory"]) - 1
-        self.verse_history = parent._app.settings["ChapterHistory"]
+        self.verse_history = parent._app.config.ReadList("History")
+        self.history_item = len(self.verse_history) - 1
 
         self.verse_entry = wx.ComboBox(self, -1,
-            choices=parent._app.settings["ReferenceHistory"], size=(150, -1),
-            style=wx.TE_PROCESS_ENTER)
-        self.verse_entry.SetValue(parent._app.settings["LastReference"])
+            choices=parent._app.config.ReadList("VerseHistory"),
+            size=(150, -1), style=wx.TE_PROCESS_ENTER)
+        self.verse_entry.SetValue(parent._app.config.Read("Main/LastVerse"))
         self.verse_entry.Bind(wx.EVT_TEXT_ENTER, self.OnGotoVerse)
         self.AddControl(self.verse_entry)
         self.AddTool(parent.menubar.goto_verse_item.GetId(), "",
@@ -29,14 +30,12 @@ class MainToolBar(aui.AuiToolBar):
         self.AddTool(wx.ID_BACKWARD, _("Back"), parent.get_bitmap("go-back"),
             _("Go Back (Alt+Left)"))
         self.SetToolDropDown(wx.ID_BACKWARD, True)
-        self.Bind(wx.EVT_MENU, self.OnBack, id=wx.ID_BACKWARD)
-        self.Bind(aui.EVT_AUITOOLBAR_TOOL_DROPDOWN, self.OnBackDropdown,
+        self.Bind(aui.EVT_AUITOOLBAR_TOOL_DROPDOWN, self.OnBack,
             id=wx.ID_BACKWARD)
         self.AddTool(wx.ID_FORWARD, _("Forward"),
             parent.get_bitmap("go-forward"), _("Go Forward (Alt+Right)"))
         self.SetToolDropDown(wx.ID_FORWARD, True)
-        self.Bind(wx.EVT_MENU, self.OnForward, id=wx.ID_FORWARD)
-        self.Bind(aui.EVT_AUITOOLBAR_TOOL_DROPDOWN, self.OnForwardDropdown,
+        self.Bind(aui.EVT_AUITOOLBAR_TOOL_DROPDOWN, self.OnForward,
             id=wx.ID_FORWARD)
         self.AddSeparator()
         self.AddTool(wx.ID_PRINT, "", parent.get_bitmap("print"),
@@ -97,42 +96,36 @@ class MainToolBar(aui.AuiToolBar):
             self.verse_entry.SetValue(self.verse_entry.GetString(0))
             self._parent.search.OnSearch(None)
 
-    def OnBack(self, event):
+    def OnHistoryItem(self, event):
         book, chapter, verse = refalize(
-            self.verse_history[self.history_item - 1])
+            self.verse_history[event.GetId() - wx.ID_HIGHEST - 1])
         self._parent.load_chapter(book, chapter, verse, True)
 
-    def OnBackDropdown(self, event):
-        if event.IsDropDownClicked():
-            self.SetToolSticky(wx.ID_BACKWARD, True)
+    def OnBack(self, event):
+        if not event.IsDropDownClicked():
+            book, chapter, verse = refalize(
+                self.verse_history[self.history_item - 1])
+            self._parent.load_chapter(book, chapter, verse, True)
+        else:
             menu = wx.Menu()
             for i in reversed(range(0, self.history_item)):
                 menu.Append(wx.ID_HIGHEST + i + 1, self.verse_history[i])
                 self.Bind(wx.EVT_MENU, self.OnHistoryItem, id=wx.ID_HIGHEST +
                     i + 1)
             self.PopupMenu(menu, self.get_popup_pos(self, wx.ID_BACKWARD))
-            self.SetToolSticky(wx.ID_BACKWARD, False)
-
-    def OnHistoryItem(self, event):
-        book, chapter, verse = refalize(
-            self.verse_history[event.GetId() - wx.ID_HIGHEST - 1])
-        self._parent.load_chapter(book, chapter, verse, True)
 
     def OnForward(self, event):
-        book, chapter, verse = refalize(
-            self.verse_history[self.history_item + 1])
-        self._parent.load_chapter(book, chapter, verse, True)
-
-    def OnForwardDropdown(self, event):
-        if event.IsDropDownClicked():
-            self.SetToolSticky(wx.ID_FORWARD, True)
+        if not event.IsDropDownClicked():
+            book, chapter, verse = refalize(
+                self.verse_history[self.history_item + 1])
+            self._parent.load_chapter(book, chapter, verse, True)
+        else:
             menu = wx.Menu()
             for i in range(self.history_item + 1, len(self.verse_history)):
                 menu.Append(wx.ID_HIGHEST + i + 1, self.verse_history[i])
                 self.Bind(wx.EVT_MENU, self.OnHistoryItem, id=wx.ID_HIGHEST +
                     i + 1)
             self.PopupMenu(menu, self.get_popup_pos(self, wx.ID_FORWARD))
-            self.SetToolSticky(wx.ID_FORWARD, False)
 
 
 class ZoomBar(wx.ToolBar):

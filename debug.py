@@ -7,6 +7,8 @@ import urllib2
 
 import wx
 
+from globals import VERSION
+
 _ = wx.GetTranslation
 
 error = False

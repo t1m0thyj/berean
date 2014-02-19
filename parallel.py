@@ -3,28 +3,28 @@
 import wx
 
 from html import BaseChapterWindow
-from info import *
+from globals import *
 
 _ = wx.GetTranslation
 
 
 class ParallelWindow(BaseChapterWindow):
-    def __init__(self, parent):
+    def __init__(self, parent, version_list):
         super(ParallelWindow, self).__init__(parent, parent.GetGrandParent())
         self._parent = parent
-        self.set_description(self._frame._app.settings["ParallelVersions"])
+        self.set_description(version_list)
 
-    def set_description(self, versions):
-        if len(versions) <= 2:
-            self.description = _(" and ").join(versions)
+    def set_description(self, version_list):
+        if len(version_list) <= 2:
+            self.description = _(" and ").join(version_list)
         else:
-            self.description = _("%s, and %s") % (", ".join(versions[:-1]),
-                versions[-1])
+            self.description = _("%s, and %s") % (", ".join(version_list[:-1]),
+                version_list[-1])
 
     def get_html(self, book, chapter, verse=-1):
         Bibles = []
         lines = ["<tr>"]
-        versions = []
+        version_list = []
         for i in range(len(self._parent.choices)):
             selection = self._parent.choices[i].GetSelection()
             if i > 0:
@@ -32,9 +32,9 @@ class ParallelWindow(BaseChapterWindow):
                     continue
                 selection -= 1
             Bibles.append(self._frame.notebook.GetPage(selection).Bible)
-            versions.append(self._frame.versions[selection])
+            version_list.append(self._frame.version_list[selection])
             heading = "<font size=\"+1\"><b>%s %d (%s)</b></font>" % \
-                (Bibles[-1][book][0], chapter, versions[-1])
+                (Bibles[-1][book][0], chapter, version_list[-1])
             if not Bibles[-1][book][chapter][0]:
                 lines.append("  <td align=center>%s</td>" % heading)
             else:
@@ -59,7 +59,7 @@ class ParallelWindow(BaseChapterWindow):
                     line.append("</a>")
                 lines.append("".join(line) + "</td>")
             lines.append("</tr>")
-        self.set_description(versions)
+        self.set_description(version_list)
         title = "%s %d (%s)" % (BOOK_NAMES[book - 1], chapter, _("Parallel"))
         return HTML % (title, self._frame.zoom_level, "\n      ".join(lines))
 
@@ -68,7 +68,7 @@ class ParallelWindow(BaseChapterWindow):
         self._frame.statusbar.SetStatusText("%s %d (%s)" %
             (BOOK_NAMES[book - 1], chapter, self.description), 0)
         if wx.VERSION_STRING >= "2.9.4.0":
-            self._frame.notebook.SetPageToolTip(len(self._frame.versions),
+            self._frame.notebook.SetPageToolTip(len(self._frame.version_list),
                 self.description)
         if verse > 1:
             wx.CallAfter(self.ScrollToAnchor, str(verse))
@@ -128,23 +128,24 @@ class ParallelPanel(wx.Panel):
         self.choice_data = wx.CustomDataObject("ParallelPanel")
 
         self.choices = []
-        for i in range(len(self._frame.versions)):
+        version_list = self._frame._app.config.ReadList("ParallelVersions",
+            self._frame.version_list)
+        for i in range(len(self._frame.version_list)):
             self.choices.append(wx.Choice(self, -1,
-                choices=self._frame.versions))
+                choices=self._frame.version_list))
             if i > 0:
                 self.choices[i].Insert(_("(none)"), 0)
-            if i < len(self._frame._app.settings["ParallelVersions"]):
-                self.choices[i].SetStringSelection(
-                    self._frame._app.settings["ParallelVersions"][i])
+            if i < len(version_list):
+                self.choices[i].SetStringSelection(version_list[i])
             else:
                 self.choices[i].SetSelection(0)
-                if i > len(self._frame._app.settings["ParallelVersions"]):
+                if i > len(version_list):
                     self.choices[i].Disable()
             self.choices[i].SetDropTarget(ChoiceDropTarget(self, i))
             self.choices[i].Bind(wx.EVT_MIDDLE_UP, self.OnChoiceMiddleUp)
             self.choices[i].Bind(wx.EVT_RIGHT_DOWN, self.OnChoiceRightDown)
         self.Bind(wx.EVT_CHOICE, self.OnChoice)
-        self.htmlwindow = ParallelWindow(self)
+        self.htmlwindow = ParallelWindow(self, version_list)
 
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer2 = wx.BoxSizer(wx.HORIZONTAL)
@@ -163,7 +164,8 @@ class ParallelPanel(wx.Panel):
                 if i > index:
                     self.choices[i - 1].SetSelection(selection)
                 self.choices[i].SetSelection(0)
-                if i < len(self.choices) - 1 and self.choices[i + 1].GetSelection() == 0:
+                if (i < len(self.choices) - 1 and
+                        self.choices[i + 1].GetSelection() == 0):
                     self.choices[i + 1].Disable()
         elif index < len(self.choices) - 1:
             self.choices[index + 1].Enable()

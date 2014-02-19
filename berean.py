@@ -15,8 +15,6 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import codecs
-import ConfigParser
 import getopt
 import os
 import sys
@@ -26,50 +24,96 @@ import wx
 import debug
 import parent
 
-VERSION = debug.VERSION = parent.help.VERSION = "1.4.8"
-# Make ConfigParser work with Unicode
-ConfigParser.str = lambda value: value.encode("utf_8")
 
+class FileConfig(wx.FileConfig):
+    def __init__(self, app):
+        super(FileConfig, self).__init__(
+            localFilename=os.path.join(app.userdatadir, "berean.ini"))
+        self._app = app
+        self.SetRecordDefaults(True)
 
-class FileConfig(ConfigParser.RawConfigParser):
-    def __init__(self):
-        ConfigParser.RawConfigParser.__init__(self)
+    def ReadList(self, key, defaultVal=[]):
+        if not self.HasGroup(key):
+            return defaultVal
+        i = 1
+        value = []
+        while self.HasEntry("%s/Item%d" % (key, i)):
+            value.append(self.Read("%s/Item%d" % (key, i)))
+            i += 1
+        return value
 
-        self.optionxform = str  # Don't make option names lowercase
+    def save(self):
+        self.SetPath("/Main")
+        self.Write("WindowPosition", ",".join(map(str,
+            self._app.frame.rect.GetPosition())))
+        self.Write("WindowSize", ",".join(map(str,
+            self._app.frame.rect.GetSize())))
+        self.WriteBool("IsMaximized", self._app.frame.IsMaximized())
+        self.WriteInt("CurrentBook", self._app.frame.reference[0])
+        self.WriteInt("CurrentChapter", self._app.frame.reference[1])
+        self.WriteInt("CurrentVerse", self._app.frame.reference[2])
+        self.WriteInt("ZoomLevel", self._app.frame.zoom_level)
+        self.Write("LastVerse", self._app.frame.toolbar.verse_entry.GetValue())
+        self.WriteInt("ActiveVersionTab",
+            self._app.frame.notebook.GetSelection())
+        self.WriteInt("ActiveNotesTab", self._app.frame.notes.GetSelection())
+        self.WriteBool("MinimizeToTray", self._app.frame.minimize_to_tray)
+        self.WriteList("../VersionList", self._app.frame.version_list)
+        self.WriteList("../FavoritesList",
+            self._app.frame.menubar.favorites_list)
+        self.WriteList("../VerseHistory",
+            self._app.frame.toolbar.verse_entry.GetStrings())
+        self.WriteList("../History", self._app.frame.toolbar.verse_history)
+        parallel_versions = []
+        if hasattr(self._app.frame, "parallel"):
+            for i, choice in enumerate(self._app.frame.parallel.choices):
+                if i > 0 and choice.GetSelection() == 0:
+                    continue
+                version = choice.GetStringSelection()
+                if version in self._app.frame.version_list:
+                    parallel_versions.append(version)
+        self.WriteList("../ParallelVersions", parallel_versions)
+        self.SetPath("/Search")
+        self.Write("LastSearch", self._app.frame.search.text.GetValue())
+        self.WriteList("SearchHistory",
+            self._app.frame.search.text.GetStrings())
+        self.WriteBool("ShowOptions",
+            self._app.frame.search.optionspane.IsExpanded())
+        for option in self._app.frame.search.options:
+            state = getattr(self._app.frame.search, option).Get3StateValue()
+            if state == wx.CHK_UNDETERMINED:
+                state += self._app.frame.search.checkbox_states[option]
+            self.WriteInt(option, state)
+        self.Write("LastMultipleVerseSearch",
+            self._app.frame.multiple_verse_search.verse_list.GetValue())
+        self.Flush()
 
-    def getunicode(self, section, option):
-        return self.get(section, option).decode("utf_8")
-
-    def getlist(self, section, option=None):
-        if option:
-            section = "%s\\%s" % (section, option)
-        return [self.getunicode(section, option) for option in
-            self.options(section)]
-
-    def setlist(self, section, option, value):
-        if option:
-            section = "%s\\%s" % (section, option)
-        if not self.has_section(section):
-            self.add_section(section)
-        else:
-            for option in self.options(section):
-                self.remove_option(section, option)
+    def WriteList(self, key, value):
+        if self.HasGroup(key):
+            self.DeleteGroup(key)
         for i in range(len(value)):
-            self.set(section, "Item%d" % (i + 1), value[i])
+            self.Write("%s/Item%d" % (key, i + 1), value[i])
 
 
 class Berean(wx.App):
     def OnInit(self):
         super(Berean, self).__init__()
         self.SetAppName("Berean")
-        options, args = getopt.getopt(sys.argv[1:], "",
-            ["datadir=", "systemtray"])
-        options = dict(options)
-
+        options = dict(getopt.getopt(sys.argv[1:], "",
+            ["datadir=", "nosplash", "systemtray"])[0])
         if not hasattr(sys, "frozen"):
             self.cwd = os.path.dirname(__file__)
         else:
             self.cwd = os.path.dirname(sys.argv[0])
+
+        nosplash = "--nosplash" in options
+        systemtray = "--systemtray" in options
+        if not (nosplash or systemtray):
+            splash = wx.SplashScreen(wx.Bitmap(os.path.join(self.cwd,
+                "images", "splash.png"), wx.BITMAP_TYPE_PNG),
+                wx.SPLASH_CENTRE_ON_SCREEN | wx.SPLASH_NO_TIMEOUT, 0, None, -1,
+                style=wx.BORDER_SIMPLE | wx.FRAME_NO_TASKBAR)
+            self.Yield()
         if "--datadir" in options:
             self.userdatadir = options["--datadir"]
             if not os.path.isabs(self.userdatadir):
@@ -77,151 +121,37 @@ class Berean(wx.App):
         elif os.path.isfile(os.path.join(self.cwd, "portable.ini")):
             self.userdatadir = self.cwd
         elif '__WXGTK__' not in wx.PlatformInfo:
-            self.userdatadir = os.path.join(wx.StandardPaths.Get(). \
-                GetUserDataDir(), "Berean")
+            self.userdatadir = os.path.join(
+                wx.StandardPaths.Get().GetUserDataDir(), "Berean")
         else:
-            self.userdatadir = os.path.join(wx.StandardPaths.Get(). \
-                GetUserDataDir(), ".berean")
+            self.userdatadir = os.path.join(
+                wx.StandardPaths.Get().GetUserDataDir(), ".berean")
         if not os.path.isdir(self.userdatadir):
             os.makedirs(self.userdatadir)
-
-        systemtray = "--systemtray" in options
-        if not systemtray:
-            splash_screen = wx.SplashScreen(wx.Bitmap(os.path.join(self.cwd,
-                "images", "splash.png"), wx.BITMAP_TYPE_PNG),
-                wx.SPLASH_CENTRE_ON_SCREEN | wx.SPLASH_NO_TIMEOUT, 0, None,
-                -1, style=wx.BORDER_SIMPLE | wx.FRAME_NO_TASKBAR)
-            self.Yield()
-
-        self.load_settings()
+        self.config = FileConfig(self)
         self.locale = wx.Locale(wx.LANGUAGE_ENGLISH_US)
         localedir = os.path.join(self.cwd, "locale")
         self.locale.AddCatalogLookupPathPrefix(localedir)
         language = self.locale.GetCanonicalName()
-        if os.path.isfile(os.path.join(localedir, language, "LC_MESSAGES", "berean.mo")):
+        if os.path.isfile(os.path.join(localedir, language, "LC_MESSAGES",
+                "berean.mo")):
             self.locale.AddCatalog(language)
-
         self.frame = parent.MainFrame(self)
         self.SetTopWindow(self.frame)
-        self.frame.Show()
         if not systemtray:
-            splash_screen.Destroy()
+            self.frame.Show()
         else:
-            self.frame.Iconize()
-
+            self.frame.taskbaricon = parent.TaskBarIcon(self.frame)
+        if not (nosplash or systemtray):
+            splash.Destroy()
         return True
-
-    def load_settings(self):
-        self.config = FileConfig()
-        filename = os.path.join(self.userdatadir, "berean.ini")
-        if os.path.isfile(filename):
-            ini = open(filename, 'r')
-            ini.seek(ini.readline().index("[")) # Seek past BOM
-            self.config.readfp(ini)
-            ini.close()
-        display_size = wx.GetDisplaySize()
-        best_size = (int(display_size[0] * 0.8), int(display_size[1] * 0.8))
-        self.settings = {"WindowPos": wx.DefaultPosition,
-            "WindowSize": best_size, "MaximizeState": False,
-            "MinimizeToTray": False, "SelectedBook": 1, "SelectedChapter": 1,
-            "ZoomLevel": 3, "ActiveVerse": -1, "ActiveTab": 0,
-            "LastReference": "", "ActiveNotes": 0,
-            "VersionList": ["KJV", "WEB"], "ParallelVersions": [],
-            "FavoritesList": [], "ReferenceHistory": [], "ChapterHistory": [],
-            "AbbrevSearchResults": False, "LastSearch": "",
-            "OptionsPane": True, "AllWords": True, "CaseSensitive": False,
-            "ExactMatch": False, "Phrase": False, "RegularExpression": False,
-            "SearchHistory": [], "LastVerses": ""}
-        if self.config.has_option("Main", "WindowPos"):
-            self.settings["WindowPos"] = map(int, self.config.getunicode("Main", "WindowPos").split(","))
-        if self.config.has_option("Main", "WindowSize"):
-            self.settings["WindowSize"] = map(int, self.config.getunicode("Main", "WindowSize").split(","))
-        if not (0 - self.settings["WindowSize"][0] < self.settings["WindowPos"][0] < display_size[0] and 0 - self.settings["WindowSize"][1] < self.settings["WindowPos"][1] < display_size[1]):
-            self.settings["WindowPos"] = wx.DefaultPosition
-            self.settings["WindowSize"] = best_size
-        for option in ("MaximizeState", "MinimizeToTray", "ActiveNotes"):
-            if self.config.has_option("Main", option):
-                self.settings[option] = self.config.getboolean("Main", option)
-        for option in ("SelectedBook", "SelectedChapter", "ZoomLevel", "ActiveVerse", "ActiveTab"):
-            if self.config.has_option("Main", option):
-                self.settings[option] = self.config.getint("Main", option)
-        if self.config.has_option("Main", "LastReference"):
-            self.settings["LastReference"] = self.config.getunicode("Main", "LastReference")
-        if self.config.has_section("VersionList"):
-            self.settings["VersionList"] = self.config.getlist("VersionList")
-        if self.config.has_section("ParallelVersions"):
-            self.settings["ParallelVersions"] = self.config.getlist("ParallelVersions")
-        else:
-            self.settings["ParallelVersions"] = self.settings["VersionList"]
-        if self.config.has_section("FavoritesList"):
-            self.settings["FavoritesList"] = self.config.getlist("FavoritesList")
-        if self.config.has_section("ReferenceHistory"):
-            self.settings["ReferenceHistory"] = self.config.getlist("ReferenceHistory")
-        if self.config.has_section("ChapterHistory"):
-            self.settings["ChapterHistory"] = self.config.getlist("ChapterHistory")
-        if self.config.has_option("Search", "AbbrevSearchResults"):
-            self.settings["AbbrevSearchResults"] = self.config.getboolean("Search", "AbbrevSearchResults")
-        if self.config.has_option("Search", "LastSearch"):
-            self.settings["LastSearch"] = self.config.getunicode("Search", "LastSearch")
-        if self.config.has_option("Search", "OptionsPane"):
-            self.settings["OptionsPane"] = self.config.getboolean("Search", "OptionsPane")
-        for option in ("AllWords", "CaseSensitive", "ExactMatch", "Phrase", "RegularExpression"):
-            if self.config.has_option("Search", option):
-                self.settings[option] = self.config.getint("Search", option)
-        if self.config.has_option("Search", "LastVerses"):
-            self.settings["LastVerses"] = self.config.getunicode("Search", "LastVerses")
-        if self.config.has_section("Search\\SearchHistory"):
-            self.settings["SearchHistory"] = self.config.getlist("Search", "SearchHistory")
-
-    def save_settings(self):
-        if not self.config.has_section("Main"):
-            self.config.add_section("Main")
-        self.config.set("Main", "WindowPos", ",".join(map(str, self.frame.rect.GetPosition())))
-        self.config.set("Main", "WindowSize", ",".join(map(str, self.frame.rect.GetSize())))
-        self.config.set("Main", "MaximizeState", str(self.frame.IsMaximized()))
-        self.config.set("Main", "MinimizeToTray", str(self.settings["MinimizeToTray"]))
-        self.config.set("Main", "SelectedBook", str(self.frame.reference[0]))
-        self.config.set("Main", "SelectedChapter", str(self.frame.reference[1]))
-        self.config.set("Main", "ZoomLevel", str(self.frame.zoom_level))
-        self.config.set("Main", "ActiveVerse", str(self.frame.reference[2]))
-        self.config.set("Main", "ActiveTab", str(self.frame.notebook.GetSelection()))
-        self.config.set("Main", "LastReference", self.frame.toolbar.verse_entry.GetValue())
-        self.config.set("Main", "ActiveNotes", str(self.frame.notes.GetSelection()))
-        self.config.setlist("VersionList", None, self.frame.versions)
-        ParallelVersions = []
-        if hasattr(self.frame, "parallel"):
-            for i, choice in enumerate(self.frame.parallel.choices):
-                if i > 0 and choice.GetSelection() == 0:
-                    continue
-                version = choice.GetStringSelection()
-                if version in self.frame.versions:
-                    ParallelVersions.append(version)
-        self.config.setlist("ParallelVersions", None, ParallelVersions)
-        self.config.setlist("FavoritesList", None, self.frame.menubar.favorites_list)
-        self.config.setlist("ReferenceHistory", None, self.frame.toolbar.verse_entry.GetStrings())
-        self.config.setlist("ChapterHistory", None, self.frame.toolbar.verse_history)
-        if not self.config.has_section("Search"):
-            self.config.add_section("Search")
-        self.config.set("Search", "AbbrevSearchResults", str(self.settings["AbbrevSearchResults"]))
-        self.config.setlist("Search", "SearchHistory", self.frame.search.text.GetStrings())
-        self.config.set("Search", "LastSearch", self.frame.search.text.GetValue())
-        self.config.set("Search", "OptionsPane", str(self.frame.search.optionspane.IsExpanded()))
-        for option in self.frame.search.options:
-            state = getattr(self.frame.search, option).Get3StateValue()
-            if state == wx.CHK_UNDETERMINED:
-                state += self.frame.search.states[option]
-            self.config.set("Search", option, str(state))
-        self.config.set("Search", "LastVerses", self.settings["LastVerses"])
-        ini = open(os.path.join(self.userdatadir, "berean.ini"), 'w')
-        ini.write(codecs.BOM_UTF8)
-        self.config.write(ini)
-        ini.close()
 
 
 def main():
     sys.excepthook = debug.OnError
     app = Berean()
     app.MainLoop()
+
 
 if __name__ == "__main__":
     main()

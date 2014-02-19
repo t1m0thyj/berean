@@ -7,14 +7,41 @@ import wx
 import wx.lib.dragscroller
 from wx import html
 
-from info import *
+from globals import *
 
 _ = wx.GetTranslation
 
 
-class Printer(html.HtmlEasyPrinting):
+class HelpSystem(html.HtmlHelpController):
     def __init__(self, frame):
-        super(Printer, self).__init__("Berean", frame)
+        super(HelpSystem, self).__init__(parentWindow=frame)
+        self._frame = frame
+        self.SetTempDir(os.path.join(frame._app.userdatadir, ""))
+        self.SetTitleFormat("%s")
+        self.UseConfig(frame._app.config, "Help")
+        filename = os.path.join(frame._app.cwd, "locale",
+            frame._app.locale.GetCanonicalName(), "help", "header.hhp")
+        if not os.path.isfile(filename):
+            filename = os.path.join(frame._app.cwd, "locale", "en_US", "help",
+                "header.hhp")
+        self.AddBook(filename)
+
+    def show_help_window(self):
+        self.DisplayContents()
+        self.GetHelpWindow().Bind(html.EVT_HTML_LINK_CLICKED,
+            self.OnHtmlLinkClicked)
+
+    def OnHtmlLinkClicked(self, event):
+        link = event.GetLinkInfo().GetHref()
+        if link.startswith("http://"):
+            wx.LaunchDefaultBrowser(link)
+        else:
+            event.Skip()
+
+
+class PrintingSystem(html.HtmlEasyPrinting):
+    def __init__(self, frame):
+        super(PrintingSystem, self).__init__("Berean", frame)
         self._frame = frame
         data = self.GetPageSetupData()
         data.SetMarginTopLeft(wx.Point(15, 15))
@@ -25,18 +52,18 @@ class Printer(html.HtmlEasyPrinting):
         htmlwindow = self._frame.get_htmlwindow()
         text = htmlwindow.get_html(self._frame.reference[0],
             self._frame.reference[1])
-        if self._frame.notebook.GetSelection() < len(self._frame.versions):
+        if self._frame.notebook.GetSelection() < len(self._frame.version_list):
             pos = text.index("</b>")
             text = text[:pos] + " (%s)" % htmlwindow.version + text[pos:]
         return text
 
     def print_chapter(self):
-        if wx.VERSION_STRING >= "2.8.11.0":
+        if wx.VERSION_STRING >= "2.8.11.0" and wx.VERSION_STRING != "2.9.0.0":
             self.SetName("%s %d (%s)" % (BOOK_NAMES[self._frame.reference[0] - 1], self._frame.reference[1], self._frame.notebook.GetPageText(self._frame.notebook.GetSelection())))
         self.PrintText(self.get_chapter())
 
     def preview_chapter(self):
-        if wx.VERSION_STRING >= "2.8.11.0":
+        if wx.VERSION_STRING >= "2.8.11.0" and wx.VERSION_STRING != "2.9.0.0":
             self.SetName("%s %d (%s)" % (BOOK_NAMES[self._frame.reference[0] - 1], self._frame.reference[1], self._frame.notebook.GetPageText(self._frame.notebook.GetSelection())))
         self.PreviewText(self.get_chapter())
 
@@ -44,13 +71,15 @@ class Printer(html.HtmlEasyPrinting):
 class BaseHtmlWindow(html.HtmlWindow):
     def __init__(self, parent):
         super(BaseHtmlWindow, self).__init__(parent)
-        self.SetAcceleratorTable(wx.AcceleratorTable([(wx.ACCEL_CTRL,
-            ord("A"), wx.ID_SELECTALL)]))
-        self.Bind(wx.EVT_MENU, lambda event: self.SelectAll(),
-            id=wx.ID_SELECTALL)
+        self.SetAcceleratorTable(wx.AcceleratorTable([(wx.ACCEL_CTRL, ord("A"),
+            wx.ID_SELECTALL)]))
+        self.Bind(wx.EVT_MENU, self.OnSelectAll, id=wx.ID_SELECTALL)
         self.dragscroller = wx.lib.dragscroller.DragScroller(self)
         self.Bind(wx.EVT_MIDDLE_DOWN, self.OnMiddleDown)
         self.Bind(wx.EVT_MIDDLE_UP, self.OnMiddleUp)
+
+    def OnSelectAll(self, event):
+        self.SelectAll()
 
     def OnMiddleDown(self, event):
         self.dragscroller.Start(event.GetPosition())
@@ -66,7 +95,7 @@ class BaseChapterWindow(BaseHtmlWindow):
         self.current_verse = -1
         if wx.VERSION_STRING >= "2.9.0.0":
             self.Bind(wx.EVT_CONTEXT_MENU, self.OnContextMenu)
-        else:
+        else:   # wxHtmlWindow doesn't generate EVT_CONTEXT_MENU in 2.8
             self.Bind(wx.EVT_RIGHT_UP, self.OnContextMenu)
 
     def load_chapter(self, book, chapter, verse=-1):
@@ -83,17 +112,18 @@ class BaseChapterWindow(BaseHtmlWindow):
         menu.Append(wx.ID_SELECTALL, _("Select &All\tCtrl+A"))
         menu.AppendSeparator()
         search_item = menu.Append(-1, _("&Search for Selected Text"))
-        self.Bind(wx.EVT_MENU, self.OnFindText, search_item)
+        self.Bind(wx.EVT_MENU, self.OnSearch, search_item)
         menu.Enable(search_item.GetId(), len(selection))
         menu.AppendSeparator()
         menu.Append(wx.ID_PRINT, _("&Print...\tCtrl+P"))
         menu.Append(wx.ID_PREVIEW, _("P&rint Preview...\tCtrl+Alt+P"))
         self.PopupMenu(menu)
 
-    def OnFindText(self, event):
+    def OnSearch(self, event):
         if not self._frame.aui.GetPane("search_pane").IsShown():
             self._frame.show_search_pane()
-        self._frame.search.text.SetValue(self.SelectionToText().strip().lstrip("1234567890 "))
+        self._frame.search.text.SetValue(
+            self.SelectionToText().strip().lstrip("1234567890 "))
         self._frame.search.OnSearch(None)
 
 
@@ -111,7 +141,7 @@ class ChapterWindow(BaseChapterWindow):
                 self.Bible = cPickle.load(fileobj)
             finally:
                 fileobj.close()
-            self.description, self.flag_name = self.Bible[0]
+            self.description = self.Bible[0]
         except Exception, exc_value:
             wx.MessageBox(_("Could not load %s.\n\nError: %s") % (version,
                 exc_value), _("Error"), wx.ICON_WARNING | wx.OK)
