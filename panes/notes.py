@@ -7,11 +7,11 @@ import os.path
 import wx
 from wx import aui, richtext
 
-from info import *
+from globals import *
 
 _ = wx.GetTranslation
 
-
+"""
 class BookChapterVerseSelector(aui.AuiToolBar):
     def __init__(self, parent, reference):
         style = aui.AUI_TB_DEFAULT_STYLE
@@ -50,7 +50,7 @@ class TopicSelector(aui.AuiToolBar):
         super(TopicSelector, self).__init__(parent, -1, (-1, -1),
             (-1, -1), style)
         self._parent = parent
-
+"""
 
 class NotesPage(wx.Panel):
     def __init__(self, parent, name):
@@ -94,7 +94,6 @@ class NotesPage(wx.Panel):
         self.font_size.Bind(wx.EVT_COMBOBOX, self.OnFontSize)
         self.font_size.Bind(wx.EVT_TEXT_ENTER, self.OnFontSize)
         self.toolbar.AddControl(self.font_size)
-        self.toolbar.AddSeparator()
         self.toolbar.AddTool(wx.ID_BOLD, "", self._frame.get_bitmap("bold"),
             _("Bold (Ctrl+B)"), wx.ITEM_CHECK)
         self.Bind(wx.EVT_MENU, self.OnBold, id=wx.ID_BOLD)
@@ -237,13 +236,13 @@ class NotesPage(wx.Panel):
         notes.close()
 
     def OnPrint(self, event):
-        if wx.VERSION_STRING >= "2.8.11.0":
-            ##self._frame.printer.SetName(_(self.name))
-            self._frame.printer.SetName(self.name)
+        if wx.VERSION_STRING >= "2.8.11.0" and wx.VERSION_STRING != "2.9.0.0":
+            ##self._frame.printing.SetName(_(self.name))
+            self._frame.printing.SetName(self.name)
         stream = cStringIO.StringIO()
         richtext.RichTextHTMLHandler().SaveStream(self.editor.GetBuffer(),
             stream)
-        self._frame.printer.PreviewText(stream.getvalue())
+        self._frame.printing.PreviewText(stream.getvalue())
 
     def OnCut(self, event):
         self.editor.Cut()
@@ -474,7 +473,7 @@ class NotesPage(wx.Panel):
 class NotesPane(aui.AuiNotebook):
     def __init__(self, parent):
         super(NotesPane, self).__init__(parent, -1, style=wx.BORDER_NONE |
-            aui.AUI_NB_TOP | aui.AUI_NB_TAB_SPLIT | aui.AUI_NB_SCROLL_BUTTONS)
+            aui.AUI_NB_TOP | aui.AUI_NB_SCROLL_BUTTONS)
         self.AddPage(NotesPage(self, "Study Notes"), _("Study Notes"))
         self.AddPage(NotesPage(self, "Topic Notes"), _("Topic Notes"))
-        self.SetSelection(parent._app.settings["ActiveNotes"])
+        self.SetSelection(parent._app.config.ReadInt("Main/ActiveNotesTab"))

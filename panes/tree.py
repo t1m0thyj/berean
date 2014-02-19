@@ -2,14 +2,16 @@
 
 import wx
 
-from info import *
+from globals import *
 
 _ = wx.GetTranslation
+
 
 class TreePane(wx.TreeCtrl):
     def __init__(self, parent):
         super(TreePane, self).__init__(parent, -1, style=wx.TR_DEFAULT_STYLE |
-            wx.BORDER_NONE | wx.TR_TWIST_BUTTONS | wx.TR_HIDE_ROOT)
+            wx.BORDER_NONE | wx.TR_TWIST_BUTTONS | wx.TR_NO_LINES |
+            wx.TR_FULL_ROW_HIGHLIGHT | wx.TR_HIDE_ROOT)
         self._parent = parent
         root = self.AddRoot("")
         self.root_nodes = []
