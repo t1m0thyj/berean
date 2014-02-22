@@ -63,7 +63,7 @@ class FileConfig(wx.FileConfig):
             self._app.frame.menubar.favorites_list)
         self.WriteList("../VerseHistory",
             self._app.frame.toolbar.verse_entry.GetStrings())
-        self.WriteList("../History", self._app.frame.toolbar.verse_history)
+        self.WriteList("../History", self._app.frame.verse_history)
         parallel_versions = []
         if hasattr(self._app.frame, "parallel"):
             for i, choice in enumerate(self._app.frame.parallel.choices):

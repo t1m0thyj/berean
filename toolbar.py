@@ -4,7 +4,7 @@ import wx
 from wx import aui
 
 from globals import *
-from refalize import *
+from refalize import refalize, validate
 
 _ = wx.GetTranslation
 
@@ -15,9 +15,6 @@ class MainToolBar(aui.AuiToolBar):
             aui.AUI_TB_DEFAULT_STYLE | aui.AUI_TB_OVERFLOW |
             aui.AUI_TB_HORZ_TEXT)
         self._parent = parent
-        self.verse_history = parent._app.config.ReadList("History")
-        self.history_item = len(self.verse_history) - 1
-
         self.verse_entry = wx.ComboBox(self, -1,
             choices=parent._app.config.ReadList("VerseHistory"),
             size=(150, -1), style=wx.TE_PROCESS_ENTER)
@@ -47,27 +44,7 @@ class MainToolBar(aui.AuiToolBar):
             parent.get_bitmap("add-favorite"), _("Add to Favorites (Ctrl+D)"))
         self.AddTool(parent.menubar.manage_favorites_item.GetId(), "",
             parent.get_bitmap("manage-favorites"), _("Manage Favorites"))
-
-        self.Refresh(False)
-
-    def set_history_item(self, history_item):
-        if history_item == -1:
-            history_item = len(self.verse_history) - 1
-        self.EnableTool(wx.ID_BACKWARD, history_item >= 0)
-        self.EnableTool(wx.ID_FORWARD, history_item < len(self.verse_history) - 1)
-        self.Refresh(False)
-        self._parent.menubar.Enable(wx.ID_BACKWARD, history_item >= 0)
-        self._parent.menubar.Enable(wx.ID_FORWARD, history_item < len(self.verse_history) - 1)
-        self.history_item = history_item
-
-    def get_popup_pos(self, toolbar, id):
-        if toolbar.GetToolFits(id):
-            x, y, width, height = toolbar.GetToolRect(id)
-            return (x, y + height)
-        else:
-            x, y = toolbar.GetPosition()
-            width, height = toolbar.GetSize()
-            return (x + width - 16, y + height)
+        self.Realize()
 
     def OnGotoVerse(self, event):
         reference = self.verse_entry.GetValue()
@@ -98,34 +75,39 @@ class MainToolBar(aui.AuiToolBar):
 
     def OnHistoryItem(self, event):
         book, chapter, verse = refalize(
-            self.verse_history[event.GetId() - wx.ID_HIGHEST - 1])
-        self._parent.load_chapter(book, chapter, verse, True)
+            self._parent.verse_history[event.GetId() - wx.ID_HIGHEST - 1])
+        self._parent.load_chapter(book, chapter, verse, False)
 
     def OnBack(self, event):
         if not event.IsDropDownClicked():
             book, chapter, verse = refalize(
-                self.verse_history[self.history_item - 1])
-            self._parent.load_chapter(book, chapter, verse, True)
+                self._parent.verse_history[self._parent.history_item - 1])
+            self._parent.load_chapter(book, chapter, verse, False)
         else:
             menu = wx.Menu()
-            for i in reversed(range(0, self.history_item)):
-                menu.Append(wx.ID_HIGHEST + i + 1, self.verse_history[i])
+            for i in range(self._parent.history_item - 1, -1, -1):
+                menu.Append(wx.ID_HIGHEST + i + 1,
+                    self._parent.verse_history[i])
                 self.Bind(wx.EVT_MENU, self.OnHistoryItem, id=wx.ID_HIGHEST +
                     i + 1)
-            self.PopupMenu(menu, self.get_popup_pos(self, wx.ID_BACKWARD))
+            x, y, width, height = self.GetToolRect(wx.ID_BACKWARD)
+            self.PopupMenu(menu, (x, y + height))
 
     def OnForward(self, event):
         if not event.IsDropDownClicked():
             book, chapter, verse = refalize(
-                self.verse_history[self.history_item + 1])
-            self._parent.load_chapter(book, chapter, verse, True)
+                self._parent.verse_history[self._parent.history_item + 1])
+            self._parent.load_chapter(book, chapter, verse, False)
         else:
             menu = wx.Menu()
-            for i in range(self.history_item + 1, len(self.verse_history)):
-                menu.Append(wx.ID_HIGHEST + i + 1, self.verse_history[i])
+            for i in range(self._parent.history_item + 1,
+                    len(self._parent.verse_history)):
+                menu.Append(wx.ID_HIGHEST + i + 1,
+                    self._parent.verse_history[i])
                 self.Bind(wx.EVT_MENU, self.OnHistoryItem, id=wx.ID_HIGHEST +
                     i + 1)
-            self.PopupMenu(menu, self.get_popup_pos(self, wx.ID_FORWARD))
+            x, y, width, height = self.GetToolRect(wx.ID_FORWARD)
+            self.PopupMenu(menu, (x, y + height))
 
 
 class ZoomBar(wx.ToolBar):

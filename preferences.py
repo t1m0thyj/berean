@@ -5,13 +5,13 @@ import os
 import wx
 
 _ = wx.GetTranslation
+VERSION_ABBREVS = ("ASV", "DSV", "KJV", "LSG", "RVA", "SEV", "WEB", "Webster",
+    "Wycliffe", "YLT")
 VERSION_NAMES = ("American Standard Version", "Dutch Statenvertaling (Dutch)",
     "King James Version", "Louis Segond (French)",
     "Reina-Valera Antigua (Spanish)", "Las Sagradas Escrituras (Spanish)",
     "World English Bible", "Webster's Bible", "Wycliffe New Testament",
     "Young's Literal Translation")
-VERSION_ABBREVS = ("ASV", "DSV", "KJV", "LSG", "RVA", "SEV", "WEB", "Webster",
-    "Wycliffe", "YLT")
 
 
 class PreferencesDialog(wx.Dialog):
