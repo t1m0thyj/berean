@@ -79,7 +79,8 @@ class NotesPage(wx.Panel):
         self.toolbar.Bind(wx.EVT_MENU, self.OnPaste, id=wx.ID_PASTE)
         self.toolbar.AddSeparator()
         self.font_name = wx.Choice(self.toolbar, -1,
-            choices=sorted(wx.FontEnumerator.GetFacenames()))
+            choices=sorted(filter(lambda name: not name.startswith("@"),
+            wx.FontEnumerator.GetFacenames())))
         self.font_name.SetSelection(0)
         self.toolbar.AddControl(self.font_name)
         self.font_name.Bind(wx.EVT_CHOICE, self.OnFontName)

@@ -36,6 +36,7 @@ def index_version(Bible, version, indexdir):
     fileobj = open(os.path.join(indexdir, "%s.idx" % version), 'wb')
     cPickle.dump(index, fileobj, -1)
     fileobj.close()
+    dialog.Update(70)
     dialog.Destroy()
     return index
 
@@ -127,9 +128,9 @@ class SearchPane(wx.Panel):
             _("Gospels & Acts (Matt - Acts)"), _("Paul's Letters (Rom - Heb)"),
             _("General Letters (Jas - Jude)"), _("Apocalypse (Rev)"),
             _("Just Current Book"), _("Custom..."))
-        self.rangechoice = wx.Choice(optionspane, -1, choices=ranges)
-        self.rangechoice.SetSelection(0)
-        self.rangechoice.Bind(wx.EVT_CHOICE, self.OnRange)
+        self.range_choice = wx.Choice(optionspane, -1, choices=ranges)
+        self.range_choice.SetSelection(0)
+        self.range_choice.Bind(wx.EVT_CHOICE, self.OnRange)
         self.start = wx.Choice(optionspane, -1, choices=BOOK_NAMES)
         self.start.SetSelection(0)
         self.start.Bind(wx.EVT_CHOICE, self.OnStart)
@@ -155,7 +156,7 @@ class SearchPane(wx.Panel):
         sizer4 = wx.StaticBoxSizer(box, wx.VERTICAL)
         sizer5 = wx.BoxSizer(wx.HORIZONTAL)
         sizer5.Add(self.version, 0, wx.ALL | wx.EXPAND, 2)
-        sizer5.Add(self.rangechoice, 1, wx.ALL | wx.EXPAND, 2)
+        sizer5.Add(self.range_choice, 1, wx.ALL | wx.EXPAND, 2)
         sizer4.Add(sizer5, 1, wx.EXPAND)
         sizer6 = wx.BoxSizer(wx.HORIZONTAL)
         sizer6.Add(self.start, 1, wx.ALL | wx.EXPAND, 2)

@@ -33,6 +33,10 @@
 			<param name="Local" value="edit-menu.html#Copy">
 		</object>
 	<li><object type="text/sitemap">
+			<param name="Name" value="Preferences">
+			<param name="Local" value="edit-menu.html#Preferences">
+		</object>
+	<li><object type="text/sitemap">
 			<param name="Name" value="View menu">
 			<param name="Local" value="view-menu.html">
 		</object>
@@ -77,6 +81,10 @@
 			<param name="Local" value="view-menu.html#NotesPane">
 		</object>
 	<li><object type="text/sitemap">
+			<param name="Name" value="Multiple verse search">
+			<param name="Local" value="view-menu.html#MultipleVerseSearch">
+		</object>
+	<li><object type="text/sitemap">
 			<param name="Name" value="Favorites menu">
 			<param name="Local" value="favorites-menu.html">
 		</object>
@@ -95,18 +103,6 @@
 	<li><object type="text/sitemap">
 			<param name="Name" value="View all favorites">
 			<param name="Local" value="favorites-menu.html#ViewAll">
-		</object>
-	<li><object type="text/sitemap">
-			<param name="Name" value="Tools menu">
-			<param name="Local" value="tools-menu.html">
-		</object>
-	<li><object type="text/sitemap">
-			<param name="Name" value="Multiple verse search">
-			<param name="Local" value="tools-menu.html#MultipleVerseSearch">
-		</object>
-	<li><object type="text/sitemap">
-			<param name="Name" value="Preferences">
-			<param name="Local" value="tools-menu.html#Preferences">
 		</object>
 	<li><object type="text/sitemap">
 			<param name="Name" value="Help menu">

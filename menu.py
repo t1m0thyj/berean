@@ -1,13 +1,11 @@
 """menu.py - menubar class and favorites management for Berean"""
 
-import os
-
 import wx
 from wx import gizmos
 
 import html
 from globals import *
-from refalize import *
+from refalize import refalize
 
 _ = wx.GetTranslation
 
@@ -91,7 +89,8 @@ class MenuBar(wx.MenuBar):
             _("&Notes Pane\tCtrl+Shift+N"), _("Shows or hides the notes pane"))
         frame.Bind(wx.EVT_MENU, self.OnNotesPane, self.notes_pane_item)
         self.multiple_verse_search_item = self.view_menu.AppendCheckItem(-1,
-            _("&Multiple Verse Search\tCtrl+M"))
+            _("&Multiple Verse Search\tCtrl+M"),
+            _("Shows or hides the Multiple Verse Search pane"))
         frame.Bind(wx.EVT_MENU, self.OnMultipleVerseSearch,
             self.multiple_verse_search_item)
         self.Append(self.view_menu, _("&View"))
