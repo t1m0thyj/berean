@@ -54,18 +54,24 @@ class MainToolBar(aui.AuiToolBar):
             try:
                 book, chapter, verse = refalize(reference)
                 if chapter > CHAPTER_LENGTHS[book - 1]:
-                    wx.MessageBox(_("The book of %s has only %d chapters.") % (BOOK_NAMES[book - 1], CHAPTER_LENGTHS[book - 1], "Berean", wx.ICON_EXCLAMATION | wx.OK))
+                    wx.MessageBox(_("The book of %s has only %d chapters.") %
+                        (BOOK_NAMES[book - 1], CHAPTER_LENGTHS[book - 1],
+                         "Berean", wx.ICON_EXCLAMATION | wx.OK))
                     return
                 elif verse > VERSE_LENGTHS[book - 1][chapter - 1]:
-                    wx.MessageBox(_("%s chapter %d has only %d verses.") % (BOOK_NAMES[book - 1], chapter, VERSE_LENGTHS[book - 1][chapter - 1]), "Berean", wx.ICON_EXCLAMATION | wx.OK)
+                    wx.MessageBox(_("%s chapter %d has only %d verses.")
+                        % (BOOK_NAMES[book - 1], chapter,
+                        VERSE_LENGTHS[book - 1][chapter - 1]), "Berean",
+                        wx.ICON_EXCLAMATION | wx.OK)
                     return
                 self._parent.load_chapter(book, chapter, verse)
-                if reference not in self.verse_entry.GetStrings():
+                if self.verse_entry.FindString(reference) == -1:
                     self.verse_entry.Insert(reference, 0)
                     if self.verse_entry.GetCount() > 10:
                         self.verse_entry.Delete(10)
             except:
-                wx.MessageBox(_("'%s' is not a valid reference.\n\nIf you think that Berean should accept it,\nplease email <timothysw@objectmail.com>.") % reference, "Berean", wx.ICON_EXCLAMATION | wx.OK)
+                wx.MessageBox(_("'%s' is not a valid reference.") % reference,
+                    "Berean", wx.ICON_EXCLAMATION | wx.OK)
         else:
             if not self._parent.aui.GetPane("search_pane").IsShown():
                 self._parent.show_search_pane()

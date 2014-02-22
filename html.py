@@ -1,4 +1,4 @@
-"""html.py - HTML classes and functions for Berean"""
+"""html.py - HTML classes"""
 
 import cPickle
 import os.path

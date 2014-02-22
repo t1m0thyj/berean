@@ -1,4 +1,4 @@
-"""menu.py - menubar class and favorites management for Berean"""
+"""menu.py - menubar class and favorite management"""
 
 import wx
 from wx import gizmos
