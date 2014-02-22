@@ -1,4 +1,4 @@
-"""debug.py - error handling functions for Berean"""
+"""debug.py - error handling functions"""
 
 import platform
 import sys

@@ -67,7 +67,7 @@ class MultipleVerseSearch(wx.Panel):
             version = self.version.GetSelection()
             Bible = self._parent.get_htmlwindow(version).Bible
             data = refalize2(self.verse_list.GetValue(), Bible)
-            version_name = self.version.GetStringSelection()
+            version_abbrev = self.version.GetStringSelection()
             results = []
             for start, stop in data:
                 b1, c1, v1 = start
@@ -75,15 +75,15 @@ class MultipleVerseSearch(wx.Panel):
                 try:
                     if start == stop:
                         if len(Bible[b1][c1][v1]):
-                            results.append("<p><a href=\"%d.%d.%d\">%s %d:%d (%s)</a><br />%s</p>" % (b1, c1, v1, BOOK_NAMES[b1 - 1], c1, v1, version_name, Bible[b1][c1][v1]))
+                            results.append("<p><a href=\"%d.%d.%d\">%s %d:%d (%s)</a><br />%s</p>" % (b1, c1, v1, BOOK_NAMES[b1 - 1], c1, v1, version_abbrev, Bible[b1][c1][v1]))
                         else:
-                            results.append(_("<p><font color=gray>%s %d:%d is not in the %s.</font></p>") % (BOOK_NAMES[b1 - 1], c1, v1, version_name))
+                            results.append(_("<p><font color=\"gray\">%s %d:%d is not in the %s.</font></p>") % (BOOK_NAMES[b1 - 1], c1, v1, version_abbrev))
                     else:
                         result = []
                         for b in range(b1, b2 + 1):
                             for c in range(1, len(Bible[b])):
                                 for v in range(0, len(Bible[b][c])):
-                                    if (b1, c1, v1) <= (b, c, v) <= (b2, c2, v2):
+                                    if start <= (b, c, v) <= stop:
                                         if c == 1 and not v:
                                             result.append("<hr /><a href=\"%d.%d.-1\">%s %d</a>" % (b, c, BOOK_NAMES[b - 1], c))
                                         elif not v:
@@ -95,15 +95,15 @@ class MultipleVerseSearch(wx.Panel):
                         if not len(result):
                             raise AssertionError
                 except:
-                    wx.MessageBox(_("%s %d:%d is not a valid reference.\n\nMake sure that it exists (i.e., is not like Mark 17 or Psalm 1:66).") % (BOOK_NAMES[b1 - 1], c1, v1), "Berean", wx.ICON_EXCLAMATION | wx.OK)
+                    wx.MessageBox(_("%s %d:%d is not a valid reference.") % (BOOK_NAMES[b1 - 1], c1, v1), "Berean", wx.ICON_EXCLAMATION | wx.OK)
                     return
                 if start != stop:
                     if b1 == b2 and c1 == c2:
-                        results.append("<p><a href=\"%d.%d.%d\">%s %d:%d-%d (%s)</a><br />%s</p>" % (b1, c1, v1, BOOK_NAMES[b1 - 1], c1, v1, v2, version_name, " ".join(result)))
+                        results.append("<p><a href=\"%d.%d.%d\">%s %d:%d-%d (%s)</a><br />%s</p>" % (b1, c1, v1, BOOK_NAMES[b1 - 1], c1, v1, v2, version_abbrev, " ".join(result)))
                     elif b1 == b2:
-                        results.append("<p><a href=\"%d.%d.%d\">%s %d:%d-%d:%d (%s)</a><br />%s</p>" % (b1, c1, v1, BOOK_NAMES[b1 - 1], c1, v1, c2, v2, version_name, " ".join(result)))
+                        results.append("<p><a href=\"%d.%d.%d\">%s %d:%d-%d:%d (%s)</a><br />%s</p>" % (b1, c1, v1, BOOK_NAMES[b1 - 1], c1, v1, c2, v2, version_abbrev, " ".join(result)))
                     else:
-                        results.append("<p><a href=\"%d.%d.%d\">%s %d:%d - %s %d:%d (%s)</a><br />%s</p>" % (b1, c1, v1, BOOK_NAMES[b1 - 1], c1, v1, BOOK_NAMES[b2 - 1], c2, v2, version_name, " ".join(result)))
+                        results.append("<p><a href=\"%d.%d.%d\">%s %d:%d - %s %d:%d (%s)</a><br />%s</p>" % (b1, c1, v1, BOOK_NAMES[b1 - 1], c1, v1, BOOK_NAMES[b2 - 1], c2, v2, version_abbrev, " ".join(result)))
             self.html = "<html><body><font size=\"%d\">%s</font></body></html>" % (self._parent.zoom_level, "".join(results))
             self.results.SetPage(self.html)
             self.toolbar.EnableTool(wx.ID_PRINT, True)
@@ -112,7 +112,7 @@ class MultipleVerseSearch(wx.Panel):
             self.last_version = version
             wx.CallAfter(self.results.SetFocus)
         except:
-            wx.MessageBox(_("Sorry, but I cannot understand all of those references.\nMake sure that they exist\n(i.e., are not like Mark 17 or Psalm 1:66).\n\nIf you think that Berean should accept them,\nplease email <timothysw@objectmail.com>."), "Berean", wx.ICON_EXCLAMATION | wx.OK)
+            wx.MessageBox(_("One or more of the references you have entered are not valid."), "Berean", wx.ICON_EXCLAMATION | wx.OK)
 
     def OnPrint(self, event):
         if wx.VERSION_STRING >= "2.8.11.0" and wx.VERSION_STRING != "2.9.0.0":

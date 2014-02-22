@@ -105,15 +105,15 @@ class Berean(wx.App):
             self.cwd = os.path.dirname(__file__)
         else:
             self.cwd = os.path.dirname(sys.argv[0])
-
-        nosplash = "--nosplash" in options
-        systemtray = "--systemtray" in options
-        if not (nosplash or systemtray):
+        show_splash = not ("--nosplash" in options or
+            "--systemtray" in options)
+        if show_splash:
             splash = wx.SplashScreen(wx.Bitmap(os.path.join(self.cwd,
                 "images", "splash.png"), wx.BITMAP_TYPE_PNG),
                 wx.SPLASH_CENTRE_ON_SCREEN | wx.SPLASH_NO_TIMEOUT, 0, None, -1,
                 style=wx.BORDER_SIMPLE | wx.FRAME_NO_TASKBAR)
             self.Yield()
+
         if "--datadir" in options:
             self.userdatadir = options["--datadir"]
             if not os.path.isabs(self.userdatadir):
@@ -138,11 +138,11 @@ class Berean(wx.App):
             self.locale.AddCatalog(language)
         self.frame = parent.MainFrame(self)
         self.SetTopWindow(self.frame)
-        if not systemtray:
+        if "--systemtray" not in options:
             self.frame.Show()
         else:
             self.frame.taskbaricon = parent.TaskBarIcon(self.frame)
-        if not (nosplash or systemtray):
+        if show_splash:
             splash.Destroy()
         return True
 

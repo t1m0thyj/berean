@@ -41,8 +41,8 @@
 			<param name="Local" value="view-menu.html">
 		</object>
 	<li><object type="text/sitemap">
-			<param name="Name" value="Go to reference">
-			<param name="Local" value="view-menu.html#GotoReference">
+			<param name="Name" value="Go to verse">
+			<param name="Local" value="view-menu.html#GotoVerse">
 		</object>
 	<li><object type="text/sitemap">
 			<param name="Name" value="Go back">

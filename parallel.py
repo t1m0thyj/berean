@@ -1,4 +1,4 @@
-"""parallel.py - parallel window classes for Berean"""
+"""parallel.py - parallel window classes"""
 
 import wx
 

@@ -74,23 +74,23 @@ class MainFrame(wx.Frame):
         while i < len(self.version_list):
             window = html.ChapterWindow(self.notebook, self.version_list[i])
             if hasattr(window, "Bible"):
-                self.notebook.AddPage(window, self.version_list[i], i == tab)
+                self.notebook.AddPage(window, self.version_list[i])
                 self.notebook.SetPageBitmap(i, self.get_bitmap(
                     os.path.join("flags", FLAG_NAMES[self.version_list[i]])))
                 if wx.VERSION_STRING >= "2.9.4.0":
                     self.notebook.SetPageToolTip(i, window.description)
                 i += 1
             else:
-                self.version_list.pop(i)
-                if 0 < tab <= i:
+                del self.version_list[i]
+                if tab > i:
                     tab -= 1
         if len(self.version_list) > 1:
             self.parallel = parallel.ParallelPanel(self.notebook)
-            self.notebook.AddPage(self.parallel, _("Parallel"),
-                tab == len(self.version_list))
+            self.notebook.AddPage(self.parallel, _("Parallel"))
             if wx.VERSION_STRING >= "2.9.4.0":
                 self.notebook.SetPageToolTip(len(self.version_list),
                     self.parallel.htmlwindow.description)
+            self.notebook.SetSelection(min(tab, self.notebook.GetPageCount()))
         else:
             self.notebook.SetTabCtrlHeight(0)
         self.notebook.Bind(aui.EVT_AUINOTEBOOK_PAGE_CHANGED,
@@ -157,7 +157,7 @@ class MainFrame(wx.Frame):
             self.verse_history = self.verse_history[:self.history_item + 1]
             self.verse_history.append(reference)
             if len(self.verse_history) >= 15:
-                self.verse_history.pop(0)
+                del self.verse_history[0]
         elif edit_history:
             self.verse_history.remove(reference)
             self.verse_history.append(reference)
@@ -167,7 +167,7 @@ class MainFrame(wx.Frame):
             self.history_item < len(self.verse_history) - 1)
         self.toolbar.Refresh(False)
         self.tree.select_chapter(book, chapter)
-        if self.search.range_choice.GetSelection() == len(self.search.ranges):
+        if self.search.range_choice.GetSelection() == len(panes.search.RANGES):
             self.search.start.SetSelection(book - 1)
             self.search.stop.SetSelection(book - 1)
         for i in range(self.notes.GetPageCount()):
