@@ -82,7 +82,8 @@ class BaseHtmlWindow(html.HtmlWindow):
         self.SelectAll()
 
     def OnMiddleDown(self, event):
-        self.dragscroller.Start(event.GetPosition())
+        if not self.HasCapture():   # Do nothing if context menu is shown
+            self.dragscroller.Start(event.GetPosition())
 
     def OnMiddleUp(self, event):
         self.dragscroller.Stop()

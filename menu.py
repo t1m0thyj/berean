@@ -1,4 +1,4 @@
-"""menu.py - menubar class and favorite management"""
+"""menu.py - menubar class and favorites management"""
 
 import wx
 from wx import gizmos

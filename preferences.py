@@ -33,8 +33,8 @@ class PreferencesDialog(wx.Dialog):
         self.versions = wx.Panel(self.notebook, -1)
         self.version_list = wx.CheckListBox(self.versions, -1)
         for i in range(len(VERSION_ABBREVS)):
-            self.version_list.Append("%s - %s" % (VERSION_NAMES[i],
-                VERSION_ABBREVS[i]))
+            self.version_list.Append("%s - %s" % (VERSION_ABBREVS[i],
+                VERSION_NAMES[i]))
             if VERSION_ABBREVS[i] in parent.version_list:
                 self.version_list.Check(i)
         sizer = wx.BoxSizer()

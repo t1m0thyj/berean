@@ -1,6 +1,6 @@
 """globals.py - global variables used throughout Berean"""
 
-VERSION = "1.4.8"
+VERSION = "0.4.3"
 
 BOOK_NAMES = ("Genesis", "Exodus", "Leviticus", "Numbers", "Deuteronomy",
     "Joshua", "Judges", "Ruth", "1 Samuel", "2 Samuel", "1 Kings", "2 Kings",

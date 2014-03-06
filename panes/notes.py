@@ -11,14 +11,11 @@ from globals import *
 
 _ = wx.GetTranslation
 
-"""
+
 class BookChapterVerseSelector(aui.AuiToolBar):
     def __init__(self, parent, reference):
-        style = aui.AUI_TB_DEFAULT_STYLE
-        if wx.VERSION_STRING >= "2.9.5.0":
-            style |= aui.AUI_TB_PLAIN_BACKGROUND
         super(BookChapterVerseSelector, self).__init__(parent, -1, (-1, -1),
-            (-1, -1), style)
+            (-1, -1), aui.AUI_TB_DEFAULT_STYLE | aui.AUI_TB_OVERFLOW)
         self._parent = parent
         self.book = wx.Choice(self, -1, choices=BOOK_NAMES)
         self.AddControl(self.book)
@@ -26,39 +23,85 @@ class BookChapterVerseSelector(aui.AuiToolBar):
         self.AddControl(self.chapter)
         self.verse = wx.Choice(self, -1, size=(60, -1))
         self.AddControl(self.verse)
+        self.Bind(wx.EVT_CHOICE, self.OnChoice)
         self.AddTool(wx.ID_DELETE, "", parent._frame.get_bitmap("delete"),
             _("Delete"))
+        self.Bind(wx.EVT_MENU, self.OnDelete, id=wx.ID_DELETE)
         self.Realize()
-        self.set_verse(*reference)
+        self.set_reference(*reference)
 
-    def set_verse(self, book, chapter, verse=-1):
-        self.book.SetSelection(book - 1)
-        self.chapter.SetItems([str(i) for i in range(1,
-            CHAPTER_LENGTHS[book - 1] + 1)])
-        self.chapter.SetSelection(chapter - 1)
-        self.verse.SetItems(["--"] + [str(i) for i in range(1,
-            VERSE_LENGTHS[book - 1][chapter - 1] + 1)])
-        if verse != -1:
-            self.verse.SetSelection(verse)
+    def set_reference(self, book, chapter, verse=-1, update_choices=True):
+        if update_choices:
+            self.book.SetSelection(book - 1)
+            self.chapter.SetItems([str(i) for i in range(1,
+                CHAPTER_LENGTHS[book - 1] + 1)])
+            self.chapter.SetSelection(chapter - 1)
+            self.verse.SetItems(["--"] + [str(i) for i in range(1,
+                VERSE_LENGTHS[book - 1][chapter - 1] + 1)])
+            self.verse.SetSelection(max(0, verse))
+        key = "%d.%d.%d" % (book, chapter, verse)
+        self.EnableTool(wx.ID_DELETE, key in self._parent.notes_dict)
+        self.Refresh(False)
+
+    def get_reference(self):
+        verse = self.verse.GetSelection()
+        if verse == 0:
+            verse = -1
+        return (self.book.GetSelection() + 1, self.chapter.GetSelection() + 1,
+            verse)
+
+    def OnChoice(self, event):
+        verse = self.verse.GetSelection()
+        if verse == 0:
+            verse = -1
+        self._parent.load_text(self.book.GetSelection() + 1,
+            self.chapter.GetSelection() + 1, verse)
+
+    def OnDelete(self, event):
+        delete = wx.MessageBox(_("Are you sure you want to delete your " \
+            "notes on this passage?"), _("Berean"),
+            wx.ICON_QUESTION | wx.YES_NO)
+        if delete == wx.YES:
+            key = "%d.%d.%d" % self.get_reference()
+            if key in self._parent.notes_dict:
+                self._parent.notes_dict.pop(key)
+            self._parent.editor.Clear()
+            self.EnableTool(wx.ID_DELETE, False)
+            self.Refresh(False)
 
 
 class TopicSelector(aui.AuiToolBar):
-    def __init__(self, parent, reference):
-        style = aui.AUI_TB_DEFAULT_STYLE
-        if wx.VERSION_STRING >= "2.9.5.0":
-            style |= aui.AUI_TB_PLAIN_BACKGROUND
-        super(TopicSelector, self).__init__(parent, -1, (-1, -1),
-            (-1, -1), style)
-        self._parent = parent
-"""
+    def __init__(self, parent):
+        super(TopicSelector, self).__init__(parent, -1, (-1, -1), (-1, -1),
+            aui.AUI_TB_DEFAULT_STYLE | aui.AUI_TB_OVERFLOW)
+        self._parent = parent 
+        self.topic_list = parent._frame._app.config.ReadList("Notes/TopicList")
+        self.topic = wx.Choice(self, -1, choices=self.topic_list)
+        self.AddControl(self.topic)
+        self.AddTool(wx.ID_NEW, "", parent._frame.get_bitmap("new"), _("New"))
+        self.AddTool(-1, "", parent._frame.get_bitmap("rename"), _("Rename"))
+        self.AddTool(wx.ID_DELETE, "", parent._frame.get_bitmap("delete"),
+            _("Delete"))
+        self.Realize()
+
 
 class NotesPage(wx.Panel):
     def __init__(self, parent, name):
         super(NotesPage, self).__init__(parent, -1)
         self._frame = parent.GetParent()
         self.name = name
-        ##self.selector = BookChapterVerseSelector(self, self._frame.reference)
+        filename = os.path.join(self._frame._app.userdatadir, "%s.not" % name)
+        if not os.path.isfile(filename):
+            notes = open(filename, 'wb')
+            cPickle.dump({}, notes, -1)
+            notes.close()
+            self.notes_dict = {}
+        else:
+            notes = open(filename, 'rb')
+            self.notes_dict = cPickle.load(notes)
+            notes.close()
 
+        self.selector = BookChapterVerseSelector(self, self._frame.reference)
         self.toolbar = aui.AuiToolBar(self, -1, (-1, -1), (-1, -1),
             aui.AUI_TB_DEFAULT_STYLE | aui.AUI_TB_OVERFLOW)
         self.toolbar.AddTool(wx.ID_SAVE, "", self._frame.get_bitmap("save"),
@@ -84,17 +127,16 @@ class NotesPage(wx.Panel):
         self.font_name.SetSelection(0)
         self.toolbar.AddControl(self.font_name)
         self.font_name.Bind(wx.EVT_CHOICE, self.OnFontName)
-        sizes = ("8", "9", "10", "11", "12", "14", "16", "18", "20", "22",
-            "24", "26", "28", "36", "48", "72")
         if '__WXGTK__' not in wx.PlatformInfo:
-            self.font_size = wx.ComboBox(self.toolbar, -1, "10", choices=sizes,
-                style=wx.TE_PROCESS_ENTER)
+            self.font_size = wx.ComboBox(self.toolbar, -1, "10",
+                choices=FONT_SIZES, style=wx.TE_PROCESS_ENTER)
         else:
-            self.font_size = wx.ComboBox(self.toolbar, -1, "10", choices=sizes,
-                size=(60, -1), style=wx.TE_PROCESS_ENTER)
+            self.font_size = wx.ComboBox(self.toolbar, -1, "10",
+                choices=FONT_SIZES, size=(60, -1), style=wx.TE_PROCESS_ENTER)
         self.font_size.Bind(wx.EVT_COMBOBOX, self.OnFontSize)
         self.font_size.Bind(wx.EVT_TEXT_ENTER, self.OnFontSize)
         self.toolbar.AddControl(self.font_size)
+        self.toolbar.AddSeparator()
         self.toolbar.AddTool(wx.ID_BOLD, "", self._frame.get_bitmap("bold"),
             _("Bold (Ctrl+B)"), wx.ITEM_CHECK)
         self.Bind(wx.EVT_MENU, self.OnBold, id=wx.ID_BOLD)
@@ -137,14 +179,14 @@ class NotesPage(wx.Panel):
             self._frame.get_bitmap("increase-indent"), _("Increase Indent"))
         self.Bind(wx.EVT_MENU, self.OnIncreaseIndent, id=ID_INCREASE_INDENT)
         self.toolbar.AddSeparator()
-        self.ID_FONT_COLOR = wx.NewId()
-        self.toolbar.AddTool(self.ID_FONT_COLOR, "",
-            self._frame.get_bitmap("font-color"), _("Font Color"))
-        self.Bind(wx.EVT_MENU, self.OnFontColor, id=self.ID_FONT_COLOR)
         self.ID_HIGHLIGHTING = wx.NewId()
         self.toolbar.AddTool(self.ID_HIGHLIGHTING, "",
             self._frame.get_bitmap("highlighting"), _("Highlighting"))
         self.Bind(wx.EVT_MENU, self.OnHighlighting, id=self.ID_HIGHLIGHTING)
+        self.ID_FONT_COLOR = wx.NewId()
+        self.toolbar.AddTool(self.ID_FONT_COLOR, "",
+            self._frame.get_bitmap("font-color"), _("Font Color"))
+        self.Bind(wx.EVT_MENU, self.OnFontColor, id=self.ID_FONT_COLOR)
         self.toolbar.Realize()
         self.SetAcceleratorTable(wx.AcceleratorTable([
             (wx.ACCEL_CTRL, ord("X"), wx.ID_CUT),
@@ -155,47 +197,40 @@ class NotesPage(wx.Panel):
             (wx.ACCEL_CTRL, ord("U"), wx.ID_UNDERLINE),
             (wx.ACCEL_CTRL, ord("L"), wx.ID_JUSTIFY_LEFT),
             (wx.ACCEL_CTRL, ord("E"), wx.ID_JUSTIFY_CENTER),
-            (wx.ACCEL_CTRL, ord("R"), wx.ID_JUSTIFY_RIGHT)]))
+            (wx.ACCEL_CTRL, ord("R"), wx.ID_JUSTIFY_RIGHT),
+            (wx.ACCEL_SHIFT, 9, ID_DECREASE_INDENT),
+            (wx.ACCEL_NORMAL, 9, ID_INCREASE_INDENT)]))
 
         self.editor = richtext.RichTextCtrl(self, -1, style=wx.BORDER_NONE |
             wx.WANTS_CHARS)
         if '__WXGTK__' not in wx.PlatformInfo:
-            self.editor.SetFont(wx.Font(10, wx.DEFAULT, wx.NORMAL, wx.NORMAL,
-                faceName="Arial"))
+            self.editor.SetFont(wx.Font(12, wx.DEFAULT, wx.NORMAL, wx.NORMAL,
+                faceName="Times New Roman"))
         else:
-            self.editor.SetFont(wx.Font(10, wx.DEFAULT, wx.NORMAL, wx.NORMAL,
-                faceName="Sans"))
+            self.editor.SetFont(wx.Font(12, wx.DEFAULT, wx.NORMAL, wx.NORMAL,
+                faceName="Serif"))
         self.editor.Bind(wx.EVT_CHAR, self.OnChar)
         self.editor.Bind(wx.EVT_KEY_UP, self.OnModified)
         self.editor.Bind(wx.EVT_LEFT_UP, self.OnModified)
 
         sizer = wx.BoxSizer(wx.VERTICAL)
-        ##sizer.Add(self.selector, 0)
+        sizer.Add(self.selector, 0)
         sizer.Add(self.toolbar, 0)
         sizer.Add(self.editor, 1, wx.EXPAND)
         self.SetSizer(sizer)
-        filename = os.path.join(self._frame._app.userdatadir,
-            "%s.notes" % name)
-        if not os.path.isfile(filename):
-            notes = open(filename, 'wb')
-            cPickle.dump({}, notes, -1)
-            notes.close()
-            self.text = {}
-        else:
-            notes = open(filename, 'rb')
-            self.text = cPickle.load(notes)
-            notes.close()
         self.load_text(self._frame.reference[0], self._frame.reference[1])
 
-    def load_text(self, book, chapter):
-        key = "%d.%d" % (book, chapter)
-        if key in self.text:
-            stream = cStringIO.StringIO(self.text[key])
+    def load_text(self, book, chapter, verse=-1):
+        key = "%d.%d.%d" % (book, chapter, verse)
+        if key in self.notes_dict:
+            stream = cStringIO.StringIO(self.notes_dict[key])
             richtext.RichTextXMLHandler().LoadStream(self.editor.GetBuffer(),
                 stream)
             self.editor.Refresh()
         else:
             self.editor.SetValue("")
+        self.selector.set_reference(book, chapter, verse,
+            self.selector.get_reference() != (book, chapter, verse))
         self.update_toolbar()
 
     def update_toolbar(self):
@@ -220,20 +255,20 @@ class NotesPage(wx.Panel):
         self.toolbar.Refresh(False)
 
     def save_text(self):
-        key = "%d.%d" % (self._frame.reference[0], self._frame.reference[1])
+        key = "%d.%d.%d" % self.selector.get_reference()
         if not self.editor.IsEmpty():
             stream = cStringIO.StringIO()
             richtext.RichTextXMLHandler().SaveStream(self.editor.GetBuffer(),
                 stream)
-            self.text[key] = stream.getvalue()
-        elif key in self.text:
-            self.text.pop(key)
+            self.notes_dict[key] = stream.getvalue()
+        elif key in self.notes_dict:
+            self.notes_dict.pop(key)
 
     def OnSave(self, event):
         self.save_text()
         notes = open(os.path.join(self._frame._app.userdatadir,
-            "%s.notes" % self.name), 'wb')
-        cPickle.dump(self.text, notes, -1)
+            "%s.not" % self.name), 'wb')
+        cPickle.dump(self.notes_dict, notes, -1)
         notes.close()
 
     def OnPrint(self, event):
@@ -402,35 +437,42 @@ class NotesPage(wx.Panel):
             style.SetLeftIndent(style.GetLeftIndent() + 100)
             self.editor.SetStyle(richtext_range, style)
 
+    def OnHighlighting(self, event):
+        pos = self.editor.GetInsertionPoint()
+        style = richtext.RichTextAttr()
+        style.SetFlags(wx.TEXT_ATTR_BACKGROUND_COLOUR)
+        data = wx.ColourData()
+        if self.editor.GetStyle(self.editor.GetInsertionPoint(), style):
+            data.SetColour(style.GetBackgroundColour())
+        dialog = wx.ColourDialog(self._frame, data)
+        dialog.SetTitle(_("Highlighting"))
+        dialog.Center()
+        if dialog.ShowModal() == wx.ID_OK:
+            if not self.editor.HasSelection():
+                richtext_range = (pos, pos + 1)
+            else:
+                richtext_range = self.editor.GetSelectionRange()
+            style.SetBackgroundColour(dialog.GetColourData().GetColour())
+            self.editor.SetStyle(richtext_range, style)
+        dialog.Destroy()
+
     def OnFontColor(self, event):
         style = richtext.RichTextAttr()
         style.SetFlags(wx.TEXT_ATTR_TEXT_COLOUR)
-        color = wx.NullColour
+        data = wx.ColourData()
         if self.editor.GetStyle(self.editor.GetInsertionPoint(), style):
-            color = style.GetTextColour()
-        color = wx.GetColourFromUser(self._frame, color, _("Font Color"))
-        if color.IsOk():
+            data.SetColour(style.GetTextColour())
+        dialog = wx.ColourDialog(self._frame, data)
+        dialog.SetTitle(_("Font Color"))
+        dialog.Center()
+        if dialog.ShowModal() == wx.ID_OK:
+            color = dialog.GetColourData().GetColour()
             if not self.editor.HasSelection():
                 self.editor.BeginTextColour(color)
             else:
                 style.SetTextColour(color)
                 self.editor.SetStyle(self.editor.GetSelectionRange(), style)
-
-    def OnHighlighting(self, event):
-        pos = self.editor.GetInsertionPoint()
-        style = richtext.RichTextAttr()
-        style.SetFlags(wx.TEXT_ATTR_BACKGROUND_COLOUR)
-        color = wx.NullColour
-        if self.editor.GetStyle(self.editor.GetInsertionPoint(), style):
-            color = style.GetBackgroundColour()
-        color = wx.GetColourFromUser(self._frame, color, _("Highlighting"))
-        if color.IsOk():
-            if not self.editor.HasSelection():
-                richtext_range = (pos, pos + 1)
-            else:
-                richtext_range = self.editor.GetSelectionRange()
-            style.SetBackgroundColour(color)
-            self.editor.SetStyle(richtext_range, style)
+        dialog.Destroy()
 
     def OnChar(self, event):
         key = event.GetKeyCode()
@@ -471,10 +513,14 @@ class NotesPage(wx.Panel):
         event.Skip()
 
 
+FONT_SIZES = ("8", "9", "10", "11", "12", "14", "16", "18", "20", "22", "24",
+    "26", "28", "36", "48", "72")
+
+
 class NotesPane(aui.AuiNotebook):
     def __init__(self, parent):
         super(NotesPane, self).__init__(parent, -1, style=wx.BORDER_NONE |
             aui.AUI_NB_TOP | aui.AUI_NB_SCROLL_BUTTONS)
         self.AddPage(NotesPage(self, "Study Notes"), _("Study Notes"))
         self.AddPage(NotesPage(self, "Topic Notes"), _("Topic Notes"))
-        self.SetSelection(parent._app.config.ReadInt("Main/ActiveNotesTab"))
+        self.SetSelection(parent._app.config.ReadInt("Notes/ActiveNotesTab"))
