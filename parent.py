@@ -43,7 +43,7 @@ class MainFrame(wx.Frame):
             app.config.ReadInt("Main/CurrentVerse", -1))
         self.zoom_level = app.config.ReadInt("Main/ZoomLevel", 3)
         self.minimize_to_tray = app.config.ReadBool("Main/MinimizeToTray")
-        self.version_list = app.config.ReadList("VersionList", ["KJV", "WEB"])
+        self.version_list = app.config.ReadList("VersionList", ["KJV"])
         self.verse_history = app.config.ReadList("History")
         self.history_item = len(self.verse_history) - 1
         self.help = html.HelpSystem(self)
@@ -91,8 +91,6 @@ class MainFrame(wx.Frame):
                 self.notebook.SetPageToolTip(len(self.version_list),
                     self.parallel.htmlwindow.description)
             self.notebook.SetSelection(min(tab, self.notebook.GetPageCount()))
-        else:
-            self.notebook.SetTabCtrlHeight(0)
         self.notebook.Bind(aui.EVT_AUINOTEBOOK_PAGE_CHANGED,
             self.OnAuiNotebookPageChanged)
         self.aui.AddPane(self.notebook, aui.AuiPaneInfo().Name("notebook").
@@ -100,19 +98,20 @@ class MainFrame(wx.Frame):
 
         self.tree = panes.TreePane(self)
         self.aui.AddPane(self.tree, aui.AuiPaneInfo().Name("tree_pane").
-            Caption(_("Tree")).Left().Layer(1).BestSize((150, -1)))
+            Caption(_("Tree")).PinButton(True).Left().Layer(1).
+            BestSize((150, -1)))
         self.search = panes.SearchPane(self)
         self.aui.AddPane(self.search, aui.AuiPaneInfo().Name("search_pane").
-            Caption(_("Search")).MaximizeButton(True).Right().Layer(1).
+            Caption(_("Search")).PinButton(True).Right().Layer(1).
             BestSize((300, -1)))
         self.notes = panes.NotesPane(self)
         self.aui.AddPane(self.notes, aui.AuiPaneInfo().Name("notes_pane").
-            Caption(_("Notes")).MaximizeButton(True).Bottom().Layer(0).
+            Caption(_("Notes")).PinButton(True).Bottom().Layer(0).
             BestSize((-1, 220)))
         self.multiple_verse_search = panes.MultipleVerseSearch(self)
         self.aui.AddPane(self.multiple_verse_search, aui.AuiPaneInfo().
             Name("multiple_verse_search").Caption(_("Multiple Verse Search")).
-            MaximizeButton(True).Float().BestSize((600, 440)).Hide())
+            PinButton(True).Float().BestSize((600, 440)).Hide())
 
         filename = os.path.join(app.userdatadir, "layout.dat")
         if os.path.isfile(filename):

@@ -56,7 +56,6 @@ class FileConfig(wx.FileConfig):
         self.Write("LastVerse", self._app.frame.toolbar.verse_entry.GetValue())
         self.WriteInt("ActiveVersionTab",
             self._app.frame.notebook.GetSelection())
-        self.WriteInt("ActiveNotesTab", self._app.frame.notes.GetSelection())
         self.WriteBool("MinimizeToTray", self._app.frame.minimize_to_tray)
         self.WriteList("../VersionList", self._app.frame.version_list)
         self.WriteList("../FavoritesList",
@@ -80,12 +79,14 @@ class FileConfig(wx.FileConfig):
         self.WriteBool("ShowOptions",
             self._app.frame.search.optionspane.IsExpanded())
         for option in self._app.frame.search.options:
-            state = getattr(self._app.frame.search, option).Get3StateValue()
-            if state == wx.CHK_UNDETERMINED:
-                state += self._app.frame.search.checkbox_states[option]
-            self.WriteInt(option, state)
+            self.WriteBool(option, 
+                getattr(self._app.frame.search, option).GetValue())
         self.Write("LastMultipleVerseSearch",
             self._app.frame.multiple_verse_search.verse_list.GetValue())
+        self.SetPath("/Notes")
+        self.WriteInt("ActiveNotesTab", self._app.frame.notes.GetSelection())
+        ##self.WriteList("TopicList",
+        ##    self._app.frame.notes.GetPage(1).selector.topic_list)
         self.Flush()
 
     def WriteList(self, key, value):

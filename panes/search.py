@@ -45,7 +45,6 @@ class SearchPane(wx.Panel):
     def __init__(self, parent):
         super(SearchPane, self).__init__(parent, -1)
         self._parent = parent
-        self.checkbox_states = {}
         self.html = ""
         self.indexes = []
         self.last_version = -1
@@ -92,24 +91,13 @@ class SearchPane(wx.Panel):
         self.optionspane = wx.CollapsiblePane(self, -1, _("Options"),
             style=wx.CP_DEFAULT_STYLE | wx.CP_NO_TLW_RESIZE)
         optionspane = self.optionspane.GetPane()
-        self.AllWords = wx.CheckBox(optionspane, -1, _("All Words in Verse"),
-            style=wx.CHK_3STATE)
-        self.CaseSensitive = wx.CheckBox(optionspane, -1, _("Case Sensitive"))
-        self.ExactMatch = wx.CheckBox(optionspane, -1, _("Exact Match Needed"),
-            style=wx.CHK_3STATE)
-        self.Phrase = wx.CheckBox(optionspane, -1, _("Phrase in Order"),
-            style=wx.CHK_3STATE)
-        self.RegularExpression = wx.CheckBox(optionspane, -1,
-            _("Regular Expression"))
-        for option in self.options:
-            state = parent._app.config.ReadInt("Search/" + option,
-                int(option == "AllWords"))
-            getattr(self, option).Set3StateValue(min(state,
-                wx.CHK_UNDETERMINED))
-            if option in ("AllWords", "ExactMatch", "Phrase"):
-                self.checkbox_states[option] = state
-                if state >= wx.CHK_UNDETERMINED:
-                    self.checkbox_states[option] -= wx.CHK_UNDETERMINED
+        for i, label in enumerate((_("All Words in Verse"),
+                _("Case Sensitive"), _("Exact Match Needed"),
+                _("Phrase in Order"), _("Regular Expression"))):
+            setattr(self, self.options[i], wx.CheckBox(optionspane, -1, label))
+            getattr(self, self.options[i]).SetValue(
+                parent._app.config.ReadBool("Search/" + self.options[i],
+                i == 0))
         self.Bind(wx.EVT_CHECKBOX, self.OnCheckbox)
         self.version = wx.Choice(optionspane, -1, choices=parent.version_list)
         selection = parent.notebook.GetSelection()
@@ -203,8 +191,7 @@ class SearchPane(wx.Panel):
         wx.CallAfter(self.results.SetFocus)
 
     def find_text(self, text):
-        options = [getattr(self, option).Get3StateValue() == wx.CHK_CHECKED
-            for option in self.options]
+        options = [getattr(self, option).GetValue() for option in self.options]
         flags = re.UNICODE
         if not options[1]:  # not Case Sensitive
             flags |= re.IGNORECASE 
@@ -374,50 +361,13 @@ class SearchPane(wx.Panel):
 
     def OnCheckbox(self, event):
         checkbox = event.GetEventObject()
-        if checkbox == self.CaseSensitive:
-            return
-        RegularExpression = self.RegularExpression.GetValue()
-        if checkbox != self.RegularExpression and \
-                (self.Phrase.Get3StateValue() == wx.CHK_CHECKED or
-                 RegularExpression):
-            if checkbox == self.AllWords:
-                self.AllWords.Set3StateValue(wx.CHK_CHECKED)
-                self.ExactMatch.Set3StateValue(
-                    self.checkbox_states["ExactMatch"])
-            elif checkbox == self.ExactMatch:
-                self.AllWords.Set3StateValue(self.checkbox_states["AllWords"])
-                self.ExactMatch.Set3StateValue(wx.CHK_CHECKED)
-            elif checkbox == self.Phrase:
-                for option in ("AllWords", "ExactMatch"):
-                    checkbox2 = getattr(self, option)
-                    state = checkbox2.Get3StateValue()
-                    if state != wx.CHK_UNDETERMINED:
-                        checkbox2.Set3StateValue(wx.CHK_UNDETERMINED)
-                        self.checkbox_states[option] = state
-                if RegularExpression:
-                    self.Phrase.Set3StateValue(wx.CHK_CHECKED)
-            if checkbox != self.Phrase:
-                self.Phrase.Set3StateValue(wx.CHK_UNCHECKED)
-            if RegularExpression:
-                self.RegularExpression.SetValue(False)
-        elif checkbox == self.Phrase:
-            for option in ("AllWords", "ExactMatch"):
-                getattr(self, option).Set3StateValue(
-                    self.checkbox_states[option])
+        checked = event.IsChecked()
+        if (checkbox == self.AllWords or checkbox == self.ExactMatch) and \
+                checked and self.Phrase.IsChecked():
+            self.Phrase.SetValue(False)
         elif checkbox == self.RegularExpression:
-            if event.IsChecked():
-                for option in ("AllWords", "ExactMatch", "Phrase"):
-                    checkbox2 = getattr(self, option)
-                    state = checkbox2.Get3StateValue()
-                    if state != wx.CHK_UNDETERMINED:
-                        checkbox2.Set3StateValue(wx.CHK_UNDETERMINED)
-                        self.checkbox_states[option] = state
-            else:
-                if self.checkbox_states["Phrase"] != wx.CHK_CHECKED:
-                    for option in ("AllWords", "ExactMatch"):
-                        getattr(self, option).Set3StateValue(
-                            self.checkbox_states[option])
-                self.Phrase.Set3StateValue(self.checkbox_states["Phrase"])
+            for option in ("AllWords", "ExactMatch", "Phrase"):
+                getattr(self, option).Enable(not checked)
 
     def OnRange(self, event):
         selection = event.GetSelection()

@@ -129,7 +129,7 @@ class ParallelPanel(wx.Panel):
 
         self.choices = []
         version_list = self._frame._app.config.ReadList("ParallelVersions",
-            self._frame.version_list)
+            self._frame.version_list[:2])
         for i in range(len(self._frame.version_list)):
             self.choices.append(wx.Choice(self, -1,
                 choices=self._frame.version_list))
