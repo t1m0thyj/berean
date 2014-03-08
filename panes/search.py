@@ -98,6 +98,9 @@ class SearchPane(wx.Panel):
             getattr(self, self.options[i]).SetValue(
                 parent._app.config.ReadBool("Search/" + self.options[i],
                 i == 0))
+        if self.RegularExpression.GetValue():
+            for option in ("AllWords", "ExactMatch", "Phrase"):
+                getattr(self, option).Disable()
         self.Bind(wx.EVT_CHECKBOX, self.OnCheckbox)
         self.version = wx.Choice(optionspane, -1, choices=parent.version_list)
         selection = parent.notebook.GetSelection()
