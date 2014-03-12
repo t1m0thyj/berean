@@ -1,7 +1,5 @@
 """preferences.py - preferences dialog class"""
 
-import os
-
 import wx
 
 _ = wx.GetTranslation
@@ -25,8 +23,18 @@ class PreferencesDialog(wx.Dialog):
         self.minimize_to_tray = wx.CheckBox(self.general, -1,
             _("Minimize to system tray"))
         self.minimize_to_tray.SetValue(parent.minimize_to_tray)
+        self.html_font = wx.FontPickerCtrl(self.general, -1,
+            wx.Font(parent.html_font["size"], wx.DEFAULT, wx.NORMAL, wx.NORMAL,
+            faceName=parent.html_font["normal_face"]))
+        self.html_font.Bind(wx.EVT_FONTPICKER_CHANGED,
+            self.OnFontpickerChanged)
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add(self.minimize_to_tray, 0, wx.ALL, 5)
+        sizer2 = wx.BoxSizer(wx.HORIZONTAL)
+        sizer2.Add(wx.StaticText(self.general, -1, _("Bible window font:")), 0,
+            wx.RIGHT | wx.ALIGN_CENTER_VERTICAL, 5)
+        sizer2.Add(self.html_font, 0)
+        sizer.Add(sizer2, 0, wx.ALL ^ wx.TOP, 5)
         self.general.SetSizer(sizer)
         self.notebook.AddPage(self.general, _("General"))
 
@@ -50,6 +58,9 @@ class PreferencesDialog(wx.Dialog):
         sizer.Add(button_sizer, 0, wx.ALL | wx.EXPAND, 5)
         self.SetSizer(sizer)
         self.Center()
+    
+    def OnFontpickerChanged(self, event):
+        self.general.Layout()
 
     def OnOk(self, event):
         version_list = list(filter(lambda version: self.version_list.IsChecked(
@@ -59,12 +70,26 @@ class PreferencesDialog(wx.Dialog):
                 _("Berean"), wx.ICON_EXCLAMATION | wx.OK)
             return
         self._parent.minimize_to_tray = self.minimize_to_tray.GetValue()
+        html_font = self.html_font.GetSelectedFont()
+        html_font = {"size": html_font.GetPointSize(),
+            "normal_face": html_font.GetFaceName()}
+        if html_font != self._parent.html_font:
+            for i in range(self._parent.notebook.GetPageCount()):
+                self._parent.get_htmlwindow(i).SetStandardFonts(**html_font)
+            self._parent.search.results.SetStandardFonts(**html_font)
+            self._parent.multiple_verse_search.results.SetStandardFonts(
+                **html_font)
+            self._parent.html_font = html_font
         if version_list != self._parent.version_list:
-            for version in self._parent.version_list:   # Delete old indexes
-                filename = os.path.join(self._parent._app.userdatadir,
-                    "indexes", "%s.idx" % version)
-                if version not in version_list and os.path.isfile(filename):
-                    wx.CallAfter(os.remove, filename)
+            if not hasattr(self._parent, "old_versions"):
+                self._parent.old_versions = []
+            for version in VERSION_ABBREVS:
+                if (version in self._parent.version_list and 
+                        version not in version_list):
+                    self._parent.old_versions.append(version)
+                elif (version in version_list and
+                        version in self._parent.old_versions):
+                    self._parent.old_versions.remove(version)
             self._parent.version_list = version_list
             wx.MessageBox(_("Changes to version settings will not take " \
                 "effect until Berean is restarted."), _("Berean"),

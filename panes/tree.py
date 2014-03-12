@@ -2,7 +2,7 @@
 
 import wx
 
-from globals import *
+from config import *
 
 _ = wx.GetTranslation
 

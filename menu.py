@@ -4,7 +4,7 @@ import wx
 from wx import gizmos
 
 import html
-from globals import *
+from config import *
 from refalize import refalize
 
 _ = wx.GetTranslation

@@ -7,7 +7,7 @@ import os.path
 import wx
 from wx import aui, richtext
 
-from globals import *
+from config import *
 
 _ = wx.GetTranslation
 
@@ -101,7 +101,7 @@ class NotesPage(wx.Panel):
             self.notes_dict = cPickle.load(notes)
             notes.close()
 
-        self.selector = BookChapterVerseSelector(self, self._frame.reference)
+        ##self.selector = BookChapterVerseSelector(self, self._frame.reference)
         self.toolbar = aui.AuiToolBar(self, -1, (-1, -1), (-1, -1),
             aui.AUI_TB_DEFAULT_STYLE | aui.AUI_TB_OVERFLOW)
         self.toolbar.AddTool(wx.ID_SAVE, "", self._frame.get_bitmap("save"),
@@ -128,11 +128,11 @@ class NotesPage(wx.Panel):
         self.toolbar.AddControl(self.font_name)
         self.font_name.Bind(wx.EVT_CHOICE, self.OnFontName)
         if '__WXGTK__' not in wx.PlatformInfo:
-            self.font_size = wx.ComboBox(self.toolbar, -1, "10",
-                choices=FONT_SIZES, style=wx.TE_PROCESS_ENTER)
+            self.font_size = wx.ComboBox(self.toolbar, -1, choices=FONT_SIZES,
+                style=wx.TE_PROCESS_ENTER)
         else:
-            self.font_size = wx.ComboBox(self.toolbar, -1, "10",
-                choices=FONT_SIZES, size=(60, -1), style=wx.TE_PROCESS_ENTER)
+            self.font_size = wx.ComboBox(self.toolbar, -1, choices=FONT_SIZES,
+                size=(60, -1), style=wx.TE_PROCESS_ENTER)
         self.font_size.Bind(wx.EVT_COMBOBOX, self.OnFontSize)
         self.font_size.Bind(wx.EVT_TEXT_ENTER, self.OnFontSize)
         self.toolbar.AddControl(self.font_size)
@@ -203,25 +203,26 @@ class NotesPage(wx.Panel):
 
         self.editor = richtext.RichTextCtrl(self, -1, style=wx.BORDER_NONE |
             wx.WANTS_CHARS)
-        if '__WXGTK__' not in wx.PlatformInfo:
+        if '__WXMSW__' in wx.PlatformInfo:
             self.editor.SetFont(wx.Font(12, wx.DEFAULT, wx.NORMAL, wx.NORMAL,
                 faceName="Times New Roman"))
         else:
             self.editor.SetFont(wx.Font(12, wx.DEFAULT, wx.NORMAL, wx.NORMAL,
-                faceName="Serif"))
+                faceName="Helvetica"))
         self.editor.Bind(wx.EVT_CHAR, self.OnChar)
         self.editor.Bind(wx.EVT_KEY_UP, self.OnModified)
         self.editor.Bind(wx.EVT_LEFT_UP, self.OnModified)
 
         sizer = wx.BoxSizer(wx.VERTICAL)
-        sizer.Add(self.selector, 0)
+        ##sizer.Add(self.selector, 0)
         sizer.Add(self.toolbar, 0)
         sizer.Add(self.editor, 1, wx.EXPAND)
         self.SetSizer(sizer)
         self.load_text(self._frame.reference[0], self._frame.reference[1])
 
-    def load_text(self, book, chapter, verse=-1):
-        key = "%d.%d.%d" % (book, chapter, verse)
+    def load_text(self, book, chapter):##, verse=-1):
+        key = "%d.%d" % (book, chapter)
+        ##key = "%d.%d.%d" % (book, chapter, verse)
         if key in self.notes_dict:
             stream = cStringIO.StringIO(self.notes_dict[key])
             richtext.RichTextXMLHandler().LoadStream(self.editor.GetBuffer(),
@@ -229,8 +230,8 @@ class NotesPage(wx.Panel):
             self.editor.Refresh()
         else:
             self.editor.SetValue("")
-        self.selector.set_reference(book, chapter, verse,
-            self.selector.get_reference() != (book, chapter, verse))
+        ##self.selector.set_reference(book, chapter, verse,
+        ##    self.selector.get_reference() != (book, chapter, verse))
         self.update_toolbar()
 
     def update_toolbar(self):
@@ -255,7 +256,8 @@ class NotesPage(wx.Panel):
         self.toolbar.Refresh(False)
 
     def save_text(self):
-        key = "%d.%d.%d" % self.selector.get_reference()
+        key = "%d.%d" % (self._frame.reference[0], self._frame.reference[1])
+        ##key = "%d.%d.%d" % self.selector.get_reference()
         if not self.editor.IsEmpty():
             stream = cStringIO.StringIO()
             richtext.RichTextXMLHandler().SaveStream(self.editor.GetBuffer(),

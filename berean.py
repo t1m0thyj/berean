@@ -52,6 +52,8 @@ class FileConfig(wx.FileConfig):
         self.WriteInt("CurrentBook", self._app.frame.reference[0])
         self.WriteInt("CurrentChapter", self._app.frame.reference[1])
         self.WriteInt("CurrentVerse", self._app.frame.reference[2])
+        self.Write("HtmlFontFace", self._app.frame.html_font["normal_face"])
+        self.WriteInt("HtmlFontSize", self._app.frame.html_font["size"])
         self.WriteInt("ZoomLevel", self._app.frame.zoom_level)
         self.Write("LastVerse", self._app.frame.toolbar.verse_entry.GetValue())
         self.WriteInt("ActiveVersionTab",

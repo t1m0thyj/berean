@@ -10,7 +10,7 @@ import menu
 import panes
 import parallel
 import toolbar
-from globals import *
+from config import *
 
 _ = wx.GetTranslation
 
@@ -41,6 +41,14 @@ class MainFrame(wx.Frame):
         self.reference = (app.config.ReadInt("Main/CurrentBook", 1),
             app.config.ReadInt("Main/CurrentChapter", 1),
             app.config.ReadInt("Main/CurrentVerse", -1))
+        self.html_font = {"size": app.config.ReadInt("Main/HtmlFontSize", 12),
+            "normal_face": ""}
+        if '__WXMSW__' in wx.PlatformInfo:
+            self.html_font["normal_face"] = app.config.Read(
+                "Main/HtmlFontFace", "Times New Roman")
+        else:
+            self.html_font["normal_face"] = app.config.Read(
+                "Main/HtmlFontFace", "Helvetica")
         self.zoom_level = app.config.ReadInt("Main/ZoomLevel", 3)
         self.minimize_to_tray = app.config.ReadBool("Main/MinimizeToTray")
         self.version_list = app.config.ReadList("VersionList", ["KJV"])
@@ -239,6 +247,12 @@ class MainFrame(wx.Frame):
         event.Skip()
 
     def OnClose(self, event):
+        if hasattr(self, "old_versions"):    # Delete old indexes
+            for version in self.old_versions:
+                filename = os.path.join(self._app.userdatadir, "indexes",
+                    "%s.idx" % version)
+                if os.path.isfile(filename):
+                    wx.CallAfter(os.remove, filename)
         for i in range(self.notes.GetPageCount()):
             self.notes.GetPage(i).OnSave(None)
         self._app.config.save()

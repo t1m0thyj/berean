@@ -7,7 +7,7 @@ import wx
 import wx.lib.dragscroller
 from wx import html
 
-from globals import *
+from config import *
 
 _ = wx.GetTranslation
 
@@ -69,10 +69,11 @@ class PrintingSystem(html.HtmlEasyPrinting):
 
 
 class BaseHtmlWindow(html.HtmlWindow):
-    def __init__(self, parent):
+    def __init__(self, parent, frame):
         super(BaseHtmlWindow, self).__init__(parent)
         self.SetAcceleratorTable(wx.AcceleratorTable([(wx.ACCEL_CTRL, ord("A"),
             wx.ID_SELECTALL)]))
+        self.SetStandardFonts(**frame.html_font)
         self.Bind(wx.EVT_MENU, self.OnSelectAll, id=wx.ID_SELECTALL)
         self.dragscroller = wx.lib.dragscroller.DragScroller(self)
         self.Bind(wx.EVT_MIDDLE_DOWN, self.OnMiddleDown)
@@ -91,7 +92,7 @@ class BaseHtmlWindow(html.HtmlWindow):
 
 class BaseChapterWindow(BaseHtmlWindow):
     def __init__(self, parent, frame):
-        super(BaseChapterWindow, self).__init__(parent)
+        super(BaseChapterWindow, self).__init__(parent, frame)
         self._frame = frame
         self.current_verse = -1
         if wx.VERSION_STRING >= "2.9.0.0":

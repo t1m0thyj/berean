@@ -5,8 +5,8 @@ import re
 import wx
 from wx import aui, html
 
+from config import *
 from html import BaseHtmlWindow
-from globals import *
 from refalize import refalize2
 
 _ = wx.GetTranslation
@@ -38,9 +38,9 @@ class MultipleVerseSearch(wx.Panel):
             parent.get_bitmap("print"), _("Print Search Results"))
         self.toolbar.EnableTool(wx.ID_PRINT, False)
         self.Bind(wx.EVT_MENU, self.OnPrint, id=wx.ID_PRINT)
-        self.toolbar.AddTool(wx.ID_COPY, _("Copy"), parent.get_bitmap("copy"),
-            _("Copy with Formatting"))
-        self.toolbar.EnableTool(wx.ID_COPY, False)
+        ##self.toolbar.AddTool(wx.ID_COPY, _("Copy"), parent.get_bitmap("copy"),
+        ##    _("Copy with Formatting"))
+        ##self.toolbar.EnableTool(wx.ID_COPY, False)
         self.toolbar.Realize()
         self.splitter_window = wx.SplitterWindow(self, -1)
         self.verse_list = wx.TextCtrl(self.splitter_window, -1,
@@ -48,7 +48,7 @@ class MultipleVerseSearch(wx.Panel):
             style=wx.TE_MULTILINE)
         self.verse_list.SetAcceleratorTable(wx.AcceleratorTable([
             (wx.ACCEL_CTRL, wx.WXK_RETURN, search_item.GetId())]))
-        self.results = BaseHtmlWindow(self.splitter_window)
+        self.results = BaseHtmlWindow(self.splitter_window, parent)
         self.results.Bind(html.EVT_HTML_LINK_CLICKED, self.OnHtmlLinkClicked)
         if wx.VERSION_STRING >= "2.9.0.0":
             self.results.Bind(wx.EVT_CONTEXT_MENU, self.OnContextMenu)

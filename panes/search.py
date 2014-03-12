@@ -7,8 +7,8 @@ import re
 import wx
 from wx import aui, html
 
+from config import *
 from html import BaseHtmlWindow
-from globals import *
 from refalize import validate
 
 _ = wx.GetTranslation
@@ -82,7 +82,7 @@ class SearchPane(wx.Panel):
         self.toolbar.EnableTool(wx.ID_PRINT, False)
         self.toolbar.Bind(wx.EVT_MENU, self.OnPrint, id=wx.ID_PRINT)
         self.toolbar.Realize()
-        self.results = BaseHtmlWindow(self)
+        self.results = BaseHtmlWindow(self, parent)
         self.results.Bind(html.EVT_HTML_LINK_CLICKED, self.OnHtmlLinkClicked)
         if wx.VERSION_STRING >= "2.9.0.0":
             self.results.Bind(wx.EVT_CONTEXT_MENU, self.OnContextMenu)
