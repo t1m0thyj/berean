@@ -2,8 +2,8 @@
 
 import wx
 
+from config import *
 from html import BaseChapterWindow
-from globals import *
 
 _ = wx.GetTranslation
 

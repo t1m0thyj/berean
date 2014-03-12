@@ -1,4 +1,4 @@
-"""globals.py - global variables used throughout Berean"""
+"""config.py - global variables used throughout Berean"""
 
 VERSION = "0.4.3"
 

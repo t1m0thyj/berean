@@ -3,7 +3,7 @@
 import wx
 from wx import aui
 
-from globals import *
+from config import *
 from refalize import refalize, validate
 
 _ = wx.GetTranslation

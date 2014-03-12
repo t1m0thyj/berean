@@ -2,7 +2,7 @@
 
 import re
 
-from globals import *
+from config import *
 
 ABBREVS = {"ge": 1, "gen": 1, "ex": 2, "exo": 2, "exod": 2, "le": 3, "lev": 3,
     "nu": 4, "num": 4, "de": 5, "deu": 5, "deut": 5, "jos": 6, "josh": 6,
