@@ -74,7 +74,7 @@ class TopicSelector(aui.AuiToolBar):
     def __init__(self, parent):
         super(TopicSelector, self).__init__(parent, -1, (-1, -1), (-1, -1),
             aui.AUI_TB_DEFAULT_STYLE | aui.AUI_TB_OVERFLOW)
-        self._parent = parent 
+        self._parent = parent
         self.topic_list = parent._frame._app.config.ReadList("Notes/TopicList")
         self.topic = wx.Choice(self, -1, choices=self.topic_list)
         self.AddControl(self.topic)
@@ -92,14 +92,12 @@ class NotesPage(wx.Panel):
         self.name = name
         filename = os.path.join(self._frame._app.userdatadir, "%s.not" % name)
         if not os.path.isfile(filename):
-            notes = open(filename, 'wb')
-            cPickle.dump({}, notes, -1)
-            notes.close()
+            with open(filename, 'wb') as notes:
+                cPickle.dump({}, notes, -1)
             self.notes_dict = {}
         else:
-            notes = open(filename, 'rb')
-            self.notes_dict = cPickle.load(notes)
-            notes.close()
+            with open(filename, 'rb') as notes:
+                self.notes_dict = cPickle.load(notes)
 
         ##self.selector = BookChapterVerseSelector(self, self._frame.reference)
         self.toolbar = aui.AuiToolBar(self, -1, (-1, -1), (-1, -1),
@@ -122,8 +120,7 @@ class NotesPage(wx.Panel):
         self.toolbar.Bind(wx.EVT_MENU, self.OnPaste, id=wx.ID_PASTE)
         self.toolbar.AddSeparator()
         self.font_name = wx.Choice(self.toolbar, -1,
-            choices=sorted(filter(lambda name: not name.startswith("@"),
-            wx.FontEnumerator.GetFacenames())))
+            choices=self._frame.facenames)
         self.font_name.SetSelection(0)
         self.toolbar.AddControl(self.font_name)
         self.font_name.Bind(wx.EVT_CHOICE, self.OnFontName)
@@ -203,12 +200,9 @@ class NotesPage(wx.Panel):
 
         self.editor = richtext.RichTextCtrl(self, -1, style=wx.BORDER_NONE |
             wx.WANTS_CHARS)
-        if '__WXMSW__' in wx.PlatformInfo:
-            self.editor.SetFont(wx.Font(12, wx.DEFAULT, wx.NORMAL, wx.NORMAL,
-                faceName="Times New Roman"))
-        else:
-            self.editor.SetFont(wx.Font(12, wx.DEFAULT, wx.NORMAL, wx.NORMAL,
-                faceName="Helvetica"))
+        self.editor.SetFont(wx.Font(self._frame.default_font["size"],
+            wx.DEFAULT, wx.NORMAL, wx.NORMAL,
+            faceName=self._frame.default_font["normal_face"]))
         self.editor.Bind(wx.EVT_CHAR, self.OnChar)
         self.editor.Bind(wx.EVT_KEY_UP, self.OnModified)
         self.editor.Bind(wx.EVT_LEFT_UP, self.OnModified)
@@ -268,10 +262,9 @@ class NotesPage(wx.Panel):
 
     def OnSave(self, event):
         self.save_text()
-        notes = open(os.path.join(self._frame._app.userdatadir,
-            "%s.not" % self.name), 'wb')
-        cPickle.dump(self.notes_dict, notes, -1)
-        notes.close()
+        with open(os.path.join(self._frame._app.userdatadir,
+                "%s.not" % self.name), 'wb') as notes:
+            cPickle.dump(self.notes_dict, notes, -1)
 
     def OnPrint(self, event):
         if wx.VERSION_STRING >= "2.8.11.0" and wx.VERSION_STRING != "2.9.0.0":
@@ -513,10 +506,6 @@ class NotesPage(wx.Panel):
     def OnModified(self, event):
         self.update_toolbar()
         event.Skip()
-
-
-FONT_SIZES = ("8", "9", "10", "11", "12", "14", "16", "18", "20", "22", "24",
-    "26", "28", "36", "48", "72")
 
 
 class NotesPane(aui.AuiNotebook):

@@ -3,6 +3,10 @@
 import cPickle
 import os
 import re
+try:
+    import threading
+except ImportError:
+    import dummy_threading as threading
 
 import wx
 from wx import aui, html
@@ -24,21 +28,26 @@ def index_version(Bible, version, indexdir):
                 verse = Bible[b][c][v]
                 if "<div" in verse:
                     verse = verse[:verse.index("<div")]
-                verse = re.sub(r'[^\w\s\-\']', r'', verse, flags=re.UNICODE)
+                verse = re.sub(r"[^\w\s\-']", r"", verse, flags=re.UNICODE)
                 for word in set(verse.split()): # Remove duplicates
                     if word not in index:
                         index[word] = []
-                    index[word] += [chr(i) for i in (b, c, v)]
+                    index[word].extend([chr(i) for i in (b, c, v)])
     dialog.Update(66, _("Saving index..."))
     for word in index:
         index[word] = "".join(index[word])
     dialog.Update(68)
-    fileobj = open(os.path.join(indexdir, "%s.idx" % version), 'wb')
-    cPickle.dump(index, fileobj, -1)
-    fileobj.close()
+    with open(os.path.join(indexdir, "%s.idx" % version), 'wb') as fileobj:
+        cPickle.dump(index, fileobj, -1)
     dialog.Update(70)
     dialog.Destroy()
     return index
+
+
+def load_indexes(versions, indexdir, indexes):
+    for version in versions:
+        with open(os.path.join(indexdir, "%s.idx" % version), 'rb') as index:
+            indexes[version] = cPickle.load(index)
 
 
 class SearchPane(wx.Panel):
@@ -46,7 +55,7 @@ class SearchPane(wx.Panel):
         super(SearchPane, self).__init__(parent, -1)
         self._parent = parent
         self.html = ""
-        self.indexes = []
+        self.indexes = {}
         self.last_version = -1
         self.options = ("AllWords", "CaseSensitive", "ExactMatch", "Phrase",
             "RegularExpression")
@@ -55,15 +64,18 @@ class SearchPane(wx.Panel):
         indexdir = os.path.join(parent._app.userdatadir, "indexes")
         if not os.path.isdir(indexdir):
             os.mkdir(indexdir)
+        versions = []
         for i in range(len(parent.version_list)):
             filename = os.path.join(indexdir, "%s.idx" % parent.version_list[i])
             if os.path.isfile(filename):
-                index = open(filename, 'rb')
-                self.indexes.append(cPickle.load(index))
-                index.close()
+                versions.append(parent.version_list[i])
             else:
                 self.indexes.append(index_version(parent.get_htmlwindow(i).
                     Bible, parent.version_list[i], indexdir))
+        thread = threading.Thread(target=load_indexes,
+            args=(versions, indexdir, self.indexes))
+        thread.start()
+        wx.CallAfter(thread.join)
 
         self.text = wx.ComboBox(self, -1,
             choices=parent._app.config.ReadList("Search/SearchHistory"),
@@ -128,7 +140,8 @@ class SearchPane(wx.Panel):
             item.Disable()
         self.optionspane.Collapse(
             not parent._app.config.ReadBool("Search/ShowOptions", True))
-        self.Bind(wx.EVT_COLLAPSIBLEPANE_CHANGED, self.OnCollapsiblePaneChanged)
+        self.Bind(wx.EVT_COLLAPSIBLEPANE_CHANGED,
+            self.OnCollapsiblePaneChanged)
 
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer2 = wx.BoxSizer(wx.HORIZONTAL)
@@ -142,7 +155,7 @@ class SearchPane(wx.Panel):
         box = wx.StaticBox(optionspane, -1, _("Search in"))
         sizer4 = wx.StaticBoxSizer(box, wx.VERTICAL)
         sizer5 = wx.BoxSizer(wx.HORIZONTAL)
-        sizer5.Add(self.version, 0, wx.ALL | wx.EXPAND, 2)
+        sizer5.Add(self.version, 0, wx.ALL, 2)
         sizer5.Add(self.range_choice, 1, wx.ALL | wx.EXPAND, 2)
         sizer4.Add(sizer5, 1, wx.EXPAND)
         sizer6 = wx.BoxSizer(wx.HORIZONTAL)
@@ -151,7 +164,7 @@ class SearchPane(wx.Panel):
             wx.LEFT | wx.RIGHT | wx.ALIGN_CENTER_VERTICAL, 5)
         sizer6.Add(self.stop, 1, wx.ALL | wx.EXPAND, 2)
         sizer4.Add(sizer6, 1, wx.EXPAND)
-        sizer3.Add(sizer4, 0, wx.ALL | wx.EXPAND, 2)
+        sizer3.Add(sizer4, 0, wx.ALL, 2)
         optionspane.SetSizer(sizer3)
         sizer.Add(self.optionspane, 0, wx.ALL | wx.EXPAND, 2)
         self.SetSizer(sizer)
@@ -165,24 +178,24 @@ class SearchPane(wx.Panel):
             self.text.SetValue(self.text.GetString(0))
             self._parent.toolbar.OnSearch(None)
             return
-        wx.BeginBusyCursor()
-        msec = wx.GetLocalTimeMillis()
-        results, number = self.find_text(text)
-        version_abbrev = self.version.GetStringSelection()
-        msec = max(1, wx.GetLocalTimeMillis() - msec)
-        if number > 0:
-            results.insert(0, _("<font color=\"gray\">%d verses in the %s " \
-                "(%d&nbsp;msec)</font>") % (number, version_abbrev, msec))
-        else:
-            results.append(_("<font color=\"gray\">0 verses in the %s " \
-                "(%d&nbsp;msec)</font><p></p><b>Suggestions:</b><ul><li>" \
-                "Make your search less specific.</li><li>Edit the search " \
-                "options.</li><li>Search in a different version.</li></ul>") %
-                (version_abbrev, msec))
-        self.html = "<html><body><font size=\"%d\">%s</font></body></html>" % \
-            (self._parent.zoom_level, "".join(results))
-        self.results.SetPage(self.html)
-        wx.EndBusyCursor()
+        with wx.BusyCursor():
+            msec = wx.GetLocalTimeMillis()
+            results, number = self.find_text(text)
+            version_abbrev = self.version.GetStringSelection()
+            msec = max(1, wx.GetLocalTimeMillis() - msec)
+            if number > 0:
+                results.insert(0, _("<font color=\"gray\">%d verses in the " \
+                    "%s (%d&nbsp;msec)</font>") % (number, version_abbrev,
+                    msec))
+            else:
+                results.append(_("<font color=\"gray\">0 verses in the %s " \
+                    "(%d&nbsp;msec)</font><p></p><b>Suggestions:</b><ul><li>" \
+                    "Make your search less specific.</li><li>Edit the " \
+                    "search options.</li><li>Search in a different version." \
+                    "</li></ul>") % (version_abbrev, msec))
+            self.html = "<html><body><font size=\"%d\">%s</font></body>" \
+                "</html>" % (self._parent.zoom_level, "".join(results))
+            self.results.SetPage(self.html)
         if self.text.FindString(text) == -1:
             self.text.Insert(text, 0)
             if self.text.GetCount() > 10:
@@ -194,49 +207,20 @@ class SearchPane(wx.Panel):
         wx.CallAfter(self.results.SetFocus)
 
     def find_text(self, text):
-        options = [getattr(self, option).GetValue() for option in self.options]
+        options = {}
+        for option in self.options:
+            options[option] = getattr(self, option).GetValue()
         flags = re.UNICODE
-        if not options[1]:  # not Case Sensitive
-            flags |= re.IGNORECASE 
+        if not options["CaseSensitive"]:
+            flags |= re.IGNORECASE
         Bible = self._parent.get_htmlwindow(self.version.GetSelection()).Bible
         start = self.start.GetSelection() + 1
         stop = self.stop.GetSelection() + 1
-        if not options[4]:  # not Regular Expression
-            words = [re.sub(r'[^\w\-\']', r'', word, flags=re.UNICODE) for
-                word in text.split()]
-            if options[0] or options[3]:    # All Words or Phrase
-                longest = ""
-                for word in words:
-                    if len(word) >= len(longest):
-                        longest = word
-                matches = self.get_word_matches(longest, options)
-                if len(matches):
-                    if options[0]:  # All Words
-                        words.remove(longest)
-                        if options[2]:  # Exact Match
-                            words = [r'\b%s\b' % word for word in words]
-                            longest = r'\b%s\b' % longest
-                        for word in words:
-                            pattern = re.compile(word, flags)
-                            matches = filter(lambda item: pattern.search(Bible[item[0]][item[1]][item[2]]), matches)
-                        words.insert(0, longest)
-                        pattern = re.compile(r'(%s)' % "|".join(words), flags)
-                    elif options[3]:    # Phrase
-                        pattern = re.compile(r'\[?\b%s\b\]?' % r'\W+'.join(words), flags)
-                        matches = filter(lambda item: pattern.search(Bible[item[0]][item[1]][item[2]]), matches)
-            else:
-                matches = []
-                for word in words:
-                    matches += self.get_word_matches(word, options)
-                if len(matches):
-                    if options[2]:  # Exact Match
-                        pattern = re.compile(r'(%s)' % "|".join([r'\b%s\b' % word for word in words]), flags)
-                        matches = filter(lambda item: pattern.search(Bible[item[0]][item[1]][item[2]]), matches)
-                    else:
-                        pattern = re.compile(r'(%s)' % "|".join(words), flags)
+        if not options["RegularExpression"]:
+            matches, pattern = self.get_matches(re.escape(text), Bible,
+                options, flags)
+            matches = filter(lambda item: start <= item[0] <= stop, matches)
             if len(matches):
-                matches = filter(lambda item: start <= item[0] <= stop,
-                    matches)
                 matches.sort()
                 last = matches[-1]
                 for i in range(len(matches) - 2, -1, -1):   # Remove duplicates
@@ -250,39 +234,79 @@ class SearchPane(wx.Panel):
             for b in range(start, stop + 1):
                 for c in range(1, len(Bible[b])):
                     for v in range(1, len(Bible[b][c])):
-                        verse = Bible[b][c][v]
+                        verse = Bible[b][c][v].replace("[", ""). \
+                            replace("]", "")
                         if "<div" in verse:
                             verse = verse[:verse.index("<div")]
                         if pattern.search(verse):
                             matches.append([b, c, v])
-        return (self.format_matches(matches, pattern), len(matches))
+        return (self.format_matches(matches, pattern, options), len(matches))
 
-    def get_word_matches(self, word, options):
-        index = self.indexes[self.version.GetSelection()]
+    def get_matches(self, text, Bible, options, flags):
+        words = [re.sub(r"[^\w\-']", r"", word, flags=re.UNICODE) for
+            word in text.split()]
+        if options["AllWords"] or options["Phrase"]:
+            longest = ""
+            for word in words:
+                if len(word) >= len(longest):
+                    longest = word
+            matches = self.get_word_matches(longest, options)
+            if not len(matches):
+                return ([], None)
+            if options["Phrase"]:
+                pattern = re.compile(r"\[?\b%s\b\]?" % r"\W+".join(words), flags)
+                matches = filter(lambda item: pattern.search(Bible[item[0]][item[1]][item[2]]), matches)
+            elif options["AllWords"]:
+                words.remove(longest)
+                if options["ExactMatch"]:
+                    words = [r"\b%s\b" % word for word in words]
+                    longest = r"\b%s\b" % longest
+                for word in words:
+                    pattern = re.compile(word, flags)
+                    matches = filter(lambda item: pattern.search(Bible[item[0]][item[1]][item[2]]), matches)
+                words.insert(0, longest)
+                pattern = re.compile("(%s)" % "|".join(words), flags)
+        else:
+            matches = []
+            for word in words:
+                matches.extend(self.get_word_matches(word, options))
+            if not len(matches):
+                return ([], None)
+            if options["ExactMatch"]:
+                pattern = re.compile("(%s)" % "|".join([r"\b%s\b" % word for word in words]), flags)
+                matches = filter(lambda item: pattern.search(Bible[item[0]][item[1]][item[2]]), matches)
+            else:
+                pattern = re.compile("(%s)" % "|".join(words), flags)
+        return (matches, pattern)
+
+    def get_word_matches(self, word, options, recursive=False):
+        index = self.indexes[self.version.GetStringSelection()]
         matches = []
-        if not options[1]:  # not Case Sensitive
+        if not options["CaseSensitive"]:
             cases = [word.lower(), word.capitalize(), word.upper()]
             if "-" in word: # Elelohe-Israel, not Elelohe-israel
                 cases.append(word.title())
             for case in cases:
                 if case in index:
-                    matches += [[ord(char) for char in index[case][i:i + 3]] for i in range(0, len(index[case]), 3)]
+                    matches.extend([[ord(char) for char in index[case][i:i + 3]] for i in range(0, len(index[case]), 3)])
         elif word in index:
-            matches += [[ord(char) for char in index[word][i:i + 3]] for i in range(0, len(index[word]), 3)]
-        if not (options[2] or options[3]):  # not Exact Match or Phrase
-            if not options[1]:  # not Case Sensitive
+            matches.extend([[ord(char) for char in index[word][i:i + 3]] for i in range(0, len(index[word]), 3)])
+        if not (recursive or options["ExactMatch"] or options["Phrase"]):
+            if not options["CaseSensitive"]:
                 lower = word.lower()
                 for word2 in index:
                     lower2 = word2.lower()
                     if lower in lower2 and lower != lower2:
-                        matches += self.get_word_matches(word2, [False, options[1], True, False, False])
+                        matches.extend(self.get_word_matches(word2,
+                            {"CaseSensitive": options["CaseSensitive"]}, True))
             else:
                 for word2 in index:
                     if word in word2 and word != word2:
-                        matches += self.get_word_matches(word2, [False, options[1], True, False, False])
+                        matches.extend(self.get_word_matches(word2,
+                            {"CaseSensitive": options["CaseSensitive"]}, True))
         return matches
-  
-    def format_matches(self, matches, pattern):
+
+    def format_matches(self, matches, pattern, options):
         i = 0
         Bible = self._parent.get_htmlwindow(self.version.GetSelection()).Bible
         results = []
@@ -296,10 +320,18 @@ class SearchPane(wx.Panel):
                         if "<div" in verse:
                             verse = verse[:verse.index("<div")]
                         offset = 0
-                        for match in pattern.finditer(verse):
-                            start, end = match.span(0)
-                            verse = verse[:start + offset] + "<b>" + verse[start + offset:end + offset] + "</b>" + verse[end + offset:]
-                            offset += 7
+                        if not options["RegularExpression"]:
+                            for match in pattern.finditer(verse):
+                                start, end = match.span(0)
+                                verse = verse[:start + offset] + "<b>" + verse[start + offset:end + offset] + "</b>" + verse[end + offset:]
+                                offset += 7
+                        else:
+                            for match in pattern.finditer(verse.replace("[", "").replace("]", "")):
+                                start, end = match.span(0)
+                                offset += verse.count("[", offset, start + offset) + verse.count("]", offset, start + offset)
+                                offset2 = offset + verse.count("[", start + offset, end + offset) + verse.count("]", start + offset, end + offset)
+                                verse = verse[:start + offset] + "<b>" + verse[start + offset:end + offset2] + "</b>" + verse[end + offset2:]
+                                offset += 7
                         verses.append(verse.replace("[", "<i>").replace("]", "</i>"))
                         i += 1
                     else:

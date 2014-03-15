@@ -46,7 +46,9 @@ class PrintingSystem(html.HtmlEasyPrinting):
         data = self.GetPageSetupData()
         data.SetMarginTopLeft(wx.Point(15, 15))
         data.SetMarginBottomRight(wx.Point(15, 15))
-        self.SetFooter(_("<div align=center><font size=\"-1\">Page @PAGENUM@</font></div>"))
+        self.SetFooter(_("<div align=center><font size=\"-1\">Page @PAGENUM@" \
+            "</font></div>"))
+        self.SetStandardFonts(**frame.default_font)
 
     def get_chapter(self):
         htmlwindow = self._frame.get_htmlwindow()
@@ -59,12 +61,16 @@ class PrintingSystem(html.HtmlEasyPrinting):
 
     def print_chapter(self):
         if wx.VERSION_STRING >= "2.8.11.0" and wx.VERSION_STRING != "2.9.0.0":
-            self.SetName("%s %d (%s)" % (BOOK_NAMES[self._frame.reference[0] - 1], self._frame.reference[1], self._frame.notebook.GetPageText(self._frame.notebook.GetSelection())))
+            self.SetName("%s %d (%s)" % (BOOK_NAMES[self._frame.reference[0] -
+                1], self._frame.reference[1], self._frame.notebook.GetPageText(
+                self._frame.notebook.GetSelection())))
         self.PrintText(self.get_chapter())
 
     def preview_chapter(self):
         if wx.VERSION_STRING >= "2.8.11.0" and wx.VERSION_STRING != "2.9.0.0":
-            self.SetName("%s %d (%s)" % (BOOK_NAMES[self._frame.reference[0] - 1], self._frame.reference[1], self._frame.notebook.GetPageText(self._frame.notebook.GetSelection())))
+            self.SetName("%s %d (%s)" % (BOOK_NAMES[self._frame.reference[0] -
+                1], self._frame.reference[1], self._frame.notebook.GetPageText(
+                self._frame.notebook.GetSelection())))
         self.PreviewText(self.get_chapter())
 
 
@@ -73,7 +79,7 @@ class BaseHtmlWindow(html.HtmlWindow):
         super(BaseHtmlWindow, self).__init__(parent)
         self.SetAcceleratorTable(wx.AcceleratorTable([(wx.ACCEL_CTRL, ord("A"),
             wx.ID_SELECTALL)]))
-        self.SetStandardFonts(**frame.html_font)
+        self.SetStandardFonts(**frame.default_font)
         self.Bind(wx.EVT_MENU, self.OnSelectAll, id=wx.ID_SELECTALL)
         self.dragscroller = wx.lib.dragscroller.DragScroller(self)
         self.Bind(wx.EVT_MIDDLE_DOWN, self.OnMiddleDown)
@@ -138,16 +144,14 @@ class ChapterWindow(BaseChapterWindow):
             filename = os.path.join(self._frame._app.userdatadir, "versions",
                 "%s.bbl" % version)
         try:
-            fileobj = open(filename, 'rb')
-            try:
-                self.Bible = cPickle.load(fileobj)
-            finally:
-                fileobj.close()
-            self.description = self.Bible[0]
+            with open(filename, 'rb') as Bible:
+                self.Bible = cPickle.load(Bible)
         except Exception, exc_value:
             wx.MessageBox(_("Could not load %s.\n\nError: %s") % (version,
                 exc_value), _("Error"), wx.ICON_WARNING | wx.OK)
-        self.version = version
+        else:
+            self.description = self.Bible[0]
+            self.version = version
 
     def get_html(self, book, chapter, verse=-1):
         if self.Bible[book][chapter] != (None,):
@@ -170,9 +174,8 @@ class ChapterWindow(BaseChapterWindow):
                 verses.append("<a name=\"%d\">%s</a>" % (i, text))
         else:
             header = []
-            verses = [
-                _("<font color=gray>%s %d is not in this version.</font>") %
-                (BOOK_NAMES[book - 1], chapter)]
+            verses = [_("<font color=gray>%s %d is not in this version." \
+                "</font>") % (BOOK_NAMES[book - 1], chapter)]
         title = "%s %d (%s)" % (BOOK_NAMES[book - 1], chapter, self.version)
         return HTML % (title, self._frame.zoom_level, "\n  ".join(header) +
             "<br />\n  ".join(verses))

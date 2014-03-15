@@ -41,14 +41,19 @@ class MainFrame(wx.Frame):
         self.reference = (app.config.ReadInt("Main/CurrentBook", 1),
             app.config.ReadInt("Main/CurrentChapter", 1),
             app.config.ReadInt("Main/CurrentVerse", -1))
-        self.html_font = {"size": app.config.ReadInt("Main/HtmlFontSize", 12),
-            "normal_face": ""}
+        self.default_font = {"size": app.config.ReadInt("Main/HtmlFontSize",
+            12)}
         if '__WXMSW__' in wx.PlatformInfo:
-            self.html_font["normal_face"] = app.config.Read(
+            self.default_font["normal_face"] = app.config.Read(
                 "Main/HtmlFontFace", "Times New Roman")
+        elif '__WXGTK__' in wx.PlatformInfo:
+            self.default_font["normal_face"] = app.config.Read(
+                "Main/HtmlFontFace", "Serif")
         else:
-            self.html_font["normal_face"] = app.config.Read(
-                "Main/HtmlFontFace", "Helvetica")
+            self.default_font["normal_face"] = app.config.Read(
+                "Main/HtmlFontFace", "Lucida Grande")
+        self.facenames = sorted(filter(lambda facename:
+            not facename.startswith("@"), wx.FontEnumerator.GetFacenames()))
         self.zoom_level = app.config.ReadInt("Main/ZoomLevel", 3)
         self.minimize_to_tray = app.config.ReadBool("Main/MinimizeToTray")
         self.version_list = app.config.ReadList("VersionList", ["KJV"])
@@ -106,26 +111,24 @@ class MainFrame(wx.Frame):
 
         self.tree = panes.TreePane(self)
         self.aui.AddPane(self.tree, aui.AuiPaneInfo().Name("tree_pane").
-            Caption(_("Tree")).PinButton(True).Left().Layer(1).
-            BestSize((150, -1)))
+            Caption(_("Tree")).Left().Layer(1).BestSize((150, -1)))
         self.search = panes.SearchPane(self)
         self.aui.AddPane(self.search, aui.AuiPaneInfo().Name("search_pane").
-            Caption(_("Search")).PinButton(True).Right().Layer(1).
+            Caption(_("Search")).MaximizeButton(True).Right().Layer(1).
             BestSize((300, -1)))
         self.notes = panes.NotesPane(self)
         self.aui.AddPane(self.notes, aui.AuiPaneInfo().Name("notes_pane").
-            Caption(_("Notes")).PinButton(True).Bottom().Layer(0).
+            Caption(_("Notes")).MaximizeButton(True).Bottom().Layer(0).
             BestSize((-1, 220)))
         self.multiple_verse_search = panes.MultipleVerseSearch(self)
         self.aui.AddPane(self.multiple_verse_search, aui.AuiPaneInfo().
             Name("multiple_verse_search").Caption(_("Multiple Verse Search")).
-            PinButton(True).Float().BestSize((600, 440)).Hide())
+            MaximizeButton(True).Float().BestSize((600, 440)).Hide())
 
         filename = os.path.join(app.userdatadir, "layout.dat")
         if os.path.isfile(filename):
-            layout = open(filename, 'r')
-            self.aui.LoadPerspective(layout.read())
-            layout.close()
+            with open(filename, 'r') as layout:
+                self.aui.LoadPerspective(layout.read())
         self.aui.Update()
         for pane in ("toolbar", "tree_pane", "search_pane", "notes_pane",
                 "multiple_verse_search"):
@@ -256,9 +259,9 @@ class MainFrame(wx.Frame):
         for i in range(self.notes.GetPageCount()):
             self.notes.GetPage(i).OnSave(None)
         self._app.config.save()
-        layout = open(os.path.join(self._app.userdatadir, "layout.dat"), 'w')
-        layout.write(self.aui.SavePerspective())
-        layout.close()
+        with open(os.path.join(self._app.userdatadir, "layout.dat"), 'w') as \
+                layout:
+            layout.write(self.aui.SavePerspective())
         self.aui.UnInit()
         del self.help
         self.Destroy()
