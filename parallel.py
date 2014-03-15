@@ -38,11 +38,11 @@ class ParallelWindow(BaseChapterWindow):
             if not Bibles[-1][book][chapter][0]:
                 lines.append("  <td align=center>%s</td>" % heading)
             else:
-                lines += ["  <td align=center>", "  %s<br/>" % heading,
-                    "  " + Bibles[-1][book][chapter][0].replace("[",
-                    "<i>").replace("]", "</i>"), "  </td>"]
+                lines.extend(["  <td align=center>", "  %s<br/>" % heading,
+                    "  " + Bibles[-1][book][chapter][0].replace("[", "<i>"). \
+                    replace("]", "</i>"), "  </td>"])
         lines.append("</tr>")
-        for i in range(1, max([len(Bible[book][chapter]) for Bible in Bibles])):
+        for i in range(1, VERSE_LENGTHS[book - 1][chapter - 1] + 1):
             lines.append("<tr>")
             for j in range(len(Bibles)):
                 line = ["  <td>"]

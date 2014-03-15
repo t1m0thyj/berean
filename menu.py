@@ -217,7 +217,8 @@ class MenuBar(wx.MenuBar):
         try:
             self._frame.load_chapter(*refalize(reference))
         except:
-            wx.MessageBox(_("Sorry, but I do not understand '%s'.\n\nIf you think that Berean should accept it,\nplease email <timothysw@objectmail.com>.") % reference, "Berean", wx.ICON_EXCLAMATION | wx.OK)
+            wx.MessageBox(_("'%s' is not a valid reference.") % reference,
+                "Berean", wx.ICON_EXCLAMATION | wx.OK)
 
     def OnViewAll(self, event):
         self._frame.show_multiple_verse_search()
@@ -264,15 +265,22 @@ class FavoritesManager(wx.Dialog):
             try:
                 reference = refalize(label)
             except:
-                wx.MessageBox(_("Sorry, but I do not understand '%s'.\n\nIf you think that Berean should accept it,\nplease email <timothysw@objectmail.com>.") % label, _("Manage Favorites"), wx.ICON_EXCLAMATION | wx.OK)
+                wx.MessageBox(_("'%s' is not a valid reference.") % label,
+                    _("Manage Favorites"), wx.ICON_EXCLAMATION | wx.OK)
                 event.Veto()
                 return
             index = find_favorite(reference, self.listbox.GetStrings())
             if index != -1 and index != event.GetIndex():
                 if reference[2] == -1:
-                    wx.MessageBox(_("%s %d is already in the favorites list.") % (BOOK_NAMES[reference[0] - 1], reference[1]), _("Manage Favorites"), wx.ICON_EXCLAMATION | wx.OK)
+                    wx.MessageBox(_("%s %d is already in the favorites " \
+                        "list.") % (BOOK_NAMES[reference[0] - 1],
+                        reference[1]), _("Manage Favorites"),
+                        wx.ICON_EXCLAMATION | wx.OK)
                 else:
-                    wx.MessageBox(_("%s %d:%d is already in the favorites list.") % (BOOK_NAMES[reference[0] - 1], reference[1], reference[2]), _("Manage Favorites"), wx.ICON_EXCLAMATION | wx.OK)
+                    wx.MessageBox(_("%s %d:%d is already in the favorites " \
+                        "list.") % (BOOK_NAMES[reference[0] - 1], reference[1],
+                        reference[2]), _("Manage Favorites"),
+                        wx.ICON_EXCLAMATION | wx.OK)
                 event.Veto()
                 return
         event.Skip()

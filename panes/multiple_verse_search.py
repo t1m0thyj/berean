@@ -1,7 +1,5 @@
 """multiple_verse_search.py - multiple verse search pane class"""
 
-import re
-
 import wx
 from wx import aui, html
 

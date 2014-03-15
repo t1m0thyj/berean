@@ -52,8 +52,8 @@ class FileConfig(wx.FileConfig):
         self.WriteInt("CurrentBook", self._app.frame.reference[0])
         self.WriteInt("CurrentChapter", self._app.frame.reference[1])
         self.WriteInt("CurrentVerse", self._app.frame.reference[2])
-        self.Write("HtmlFontFace", self._app.frame.html_font["normal_face"])
-        self.WriteInt("HtmlFontSize", self._app.frame.html_font["size"])
+        self.Write("HtmlFontFace", self._app.frame.default_font["normal_face"])
+        self.WriteInt("HtmlFontSize", self._app.frame.default_font["size"])
         self.WriteInt("ZoomLevel", self._app.frame.zoom_level)
         self.Write("LastVerse", self._app.frame.toolbar.verse_entry.GetValue())
         self.WriteInt("ActiveVersionTab",
@@ -81,7 +81,7 @@ class FileConfig(wx.FileConfig):
         self.WriteBool("ShowOptions",
             self._app.frame.search.optionspane.IsExpanded())
         for option in self._app.frame.search.options:
-            self.WriteBool(option, 
+            self.WriteBool(option,
                 getattr(self._app.frame.search, option).GetValue())
         self.Write("LastMultipleVerseSearch",
             self._app.frame.multiple_verse_search.verse_list.GetValue())

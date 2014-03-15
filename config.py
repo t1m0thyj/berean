@@ -89,3 +89,6 @@ VERSE_LENGTHS = ((31, 25, 24, 26, 32, 22, 24, 22, 29, 32, 32, 20, 18, 24, 21,
 FLAG_NAMES = {"ASV": "us", "DSV": "nl", "KJV": "gb", "LSG": "fr", "RVA": "es",
     "SEV": "es", "WEB": "us", "Webster": "us", "Wycliffe": "gb",
     "YLT": "scotland"}
+
+FONT_SIZES = ("8", "9", "10", "11", "12", "14", "16", "18", "20", "22", "24",
+    "26", "28", "36", "48", "72")

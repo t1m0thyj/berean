@@ -10,12 +10,12 @@ ABBREVS = {"ge": 1, "gen": 1, "ex": 2, "exo": 2, "exod": 2, "le": 3, "lev": 3,
     "1sam": 9, "2s": 10, "2sa": 10, "2sam": 10, "1k": 11, "1ki": 11,
     "1kin": 11, "1kgs": 11, "2k": 12, "2ki": 12, "2kin": 12, "2kgs": 12,
     "1ch": 13, "1chr": 13, "2ch": 14, "2chr": 14, "ezr": 15, "ne": 16,
-    "neh":16, "es": 17, "est": 17, "esth": 17, "ps": 19, "psa": 19,
+    "neh": 16, "es": 17, "est": 17, "esth": 17, "ps": 19, "psa": 19,
     "psalm": 19, "pr": 20, "pro": 20, "prov": 20, "ec": 21, "ecc": 21,
     "eccl": 21, "ca": 22, "can": 22, "cant": 22, "canticles": 22, "so": 22,
     "son": 22, "song": 22, "is": 23, "isa": 23, "je": 24, "jer": 24, "la": 25,
     "lam": 25, "eze": 26, "ezek": 26, "da": 27, "dan": 27, "ho": 28, "hos": 28,
-    "joe": 29, "am": 30, "amo":30, "ob": 31, "oba": 31, "obad": 31, "jon": 32,
+    "joe": 29, "am": 30, "amo": 30, "ob": 31, "oba": 31, "obad": 31, "jon": 32,
     "mi": 33, "mic": 33, "na": 34, "nah": 34, "hab": 35, "zep": 36, "zeph": 36,
     "hag": 37, "zec": 38, "zech": 38, "mal": 39, "mat": 40, "matt": 40,
     "mar": 41, "mk": 41, "mrk": 41, "lk": 42, "lu": 42, "luk": 42, "joh": 43,
@@ -48,7 +48,7 @@ def get_book_index(abbrev, no_error=False):
 
 
 def refalize(reference):
-    groups = re.match(r'((?:[1-3]\s?|i{1,3}\s)?[A-Za-z]+)\s*(\d+)?\W*(\d+)?',
+    groups = re.match(r"((?:[1-3]\s?|i{1,3}\s)?[A-Za-z]+)\s*(\d+)?\W*(\d+)?",
         reference.lstrip(), flags=re.IGNORECASE).groups()
     book = get_book_index(groups[0])
     if groups[2]:
@@ -64,11 +64,11 @@ def refalize(reference):
 
 def refalize2(references, Bible):
     references = filter(None, [reference.lstrip() for reference in re.split(
-        r'[,;\n]', references)])
+        r"[,;\n]", references)])
     pattern = re.compile(
-        r'((?:[1-3]\s?|i{1,3}\s)?[A-Za-z]+)?\s*(\d+)?\W*(\d+)?',
+        r"((?:[1-3]\s?|i{1,3}\s)?[A-Za-z]+)?\s*(\d+)?\W*(\d+)?",
         flags=re.IGNORECASE)
-    style = 1   # 0 = full reference, 1 = reference with no verse, 2 = reference with no chapter
+    style = 1   # 0: Book/Chapter/Verse, 1: Book/Chapter Only, 2 = Book Only
     for i in range(len(references)):
         if "-" in references[i]:
             first, last = references[i].split("-")
@@ -126,7 +126,7 @@ def refalize2(references, Bible):
                 last = (book, chapter, verse)
             else:
                 last = None
-        elif re.search(r'\W*ff', references[i][match.end(len(groups)):],
+        elif re.search(r"\W*ff", references[i][match.end(len(groups)):],
                 flags=re.IGNORECASE):  # Recognize 'ff'
             if style != 1:
                 last = (book, chapter, len(Bible[book][chapter]) - 1)

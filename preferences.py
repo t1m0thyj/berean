@@ -2,20 +2,23 @@
 
 import wx
 
+from config import *
+
 _ = wx.GetTranslation
 VERSION_ABBREVS = ("ASV", "DSV", "KJV", "LSG", "RVA", "SEV", "WEB", "Webster",
     "Wycliffe", "YLT")
-VERSION_NAMES = ("American Standard Version", "Dutch Statenvertaling (Dutch)",
-    "King James Version", "Louis Segond (French)",
-    "Reina-Valera Antigua (Spanish)", "Las Sagradas Escrituras (Spanish)",
-    "World English Bible", "Webster's Bible", "Wycliffe New Testament",
-    "Young's Literal Translation")
+VERSION_NAMES = (u"American Standard Version",
+    u"Dutch Statenvertaling (Deutsch)", u"King James Version",
+    u"Louis Segond (Fran\u00e7ais)", u"Reina-Valera Antigua (Espa\u00f1ol)",
+    u"Las Sagradas Escrituras (Espa\u00f1ol)", u"World English Bible",
+    u"Webster's Bible", u"Wycliffe New Testament",
+    u"Young's Literal Translation")
 
 
 class PreferencesDialog(wx.Dialog):
     def __init__(self, parent):
         super(PreferencesDialog, self).__init__(parent, -1, _("Preferences"),
-            size=(300, 440), style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER)
+            style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER)
         self._parent = parent
         self.notebook = wx.Notebook(self, -1, style=wx.NB_MULTILINE)
 
@@ -23,17 +26,23 @@ class PreferencesDialog(wx.Dialog):
         self.minimize_to_tray = wx.CheckBox(self.general, -1,
             _("Minimize to system tray"))
         self.minimize_to_tray.SetValue(parent.minimize_to_tray)
-        self.html_font = wx.FontPickerCtrl(self.general, -1,
-            wx.Font(parent.html_font["size"], wx.DEFAULT, wx.NORMAL, wx.NORMAL,
-            faceName=parent.html_font["normal_face"]))
-        self.html_font.Bind(wx.EVT_FONTPICKER_CHANGED,
-            self.OnFontpickerChanged)
+        self.default_font_face = wx.Choice(self.general, -1,
+            choices=parent.facenames)
+        self.default_font_face.SetStringSelection(
+            parent.default_font["normal_face"])
+        self.default_font_size = wx.ComboBox(self.general, -1,
+            choices=FONT_SIZES)
+        self.default_font_size.SetStringSelection(str(
+            parent.default_font["size"]))
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add(self.minimize_to_tray, 0, wx.ALL, 5)
         sizer2 = wx.BoxSizer(wx.HORIZONTAL)
-        sizer2.Add(wx.StaticText(self.general, -1, _("Bible window font:")), 0,
-            wx.RIGHT | wx.ALIGN_CENTER_VERTICAL, 5)
-        sizer2.Add(self.html_font, 0)
+        sizer2.Add(wx.StaticText(self.general, -1, _("Default font:")), 0,
+            wx.ALIGN_CENTER_VERTICAL)
+        sizer2.Add(self.default_font_face, 0, wx.ALL, 5)
+        sizer2.Add(wx.StaticText(self.general, -1, _("Size:")), 0,
+            wx.LEFT | wx.ALIGN_CENTER_VERTICAL, 5)
+        sizer2.Add(self.default_font_size, 0, wx.ALL, 5)
         sizer.Add(sizer2, 0, wx.ALL ^ wx.TOP, 5)
         self.general.SetSizer(sizer)
         self.notebook.AddPage(self.general, _("General"))
@@ -57,10 +66,8 @@ class PreferencesDialog(wx.Dialog):
         self.Bind(wx.EVT_BUTTON, self.OnCancel, id=wx.ID_CANCEL)
         sizer.Add(button_sizer, 0, wx.ALL | wx.EXPAND, 5)
         self.SetSizer(sizer)
+        self.Fit()
         self.Center()
-    
-    def OnFontpickerChanged(self, event):
-        self.general.Layout()
 
     def OnOk(self, event):
         version_list = list(filter(lambda version: self.version_list.IsChecked(
@@ -70,21 +77,21 @@ class PreferencesDialog(wx.Dialog):
                 _("Berean"), wx.ICON_EXCLAMATION | wx.OK)
             return
         self._parent.minimize_to_tray = self.minimize_to_tray.GetValue()
-        html_font = self.html_font.GetSelectedFont()
-        html_font = {"size": html_font.GetPointSize(),
-            "normal_face": html_font.GetFaceName()}
-        if html_font != self._parent.html_font:
+        default_font = {"size": int(self.default_font_size.GetValue()),
+            "normal_face": self.default_font_face.GetStringSelection()}
+        if default_font != self._parent.default_font:
             for i in range(self._parent.notebook.GetPageCount()):
-                self._parent.get_htmlwindow(i).SetStandardFonts(**html_font)
-            self._parent.search.results.SetStandardFonts(**html_font)
-            self._parent.multiple_verse_search.results.SetStandardFonts(
-                **html_font)
-            self._parent.html_font = html_font
+                self._parent.get_htmlwindow(i).SetStandardFonts(**default_font)
+            for klass in (self._parent.search.results,
+                    self._parent.multiple_verse_search.results,
+                    self._parent.printer):
+                klass.SetStandardFonts(**default_font)
+            self._parent.default_font = default_font
         if version_list != self._parent.version_list:
             if not hasattr(self._parent, "old_versions"):
                 self._parent.old_versions = []
             for version in VERSION_ABBREVS:
-                if (version in self._parent.version_list and 
+                if (version in self._parent.version_list and
                         version not in version_list):
                     self._parent.old_versions.append(version)
                 elif (version in version_list and
