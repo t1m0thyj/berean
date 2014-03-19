@@ -89,7 +89,7 @@ class BaseHtmlWindow(html.HtmlWindow):
         self.SelectAll()
 
     def OnMiddleDown(self, event):
-        if not self.HasCapture():   # Do nothing if context menu is shown
+        if not self.HasCapture():  # Do nothing if context menu is shown
             self.dragscroller.Start(event.GetPosition())
 
     def OnMiddleUp(self, event):
@@ -103,7 +103,7 @@ class BaseChapterWindow(BaseHtmlWindow):
         self.current_verse = -1
         if wx.VERSION_STRING >= "2.9.0.0":
             self.Bind(wx.EVT_CONTEXT_MENU, self.OnContextMenu)
-        else:   # wxHtmlWindow doesn't generate EVT_CONTEXT_MENU in 2.8
+        else:  # wxHtmlWindow doesn't generate EVT_CONTEXT_MENU in 2.8
             self.Bind(wx.EVT_RIGHT_UP, self.OnContextMenu)
 
     def load_chapter(self, book, chapter, verse=-1):
@@ -114,17 +114,17 @@ class BaseChapterWindow(BaseHtmlWindow):
 
     def OnContextMenu(self, event):
         menu = wx.Menu()
-        selection = self.SelectionToText()
-        menu.Append(wx.ID_COPY, _("&Copy\tCtrl+C"))
-        menu.Enable(wx.ID_COPY, len(selection))
-        menu.Append(wx.ID_SELECTALL, _("Select &All\tCtrl+A"))
+        selected = len(self.SelectionToText()) > 0
+        if selected:
+            menu.Append(wx.ID_COPY, _("&Copy"))
+        menu.Append(wx.ID_SELECTALL, _("Select &All"))
         menu.AppendSeparator()
         search_item = menu.Append(-1, _("&Search for Selected Text"))
         self.Bind(wx.EVT_MENU, self.OnSearch, search_item)
-        menu.Enable(search_item.GetId(), len(selection))
+        menu.Enable(search_item.GetId(), selected)
         menu.AppendSeparator()
-        menu.Append(wx.ID_PRINT, _("&Print...\tCtrl+P"))
-        menu.Append(wx.ID_PREVIEW, _("P&rint Preview...\tCtrl+Alt+P"))
+        menu.Append(wx.ID_PRINT, _("&Print..."))
+        menu.Append(wx.ID_PREVIEW, _("P&rint Preview..."))
         self.PopupMenu(menu)
 
     def OnSearch(self, event):

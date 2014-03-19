@@ -81,8 +81,8 @@
 			<param name="Local" value="view-menu.html#NotesPane">
 		</object>
 	<li><object type="text/sitemap">
-			<param name="Name" value="Multiple verse search">
-			<param name="Local" value="view-menu.html#MultipleVerseSearch">
+			<param name="Name" value="Multi-verse retrieval">
+			<param name="Local" value="view-menu.html#MultiVerseRetrieval">
 		</object>
 	<li><object type="text/sitemap">
 			<param name="Name" value="Favorites menu">

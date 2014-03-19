@@ -48,7 +48,7 @@ def get_book_index(abbrev, no_error=False):
 
 
 def refalize(reference):
-    groups = re.match(r"((?:[1-3]\s?|i{1,3}\s)?[A-Za-z]+)\s*(\d+)?\W*(\d+)?",
+    groups = re.match(r"((?:[1-3]\s?|i{1,3}\s)?[a-z]+)\s*(\d+)?\W*(\d+)?",
         reference.lstrip(), flags=re.IGNORECASE).groups()
     book = get_book_index(groups[0])
     if groups[2]:
@@ -62,82 +62,59 @@ def refalize(reference):
         return (book, 1, -1)
 
 
-def refalize2(references, Bible):
-    references = filter(None, [reference.lstrip() for reference in re.split(
-        r"[,;\n]", references)])
-    pattern = re.compile(
-        r"((?:[1-3]\s?|i{1,3}\s)?[A-Za-z]+)?\s*(\d+)?\W*(\d+)?",
+def refalize2(references):
+    references = filter(None, [reference.lstrip() for reference in
+        re.split(r"[,;\n]", references)])
+    start_pattern = re.compile(
+        r"((?:[1-3]\s?|i{1,3}\s)?[a-z]+)?\s*(\d+)?\W*(\d+)?",
         flags=re.IGNORECASE)
-    style = 1   # 0: Book/Chapter/Verse, 1: Book/Chapter Only, 2 = Book Only
+    stop_pattern = re.compile(r"(\d+)\W*(\d+)?")
+    complete = False  # Reference must include B/C/V to be complete
+    failed = []
     for i in range(len(references)):
-        if "-" in references[i]:
-            first, last = references[i].split("-")
-        else:
-            first = references[i]
-            last = None
-        match = pattern.match(first)
-        groups = match.groups()
-        if groups[0] and (groups[0].lower() not in
-                ("c", "ch", "chap", "v", "ver", "vv")):
-            book = get_book_index(groups[0])
-        else:
-            book = references[i - 1][1][0]
-        if groups[2]:
-            chapter = int(groups[1])
-            verse = int(groups[2])
-            style = 0
-        elif book in (31, 57, 63, 64, 65):
-            chapter = 1
-            verse = int(groups[1])
-            style = 2
-        elif style != 1 and ((not groups[0]) or groups[0].lower() in
-                ("v", "ver", "vv")):
-            chapter = references[i - 1][1][1]
-            verse = int(groups[1])
-            style = 2
-        else:
-            chapter = int(groups[1])
-            verse = 1
-            style = 1
-        first = (book, chapter, verse)
-        if last:
-            match2 = pattern.match(last.lstrip())
-            if match2:
-                groups2 = match2.groups()
-                if groups2[0] and (groups2[0].lower() not in
-                        ("c", "ch", "chap", "v", "ver", "vv")):
-                    book = get_book_index(groups2[0])
-                else:
-                    book = first[0]
-                if groups2[1] and groups2[2]:
-                    chapter = int(groups2[1])
-                    verse = int(groups2[2])
-                    style = 0
-                elif groups2[1] and not groups2[2]:
-                    if book in (31, 57, 63, 64, 65):
-                        chapter = 1
-                        verse = int(groups2[1])
-                    elif style != 1:
-                        chapter = first[1]
-                        verse = int(groups2[1])
+        try:
+            if "-" in references[i]:
+                start, stop = references[i].split("-")
+            else:
+                start, stop = references[i], None
+            match = start_pattern.match(start)
+            groups = match.groups()
+            if groups[0]:
+                book = get_book_index(groups[0])
+            else:
+                book = references[i - 1][0]
+            if groups[2]:
+                chapter, verse = int(groups[1]), int(groups[2])
+            elif book in (31, 57, 63, 64, 65):
+                chapter, verse = 1, int(groups[1])
+            elif not (complete or groups[0]):
+                chapter, verse = references[i - 1][1][1], int(groups[1])
+            else:
+                chapter, verse = int(groups[1]), 1
+            data = [book, chapter, verse, -1, -1, references[i]]
+            complete = groups[2] != None
+            if stop:
+                match2 = stop_pattern.match(stop.lstrip())
+                if match2:
+                    groups2 = match2.groups()
+                    if groups2[1]:
+                        chapter, verse = int(groups2[0]), int(groups2[1])
                     else:
-                        chapter = int(groups2[1])
-                        verse = len(Bible[book][chapter]) - 1
-                last = (book, chapter, verse)
-            else:
-                last = None
-        elif re.search(r"\W*ff", references[i][match.end(len(groups)):],
-                flags=re.IGNORECASE):  # Recognize 'ff'
-            if style != 1:
-                last = (book, chapter, len(Bible[book][chapter]) - 1)
-            else:
-                last = (book, len(Bible[book]) - 1, len(Bible[book][-1]) - 1)
-        if not last:
-            last = first
-            if style == 1:
-                last = (last[0], last[1], len(Bible[last[0]][last[1]]) - 1)
-        references[i] = (first, last)
-    return references
+                        if book in (31, 57, 63, 64, 65):
+                            chapter, verse = 1, int(groups2[0])
+                        elif complete:
+                            chapter, verse = data[1], int(groups2[0])
+                        else:
+                            chapter = int(groups2[0])
+                            verse = VERSE_LENGTHS[book - 1][chapter - 1]
+                    data[3:5] = [chapter, verse]
+                    complete = groups2[1] != None
+            elif not complete:
+                data[3:5] = [data[1], VERSE_LENGTHS[data[0] - 1][data[1] - 1]]
+            references[i] = data
+        except Exception:
+            failed.append(references[i])
+    return (references, failed)
 
 
 def validate(reference, check_book=True):

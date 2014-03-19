@@ -65,13 +65,14 @@ class MainToolBar(aui.AuiToolBar):
                         wx.ICON_EXCLAMATION | wx.OK)
                     return
                 self._parent.load_chapter(book, chapter, verse)
+            except Exception:
+                wx.MessageBox(_("'%s' is not a valid reference.") % reference,
+                    "Berean", wx.ICON_EXCLAMATION | wx.OK)
+            else:
                 if self.verse_entry.FindString(reference) == -1:
                     self.verse_entry.Insert(reference, 0)
                     if self.verse_entry.GetCount() > 10:
                         self.verse_entry.Delete(10)
-            except:
-                wx.MessageBox(_("'%s' is not a valid reference.") % reference,
-                    "Berean", wx.ICON_EXCLAMATION | wx.OK)
         else:
             if not self._parent.aui.GetPane("search_pane").IsShown():
                 self._parent.show_search_pane()
@@ -86,9 +87,7 @@ class MainToolBar(aui.AuiToolBar):
 
     def OnBack(self, event):
         if not event.IsDropDownClicked():
-            book, chapter, verse = refalize(
-                self._parent.verse_history[self._parent.history_item - 1])
-            self._parent.load_chapter(book, chapter, verse, False)
+            self._parent.menubar.OnBack(None)
         else:
             menu = wx.Menu()
             for i in range(self._parent.history_item - 1, -1, -1):
@@ -101,9 +100,7 @@ class MainToolBar(aui.AuiToolBar):
 
     def OnForward(self, event):
         if not event.IsDropDownClicked():
-            book, chapter, verse = refalize(
-                self._parent.verse_history[self._parent.history_item + 1])
-            self._parent.load_chapter(book, chapter, verse, False)
+            self._parent.menubar.OnForward(None)
         else:
             menu = wx.Menu()
             for i in range(self._parent.history_item + 1,
