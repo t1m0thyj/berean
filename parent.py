@@ -42,16 +42,8 @@ class MainFrame(wx.Frame):
             app.config.ReadInt("Main/CurrentChapter", 1),
             app.config.ReadInt("Main/CurrentVerse", -1))
         self.default_font = {"size": app.config.ReadInt("Main/HtmlFontSize",
-            12)}
-        if '__WXMSW__' in wx.PlatformInfo:
-            self.default_font["normal_face"] = app.config.Read(
-                "Main/HtmlFontFace", "Times New Roman")
-        elif '__WXGTK__' in wx.PlatformInfo:
-            self.default_font["normal_face"] = app.config.Read(
-                "Main/HtmlFontFace", "Serif")
-        else:
-            self.default_font["normal_face"] = app.config.Read(
-                "Main/HtmlFontFace", "Lucida Grande")
+            12), "normal_face": app.config.Read("Main/HtmlFontFace",
+            wx.FFont(-1, wx.ROMAN).GetFaceName())}
         self.facenames = sorted(filter(lambda facename:
             not facename.startswith("@"), wx.FontEnumerator.GetFacenames()))
         self.zoom_level = app.config.ReadInt("Main/ZoomLevel", 3)
@@ -120,9 +112,9 @@ class MainFrame(wx.Frame):
         self.aui.AddPane(self.notes, aui.AuiPaneInfo().Name("notes_pane").
             Caption(_("Notes")).MaximizeButton(True).Bottom().Layer(0).
             BestSize((-1, 220)))
-        self.multiple_verse_search = panes.MultipleVerseSearch(self)
-        self.aui.AddPane(self.multiple_verse_search, aui.AuiPaneInfo().
-            Name("multiple_verse_search").Caption(_("Multiple Verse Search")).
+        self.multiverse = panes.MultiVersePane(self)
+        self.aui.AddPane(self.multiverse, aui.AuiPaneInfo().
+            Name("multiverse_pane").Caption(_("Multi-Verse Retrieval")).
             MaximizeButton(True).Float().BestSize((600, 440)).Hide())
 
         filename = os.path.join(app.userdatadir, "layout.dat")
@@ -131,7 +123,7 @@ class MainFrame(wx.Frame):
                 self.aui.LoadPerspective(layout.read())
         self.aui.Update()
         for pane in ("toolbar", "tree_pane", "search_pane", "notes_pane",
-                "multiple_verse_search"):
+                "multiverse_pane"):
             self.menubar.Check(getattr(self.menubar, "%s_item" % pane).GetId(),
                 self.aui.GetPane(pane).IsShown())
         self.load_chapter(self.reference[0], self.reference[1],
@@ -156,9 +148,9 @@ class MainFrame(wx.Frame):
     def load_chapter(self, book, chapter, verse=-1, edit_history=True):
         htmlwindow = self.get_htmlwindow()
         htmlwindow.load_chapter(book, chapter, verse)
-        selection = self.notebook.GetSelection()
+        tab = self.notebook.GetSelection()
         self.SetTitle("Berean - %s %d (%s)" % (BOOK_NAMES[book - 1], chapter,
-            self.notebook.GetPageText(selection)))
+            self.notebook.GetPageText(tab)))
         if verse == -1:
             reference = "%s %d" % (BOOK_NAMES[book - 1], chapter)
         else:
@@ -191,7 +183,7 @@ class MainFrame(wx.Frame):
             self.history_item < len(self.verse_history) - 1)
         self.reference = (book, chapter, verse)
         for i in range(self.notebook.GetPageCount()):
-            if i != selection:
+            if i != tab:
                 self.get_htmlwindow(i).current_verse = verse
         wx.CallAfter(htmlwindow.SetFocus)
 
@@ -209,22 +201,23 @@ class MainFrame(wx.Frame):
         self.aui.GetPane("search_pane").Show(show)
         self.aui.Update()
 
-    def show_multiple_verse_search(self, show=True):
-        self.aui.GetPane("multiple_verse_search").Show(show)
+    def show_multiverse_pane(self, show=True):
+        self.aui.GetPane("multiverse_pane").Show(show)
         self.aui.Update()
 
     def OnAuiNotebookPageChanged(self, event):
-        selection = event.GetSelection()
+        tab = event.GetSelection()
         htmlwindow = self.get_htmlwindow()
         htmlwindow.load_chapter(*self.reference)
         self.SetTitle("Berean - %s %d (%s)" %
             (BOOK_NAMES[self.reference[0] - 1], self.reference[1],
-            self.notebook.GetPageText(selection)))
+            self.notebook.GetPageText(tab)))
         self.statusbar.SetStatusText("%s %d (%s)" %
             (BOOK_NAMES[self.reference[0] - 1], self.reference[1],
             htmlwindow.description), 0)
-        if selection < len(self.version_list):
-            self.search.version.SetSelection(selection)
+        if tab < len(self.version_list):
+            self.search.version.SetSelection(tab)
+            self.multiverse.version.SetSelection(tab)
 
     def OnAuiPaneClose(self, event):
         self.menubar.Check(getattr(self.menubar,
@@ -250,7 +243,7 @@ class MainFrame(wx.Frame):
         event.Skip()
 
     def OnClose(self, event):
-        if hasattr(self, "old_versions"):    # Delete old indexes
+        if hasattr(self, "old_versions"):  # Delete old indexes
             for version in self.old_versions:
                 filename = os.path.join(self._app.userdatadir, "indexes",
                     "%s.idx" % version)
@@ -294,4 +287,4 @@ class TaskBarIcon(wx.TaskBarIcon):
 
     def OnExit(self, event):
         wx.CallAfter(self._frame.Close)
-        self.OnRestore(event)
+        self.OnRestore(None)

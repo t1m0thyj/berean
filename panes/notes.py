@@ -200,9 +200,8 @@ class NotesPage(wx.Panel):
 
         self.editor = richtext.RichTextCtrl(self, -1, style=wx.BORDER_NONE |
             wx.WANTS_CHARS)
-        self.editor.SetFont(wx.Font(self._frame.default_font["size"],
-            wx.DEFAULT, wx.NORMAL, wx.NORMAL,
-            faceName=self._frame.default_font["normal_face"]))
+        self.editor.SetFont(wx.FFont(self._frame.default_font["size"],
+            wx.DEFAULT, face=self._frame.default_font["normal_face"]))
         self.editor.Bind(wx.EVT_CHAR, self.OnChar)
         self.editor.Bind(wx.EVT_KEY_UP, self.OnModified)
         self.editor.Bind(wx.EVT_LEFT_UP, self.OnModified)

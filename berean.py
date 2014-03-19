@@ -83,8 +83,8 @@ class FileConfig(wx.FileConfig):
         for option in self._app.frame.search.options:
             self.WriteBool(option,
                 getattr(self._app.frame.search, option).GetValue())
-        self.Write("LastMultipleVerseSearch",
-            self._app.frame.multiple_verse_search.verse_list.GetValue())
+        self.Write("LastMultiVerseRetrieval",
+            self._app.frame.multiverse.verse_list.GetValue())
         self.SetPath("/Notes")
         self.WriteInt("ActiveNotesTab", self._app.frame.notes.GetSelection())
         ##self.WriteList("TopicList",

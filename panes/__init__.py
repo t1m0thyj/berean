@@ -1,6 +1,6 @@
 """__init__.py - pane classes"""
 
-from multiple_verse_search import *
-from notes import *
-from search import *
-from tree import *
+from panes.multiverse import *
+from panes.notes import *
+from panes.search import *
+from panes.tree import *

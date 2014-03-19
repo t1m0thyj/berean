@@ -88,11 +88,11 @@ class MenuBar(wx.MenuBar):
         self.notes_pane_item = self.view_menu.AppendCheckItem(-1,
             _("&Notes Pane\tCtrl+Shift+N"), _("Shows or hides the notes pane"))
         frame.Bind(wx.EVT_MENU, self.OnNotesPane, self.notes_pane_item)
-        self.multiple_verse_search_item = self.view_menu.AppendCheckItem(-1,
-            _("&Multiple Verse Search\tCtrl+M"),
-            _("Shows or hides the Multiple Verse Search pane"))
-        frame.Bind(wx.EVT_MENU, self.OnMultipleVerseSearch,
-            self.multiple_verse_search_item)
+        self.multiverse_pane_item = self.view_menu.AppendCheckItem(-1,
+            _("&Multi-Verse Retrieval\tCtrl+M"),
+            _("Shows or hides the Multi-Verse Retrieval pane"))
+        frame.Bind(wx.EVT_MENU, self.OnMultiVersePane,
+            self.multiverse_pane_item)
         self.Append(self.view_menu, _("&View"))
 
         self.favorites_menu = wx.Menu()
@@ -159,13 +159,17 @@ class MenuBar(wx.MenuBar):
         dialog.Show()
 
     def OnGotoVerse(self, event):
-        self._frame.toolbar.OnGotoVerse(event)
+        self._frame.toolbar.OnGotoVerse(None)
 
     def OnBack(self, event):
-        self._frame.toolbar.OnBack(event)
+        book, chapter, verse = refalize(
+            self._frame.verse_history[self._frame.history_item - 1])
+        self._frame.load_chapter(book, chapter, verse, False)
 
     def OnForward(self, event):
-        self._frame.toolbar.OnForward(event)
+        book, chapter, verse = refalize(
+            self._frame.verse_history[self._frame.history_item + 1])
+        self._frame.load_chapter(book, chapter, verse, False)
 
     def OnZoomIn(self, event):
         self._frame.set_zoom(self._frame.zoom_level + 1)
@@ -191,8 +195,8 @@ class MenuBar(wx.MenuBar):
         self._frame.aui.GetPane("notes_pane").Show(event.IsChecked())
         self._frame.aui.Update()
 
-    def OnMultipleVerseSearch(self, event):
-        self._frame.show_multiple_verse_search(event.IsChecked())
+    def OnMultiVersePane(self, event):
+        self._frame.show_multiverse_pane(event.IsChecked())
 
     def OnAddToFavorites(self, event):
         if self._frame.reference[2] == -1:
@@ -216,15 +220,15 @@ class MenuBar(wx.MenuBar):
         reference = self.favorites_list[event.GetId() - wx.ID_HIGHEST - 1]
         try:
             self._frame.load_chapter(*refalize(reference))
-        except:
+        except Exception:
             wx.MessageBox(_("'%s' is not a valid reference.") % reference,
                 "Berean", wx.ICON_EXCLAMATION | wx.OK)
 
     def OnViewAll(self, event):
-        self._frame.show_multiple_verse_search()
-        self._frame.multiple_verse_search.verse_list.SetValue(
+        self._frame.show_multiverse_pane()
+        self._frame.multiverse.verse_list.SetValue(
             "\n".join(self.favorites_list))
-        self._frame.multiple_verse_search.OnSearch(None)
+        self._frame.multiverse.OnSearch(None)
 
     def OnHelp(self, event):
         self._frame.help.show_help_window()
@@ -264,7 +268,7 @@ class FavoritesManager(wx.Dialog):
             label = event.GetLabel()
             try:
                 reference = refalize(label)
-            except:
+            except Exception:
                 wx.MessageBox(_("'%s' is not a valid reference.") % label,
                     _("Manage Favorites"), wx.ICON_EXCLAMATION | wx.OK)
                 event.Veto()

@@ -7,12 +7,11 @@ from config import *
 _ = wx.GetTranslation
 VERSION_ABBREVS = ("ASV", "DSV", "KJV", "LSG", "RVA", "SEV", "WEB", "Webster",
     "Wycliffe", "YLT")
-VERSION_NAMES = (u"American Standard Version",
-    u"Dutch Statenvertaling (Deutsch)", u"King James Version",
-    u"Louis Segond (Fran\u00e7ais)", u"Reina-Valera Antigua (Espa\u00f1ol)",
-    u"Las Sagradas Escrituras (Espa\u00f1ol)", u"World English Bible",
-    u"Webster's Bible", u"Wycliffe New Testament",
-    u"Young's Literal Translation")
+VERSION_NAMES = ("American Standard Version",
+    "Dutch Statenvertaling (Deutsch)", "King James Version",
+    "Louis Segond (Fran\xe7ais)", "Reina-Valera Antigua (Espa\xf1ol)",
+    "Las Sagradas Escrituras (Espa\xf1ol)", "World English Bible",
+    "Webster's Bible", "Wycliffe New Testament", "Young's Literal Translation")
 
 
 class PreferencesDialog(wx.Dialog):
@@ -82,10 +81,15 @@ class PreferencesDialog(wx.Dialog):
         if default_font != self._parent.default_font:
             for i in range(self._parent.notebook.GetPageCount()):
                 self._parent.get_htmlwindow(i).SetStandardFonts(**default_font)
-            for klass in (self._parent.search.results,
-                    self._parent.multiple_verse_search.results,
-                    self._parent.printer):
-                klass.SetStandardFonts(**default_font)
+            for htmlwindow in (self._parent.search.results,
+                    self._parent.multiverse.results, self._parent.printing):
+                htmlwindow.SetStandardFonts(**default_font)
+            for i in range(self._parent.notes.GetPageCount()):
+                page = self._parent.notes.GetPage(i)
+                page.editor.SetFont(wx.FFont(default_font["size"], wx.DEFAULT,
+                    face=default_font["normal_face"]))
+                if page.editor.IsEmpty():
+                    page.update_toolbar()
             self._parent.default_font = default_font
         if version_list != self._parent.version_list:
             if not hasattr(self._parent, "old_versions"):
