@@ -50,35 +50,35 @@ class MainToolBar(aui.AuiToolBar):
         reference = self.verse_entry.GetValue()
         if not len(reference):
             return
-        if validate(reference):
-            try:
-                book, chapter, verse = refalize(reference)
-                if chapter > CHAPTER_LENGTHS[book - 1]:
-                    wx.MessageBox(_("The book of %s has only %d chapters.") %
-                        (BOOK_NAMES[book - 1], CHAPTER_LENGTHS[book - 1],
-                         "Berean", wx.ICON_EXCLAMATION | wx.OK))
-                    return
-                elif verse > VERSE_LENGTHS[book - 1][chapter - 1]:
-                    wx.MessageBox(_("%s chapter %d has only %d verses.")
-                        % (BOOK_NAMES[book - 1], chapter,
-                        VERSE_LENGTHS[book - 1][chapter - 1]), "Berean",
-                        wx.ICON_EXCLAMATION | wx.OK)
-                    return
-                self._parent.load_chapter(book, chapter, verse)
-            except Exception:
-                wx.MessageBox(_("'%s' is not a valid reference.") % reference,
-                    "Berean", wx.ICON_EXCLAMATION | wx.OK)
-            else:
-                if self.verse_entry.FindString(reference) == -1:
-                    self.verse_entry.Insert(reference, 0)
-                    if self.verse_entry.GetCount() > 10:
-                        self.verse_entry.Delete(10)
-        else:
+        elif not validate(reference):
             if not self._parent.aui.GetPane("search_pane").IsShown():
                 self._parent.show_search_pane()
             self._parent.search.text.SetValue(reference)
             self.verse_entry.SetValue(self.verse_entry.GetString(0))
             self._parent.search.OnSearch(None)
+            return
+        try:
+            book, chapter, verse = refalize(reference)
+            if chapter > BOOK_LENGTHS[book - 1]:
+                wx.MessageBox(_("The book of %s has only %d chapters.") %
+                    (BOOK_NAMES[book - 1], BOOK_LENGTHS[book - 1], "Berean",
+                    wx.ICON_EXCLAMATION | wx.OK))
+                return
+            elif verse > CHAPTER_LENGTHS[book - 1][chapter - 1]:
+                wx.MessageBox(_("%s chapter %d has only %d verses.") %
+                    (BOOK_NAMES[book - 1], chapter,
+                    CHAPTER_LENGTHS[book - 1][chapter - 1]), "Berean",
+                    wx.ICON_EXCLAMATION | wx.OK)
+                return
+            self._parent.load_chapter(book, chapter, verse)
+        except Exception:
+            wx.MessageBox(_("'%s' is not a valid reference.") % reference,
+                "Berean", wx.ICON_EXCLAMATION | wx.OK)
+        else:
+            if self.verse_entry.FindString(reference) == -1:
+                self.verse_entry.Insert(reference, 0)
+                if self.verse_entry.GetCount() > 10:
+                    self.verse_entry.Delete(10)
 
     def OnHistoryItem(self, event):
         book, chapter, verse = refalize(

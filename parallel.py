@@ -39,21 +39,20 @@ class ParallelWindow(BaseChapterWindow):
                 lines.append("  <td align=center>%s</td>" % heading)
             else:
                 lines.extend(["  <td align=center>", "  %s<br/>" % heading,
-                    "  " + Bibles[-1][book][chapter][0].replace("[", "<i>"). \
-                    replace("]", "</i>"), "  </td>"])
+                    "  <i>%s</i>" % Bibles[-1][book][chapter][0].
+                    replace("]", "<i>").replace("[", "</i>"), "  </td>"])
         lines.append("</tr>")
-        for i in range(1, VERSE_LENGTHS[book - 1][chapter - 1] + 1):
+        for i in range(1, CHAPTER_LENGTHS[book - 1][chapter - 1] + 1):
             lines.append("<tr>")
             for j in range(len(Bibles)):
                 line = ["  <td>"]
-                if i < len(Bibles[j][book][chapter]) and \
-                        len(Bibles[j][book][chapter][i]):
+                if (i < len(Bibles[j][book][chapter]) and
+                        len(Bibles[j][book][chapter][i])):
                     line.append("<font size=\"-1\">%d&nbsp;</font>%s" %
                         (i, Bibles[j][book][chapter][i].replace("[", "<i>").
                         replace("]", "</i>")))
                     if i == verse:
-                        line.insert(1, "<b>")
-                        line.append("</b>")
+                        line[-1] = "<b>%s</b>" % line[-1]
                 if j == 0:
                     line.insert(1, "<a name=\"%d\">" % i)
                     line.append("</a>")
@@ -71,8 +70,10 @@ class ParallelWindow(BaseChapterWindow):
             self._frame.notebook.SetPageToolTip(len(self._frame.version_list),
                 self.description)
         if verse > 1:
-            wx.CallAfter(self.ScrollToAnchor, str(verse))
             self.current_verse = -1
+            wx.CallAfter(self.ScrollToAnchor, str(verse))
+        self.reference = (book, chapter, verse)
+        wx.CallAfter(self.SetFocus)  # Keep the first choice from scrolling
 
 
 HTML = """<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"

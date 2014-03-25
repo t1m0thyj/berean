@@ -46,8 +46,8 @@ class PrintingSystem(html.HtmlEasyPrinting):
         data = self.GetPageSetupData()
         data.SetMarginTopLeft(wx.Point(15, 15))
         data.SetMarginBottomRight(wx.Point(15, 15))
-        self.SetFooter(_("<div align=center><font size=\"-1\">Page @PAGENUM@" \
-            "</font></div>"))
+        self.SetFooter(_("<div align=\"center\"><font size=\"-1\">Page " \
+            "@PAGENUM@</font></div>"))
         self.SetStandardFonts(**frame.default_font)
 
     def get_chapter(self):
@@ -61,16 +61,12 @@ class PrintingSystem(html.HtmlEasyPrinting):
 
     def print_chapter(self):
         if wx.VERSION_STRING >= "2.8.11.0" and wx.VERSION_STRING != "2.9.0.0":
-            self.SetName("%s %d (%s)" % (BOOK_NAMES[self._frame.reference[0] -
-                1], self._frame.reference[1], self._frame.notebook.GetPageText(
-                self._frame.notebook.GetSelection())))
+            self.SetName(self._frame.get_htmlwindow().GetOpenedPageTitle())
         self.PrintText(self.get_chapter())
 
     def preview_chapter(self):
         if wx.VERSION_STRING >= "2.8.11.0" and wx.VERSION_STRING != "2.9.0.0":
-            self.SetName("%s %d (%s)" % (BOOK_NAMES[self._frame.reference[0] -
-                1], self._frame.reference[1], self._frame.notebook.GetPageText(
-                self._frame.notebook.GetSelection())))
+            self.SetName(self._frame.get_htmlwindow().GetOpenedPageTitle())
         self.PreviewText(self.get_chapter())
 
 
@@ -101,6 +97,7 @@ class BaseChapterWindow(BaseHtmlWindow):
         super(BaseChapterWindow, self).__init__(parent, frame)
         self._frame = frame
         self.current_verse = -1
+        self.reference = None
         if wx.VERSION_STRING >= "2.9.0.0":
             self.Bind(wx.EVT_CONTEXT_MENU, self.OnContextMenu)
         else:  # wxHtmlWindow doesn't generate EVT_CONTEXT_MENU in 2.8
@@ -109,8 +106,9 @@ class BaseChapterWindow(BaseHtmlWindow):
     def load_chapter(self, book, chapter, verse=-1):
         self.SetPage(self.get_html(book, chapter, verse))
         if verse > 1 and self.HasAnchor(str(verse)):
-            wx.CallAfter(self.ScrollToAnchor, str(verse))
             self.current_verse = -1
+            wx.CallAfter(self.ScrollToAnchor, str(verse))
+        self.reference = (book, chapter, verse)
 
     def OnContextMenu(self, event):
         menu = wx.Menu()
@@ -160,8 +158,8 @@ class ChapterWindow(BaseChapterWindow):
                 chapter), "</div>", ""]
             if self.Bible[book][chapter][0]:
                 header[1] += "<br />"
-                header.insert(2, self.Bible[book][chapter][0].replace("[",
-                    "<i>").replace("]", "</i>"))
+                header.insert(2, "<i>%s</i>" % self.Bible[book][chapter][0].
+                    replace("]", "<i>").replace("[", "</i>"))
             verses = []
             for i in range(1, len(self.Bible[book][chapter])):
                 if not len(self.Bible[book][chapter][i]):
