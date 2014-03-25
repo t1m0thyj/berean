@@ -17,7 +17,7 @@ class TreePane(wx.TreeCtrl):
         self.root_nodes = []
         for i in range(66):
             self.root_nodes.append(self.AppendItem(root, BOOK_NAMES[i]))
-            if CHAPTER_LENGTHS > 1:
+            if BOOK_LENGTHS[i] > 1:
                 self.SetItemHasChildren(self.root_nodes[-1], True)
         self.expand_book(parent.reference[0])
         self.Bind(wx.EVT_TREE_ITEM_COLLAPSED, self.OnItemCollapsed)
@@ -27,8 +27,8 @@ class TreePane(wx.TreeCtrl):
 
     def expand_book(self, book):
         item = self.root_nodes[book - 1]
-        if (not self.GetChildrenCount(item)) and CHAPTER_LENGTHS[book - 1] > 1:
-            for i in range(CHAPTER_LENGTHS[book - 1]):
+        if (not self.GetChildrenCount(item)) and BOOK_LENGTHS[book - 1] > 1:
+            for i in range(BOOK_LENGTHS[book - 1]):
                 self.AppendItem(item, str(i + 1))
             self.Expand(item)
 
@@ -67,7 +67,7 @@ class TreePane(wx.TreeCtrl):
         self.Freeze()
         if book != self._parent.reference[0]:
             self.expand_book(book)
-        if CHAPTER_LENGTHS[book - 1] > 1:
+        if BOOK_LENGTHS[book - 1] > 1:
             item = self.root_nodes[book - 1]
             child, cookie = self.GetFirstChild(item)
             i = 1

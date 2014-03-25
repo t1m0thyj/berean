@@ -18,14 +18,12 @@ _ = wx.GetTranslation
 def index_version(version, Bible, indexdir):
     dialog = wx.ProgressDialog(_("Indexing %s") % version, "", 70)
     index = {}
-    for b in range(1, len(Bible)):
+    for b in range(1, 67):
         dialog.Update(b - 1, _("Processing %s...") % BOOK_NAMES[b - 1])
         for c in range(1, len(Bible[b])):
             for v in range(1, len(Bible[b][c])):
-                verse = Bible[b][c][v]
-                if "<div" in verse:
-                    verse = verse[:verse.index("<div")]
-                verse = re.sub(r"[^\w\s\-']", r"", verse, flags=re.UNICODE)
+                verse = re.sub(r"[^\w\s'\-]", r"", Bible[b][c][v],
+                    flags=re.UNICODE)
                 for word in set(verse.split()):  # Remove duplicates
                     if word not in index:
                         index[word] = []
@@ -79,7 +77,7 @@ class SearchPane(wx.Panel):
             _("Search"))
         self.toolbar.Bind(wx.EVT_MENU, self.OnSearch, search_item)
         self.toolbar.AddTool(wx.ID_PRINT, "", parent.get_bitmap("print"),
-            _("Print Search Results"))
+            _("Print Results"))
         self.toolbar.EnableTool(wx.ID_PRINT, False)
         self.toolbar.Bind(wx.EVT_MENU, self.OnPrint, id=wx.ID_PRINT)
         self.toolbar.Realize()
@@ -169,18 +167,17 @@ class SearchPane(wx.Panel):
         if not len(text):
             return
         elif validate(text, False):
-            self._parent.toolbar.reference.SetValue(text)
+            self._parent.toolbar.verse_entry.SetValue(text)
             self.text.SetValue(self.text.GetString(0))
-            self._parent.toolbar.OnSearch(None)
+            self._parent.toolbar.OnGotoVerse(None)
             return
         with wx.BusyCursor():
             msec = wx.GetLocalTimeMillis()
             results, number = self.find_text(text)
             version_abbrev = self.version.GetStringSelection()
             msec = max(1, wx.GetLocalTimeMillis() - msec)
-            results.insert(0, _("<font color=\"gray\">%d verses in the " \
-                "%s (%d&nbsp;msec)</font>") % (number, version_abbrev,
-                msec))
+            results.insert(0, _("<font color=\"gray\">%d verses in the %s " \
+                "(%d&nbsp;msec)</font>") % (number, version_abbrev, msec))
             if number == 0:
                 results.append(_("<p>No results were found.</p>"))
             self.html = "<html><body><font size=\"%d\">%s</font></body>" \
@@ -224,15 +221,14 @@ class SearchPane(wx.Panel):
             for b in range(start, stop + 1):
                 for c in range(1, len(Bible[b])):
                     for v in range(1, len(Bible[b][c])):
-                        verse = Bible[b][c][v].replace("[", "").replace("]", "")
-                        if "<div" in verse:
-                            verse = verse[:verse.index("<div")]
+                        verse = Bible[b][c][v].replace("[", ""). \
+                            replace("]", "")
                         if pattern.search(verse):
-                            matches.append([b, c, v])
+                            matches.append((b, c, v))
         return (self.format_matches(matches, pattern, options), len(matches))
 
     def get_matches(self, text, Bible, options, flags):
-        words = [re.sub(r"[^\w\-']", r"", word, flags=re.UNICODE) for
+        words = [re.sub(r"[^\w'\-]", r"", word, flags=re.UNICODE) for
             word in text.split()]
         if options["AllWords"] or options["Phrase"]:
             longest = ""
@@ -243,8 +239,10 @@ class SearchPane(wx.Panel):
             if not len(matches):
                 return ([], None)
             if options["Phrase"]:
-                pattern = re.compile(r"\[?\b%s\b\]?" % r"\W+".join(words), flags)
-                matches = filter(lambda item: pattern.search(Bible[item[0]][item[1]][item[2]]), matches)
+                pattern = re.compile(r"\[?\b%s\b\]?" % r"\W+".join(words),
+                    flags)
+                matches = filter(lambda item:
+                    pattern.search(Bible[item[0]][item[1]][item[2]]), matches)
             elif options["AllWords"]:
                 words.remove(longest)
                 if options["ExactMatch"]:
@@ -252,7 +250,9 @@ class SearchPane(wx.Panel):
                     longest = r"\b%s\b" % longest
                 for word in words:
                     pattern = re.compile(word, flags)
-                    matches = filter(lambda item: pattern.search(Bible[item[0]][item[1]][item[2]]), matches)
+                    matches = filter(lambda item:
+                        pattern.search(Bible[item[0]][item[1]][item[2]]),
+                        matches)
                 words.insert(0, longest)
                 pattern = re.compile("(%s)" % "|".join(words), flags)
         else:
@@ -262,8 +262,10 @@ class SearchPane(wx.Panel):
             if not len(matches):
                 return ([], None)
             if options["ExactMatch"]:
-                pattern = re.compile("(%s)" % "|".join([r"\b%s\b" % word for word in words]), flags)
-                matches = filter(lambda item: pattern.search(Bible[item[0]][item[1]][item[2]]), matches)
+                pattern = re.compile("(%s)" %
+                    "|".join([r"\b%s\b" % word for word in words]), flags)
+                matches = filter(lambda item:
+                    pattern.search(Bible[item[0]][item[1]][item[2]]), matches)
             else:
                 pattern = re.compile("(%s)" % "|".join(words), flags)
         return (matches, pattern)
@@ -277,9 +279,11 @@ class SearchPane(wx.Panel):
                 cases.append(word.title())
             for case in cases:
                 if case in index:
-                    matches.extend([[ord(char) for char in index[case][i:i + 3]] for i in range(0, len(index[case]), 3)])
+                    matches.extend([tuple(bytearray(index[case][i:i + 3]
+                        )) for i in range(0, len(index[case]), 3)])
         elif word in index:
-            matches.extend([[ord(char) for char in index[word][i:i + 3]] for i in range(0, len(index[word]), 3)])
+            matches.extend([tuple(bytearray(index[word][i:i + 3])) for \
+                i in range(0, len(index[word]), 3)])
         if not (recursive or options["ExactMatch"] or options["Phrase"]):
             if not options["CaseSensitive"]:
                 lower = word.lower()
@@ -296,79 +300,55 @@ class SearchPane(wx.Panel):
         return matches
 
     def format_matches(self, matches, pattern, options):
-        i = 0
         Bible = self._parent.get_htmlwindow(self.version.GetSelection()).Bible
         results = []
         if len(matches) <= 1000:
-            while i < len(matches):
-                b, c, v = matches[i]
-                verses = []
-                while i < len(matches):
-                    if matches[i] == [b, c, v + len(verses)]:
-                        verse = Bible[matches[i][0]][matches[i][1]][matches[i][2]]
-                        if "<div" in verse:
-                            verse = verse[:verse.index("<div")]
-                        offset = 0
-                        if not options["RegularExpression"]:
-                            for match in pattern.finditer(verse):
-                                start, end = match.span(0)
-                                verse = verse[:start + offset] + "<b>" + \
-                                    verse[start + offset:end + offset] + \
-                                    "</b>" + verse[end + offset:]
-                                offset += 7
-                        else:
-                            for match in pattern.finditer(verse.
-                                    replace("[", "").replace("]", "")):
-                                start, end = match.span(0)
-                                offset += verse.count("[", offset, start +
-                                    offset) + verse.count("]", offset,
-                                    start + offset)
-                                offset2 = offset + verse.count("[", start +
-                                    offset, end + offset) + verse.count("]",
-                                    start + offset, end + offset)
-                                verse = verse[:start + offset] + "<b>" + \
-                                    verse[start + offset:end + offset2] + \
-                                    "</b>" + verse[end + offset2:]
-                                offset += 7
-                        verses.append(verse.replace("[", "<i>").
-                            replace("]", "</i>"))
-                        i += 1
-                    else:
-                        break
-                if len(verses) == 1:
-                    results.append("<p><a href=\"%d.%d.%d\">%s %d:%d</a>" \
-                        "<br />%s</p>" % (b, c, v, BOOK_NAMES[b - 1], c, v,
-                        verses[0]))
+            for b, c, v, in matches:
+                verse = Bible[b][c][v]
+                offset = 0
+                if not options["RegularExpression"]:
+                    for match in pattern.finditer(verse):
+                        start, end = match.span(0)
+                        verse = verse[:start + offset] + "<b>" + \
+                            verse[start + offset:end + offset] + "</b>" + \
+                            verse[end + offset:]
+                        offset += 7
                 else:
-                    for j in range(len(verses)):
-                        verses[j] = "<font size=\"-1\"><a href=\"%d.%d.%d\">" \
-                            "%d</a>&nbsp;</font>%s" % (b, c, v + j, v + j,
-                            verses[j])
-                    results.append("<p><a href=\"%d.%d.%d\">%s %d:%d-%d</a>" \
-                        "<br />%s</p>" % (b, c, v, BOOK_NAMES[b - 1], c, v,
-                        v + len(verses) - 1, " ".join(verses)))
+                    for match in pattern.finditer(verse.replace("[", "").
+                            replace("]", "")):
+                        start, end = match.span(0)
+                        offset += verse.count("[", offset, start + offset) + \
+                            verse.count("]", offset, start + offset)
+                        offset2 = offset + verse.count("[", start + offset,
+                            end + offset) + verse.count("]", start + offset,
+                            end + offset)
+                        verse = verse[:start + offset] + "<b>" + \
+                            verse[start + offset:end + offset2] + "</b>" + \
+                            verse[end + offset2:]
+                        offset += 7
+                results.append("<p><a href=\"%d.%d.%d\">%s %d:%d</a><br />" \
+                        "%s</p>" % (b, c, v, BOOK_NAMES[b - 1], c, v,
+                        verse.replace("[", "<i>").replace("]", "</i>")))
         else:
-            lastbook = 0
+            results.append("<br />")
+            i = last_book = 0
             while i < len(matches):
                 b, c, v = matches[i]
-                verses = 0
-                while i < len(matches):
-                    if matches[i] == [b, c, v + verses]:
-                        verses += 1
-                        i += 1
-                    else:
-                        break
+                verses = 1
+                while (i + verses < len(matches) and
+                        matches[i + verses] == (b, c, v + verses)):
+                    verses += 1
                 if verses == 1:
                     results.append(", <a href=\"%d.%d.%d\">%d:%d</a>" %
                         (b, c, v, c, v))
                 else:
                     results.append(", <a href=\"%d.%d.%d\">%d:%d-%d</a>" %
                         (b, c, v, c, v, v + verses - 1))
-                if b != lastbook:
-                    results[-1] = "<br /><b>%s</b>%s" % \
-                        (BOOK_NAMES[b - 1].upper(), results[-1][1:])
-                lastbook = b
-            results.insert(0, "<br />")
+                if b > last_book:
+                    results[-1] = "<br /><b>%s</b>" % \
+                        BOOK_NAMES[b - 1].upper() + results[-1][1:]
+                    last_book = b
+                i += verses
         return results
 
     def OnPrint(self, event):
@@ -386,7 +366,8 @@ class SearchPane(wx.Panel):
             self._parent.printing.PreviewText(text)
 
     def OnHtmlLinkClicked(self, event):
-        if self._parent.notebook.GetSelection() != self.last_version:
+        if self._parent.notebook.GetSelection() != self.last_version and \
+                not wx.GetKeyState(wx.WXK_SHIFT):
             self._parent.notebook.SetSelection(self.last_version)
         self._parent.load_chapter(*map(int,
             event.GetLinkInfo().GetHref().split(".")))

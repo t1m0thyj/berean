@@ -69,7 +69,7 @@ def refalize2(references):
         r"((?:[1-3]\s?|i{1,3}\s)?[a-z]+)?\s*(\d+)?\W*(\d+)?",
         flags=re.IGNORECASE)
     stop_pattern = re.compile(r"(\d+)\W*(\d+)?")
-    complete = False  # Reference must include B/C/V to be complete
+    has_verse = False
     failed = []
     for i in range(len(references)):
         try:
@@ -77,41 +77,41 @@ def refalize2(references):
                 start, stop = references[i].split("-")
             else:
                 start, stop = references[i], None
-            match = start_pattern.match(start)
-            groups = match.groups()
-            if groups[0]:
-                book = get_book_index(groups[0])
+            start_groups = start_pattern.match(start).groups()
+            if start_groups[0]:
+                book = get_book_index(start_groups[0])
             else:
                 book = references[i - 1][0]
-            if groups[2]:
-                chapter, verse = int(groups[1]), int(groups[2])
+            has_verse2 = True
+            if start_groups[2]:
+                chapter, verse = int(start_groups[1]), int(start_groups[2])
             elif book in (31, 57, 63, 64, 65):
-                chapter, verse = 1, int(groups[1])
-            elif not (complete or groups[0]):
-                chapter, verse = references[i - 1][1][1], int(groups[1])
+                chapter, verse = 1, int(start_groups[1])
+            elif (not has_verse) or start_groups[0]:
+                chapter, verse = int(start_groups[1]), 1
+                has_verse2 = False
             else:
-                chapter, verse = int(groups[1]), 1
-            data = [book, chapter, verse, -1, -1, references[i]]
-            complete = groups[2] != None
+                chapter, verse = references[i - 1][1], int(start_groups[1])
+            reference = [book, chapter, verse]
+            has_verse = has_verse2
             if stop:
-                match2 = stop_pattern.match(stop.lstrip())
-                if match2:
-                    groups2 = match2.groups()
-                    if groups2[1]:
-                        chapter, verse = int(groups2[0]), int(groups2[1])
-                    else:
-                        if book in (31, 57, 63, 64, 65):
-                            chapter, verse = 1, int(groups2[0])
-                        elif complete:
-                            chapter, verse = data[1], int(groups2[0])
-                        else:
-                            chapter = int(groups2[0])
-                            verse = VERSE_LENGTHS[book - 1][chapter - 1]
-                    data[3:5] = [chapter, verse]
-                    complete = groups2[1] != None
-            elif not complete:
-                data[3:5] = [data[1], VERSE_LENGTHS[data[0] - 1][data[1] - 1]]
-            references[i] = data
+                stop_groups = stop_pattern.match(stop.lstrip()).groups()
+                if stop_groups[1]:
+                    chapter, verse = int(stop_groups[0]), int(stop_groups[1])
+                elif book in (31, 57, 63, 64, 65):
+                    chapter, verse = 1, int(stop_groups[0])
+                elif not has_verse:
+                    chapter = int(stop_groups[0])
+                    verse = CHAPTER_LENGTHS[book - 1][chapter - 1]
+                else:
+                    chapter, verse = reference[1], int(stop_groups[0])
+                reference.extend([chapter, verse])
+            elif not has_verse:
+                reference.extend([chapter,
+                    CHAPTER_LENGTHS[book - 1][chapter - 1]])
+            else:
+                reference.extend([-1, -1])
+            references[i] = reference + [references[i]]
         except Exception:
             failed.append(references[i])
     return (references, failed)

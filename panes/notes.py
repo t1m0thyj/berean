@@ -34,10 +34,10 @@ class BookChapterVerseSelector(aui.AuiToolBar):
         if update_choices:
             self.book.SetSelection(book - 1)
             self.chapter.SetItems([str(i) for i in range(1,
-                CHAPTER_LENGTHS[book - 1] + 1)])
+                BOOK_LENGTHS[book - 1] + 1)])
             self.chapter.SetSelection(chapter - 1)
             self.verse.SetItems(["--"] + [str(i) for i in range(1,
-                VERSE_LENGTHS[book - 1][chapter - 1] + 1)])
+                CHAPTER_LENGTHS[book - 1][chapter - 1] + 1)])
             self.verse.SetSelection(max(0, verse))
         key = "%d.%d.%d" % (book, chapter, verse)
         self.EnableTool(wx.ID_DELETE, key in self._parent.notes_dict)

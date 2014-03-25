@@ -208,7 +208,8 @@ class MainFrame(wx.Frame):
     def OnAuiNotebookPageChanged(self, event):
         tab = event.GetSelection()
         htmlwindow = self.get_htmlwindow()
-        htmlwindow.load_chapter(*self.reference)
+        if htmlwindow.reference != self.reference:
+            htmlwindow.load_chapter(*self.reference)
         self.SetTitle("Berean - %s %d (%s)" %
             (BOOK_NAMES[self.reference[0] - 1], self.reference[1],
             self.notebook.GetPageText(tab)))
