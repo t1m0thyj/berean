@@ -1,6 +1,6 @@
 """config.py - global variables used throughout Berean"""
 
-VERSION = "0.4.3"
+VERSION = "0.4.4"
 
 BOOK_NAMES = ("Genesis", "Exodus", "Leviticus", "Numbers", "Deuteronomy",
     "Joshua", "Judges", "Ruth", "1 Samuel", "2 Samuel", "1 Kings", "2 Kings",
@@ -85,9 +85,11 @@ CHAPTER_LENGTHS = ((31, 25, 24, 26, 32, 22, 24, 22, 29, 32, 32, 20, 18, 24, 21,
     14), (21, 22, 18), (10, 29, 24, 21, 21), (13,), (14,), (25,), (20, 29, 22,
     11, 14, 17, 17, 13, 21, 11, 19, 17, 18, 20, 8, 21, 18, 24, 21, 15, 27, 21))
 
-FLAG_NAMES = {"ASV": "us", "DSV": "nl", "KJV": "gb", "LSG": "fr", "RVA": "es",
-    "SEV": "es", "WEB": "us", "Webster": "us", "Wycliffe": "gb",
-    "YLT": "scotland"}
+VERSION_NAMES = ("ASV", "DutSVV", "FreSegond", "KJV", "RV", "SpaRV", "SpaSEV",
+    "Tyndale", "WEB", "WEBBE", "WEBME", "Webster", "Wycliffe", "YLT")
+
+FLAG_NAMES = dict(zip(VERSION_NAMES, ("us", "nl", "fr", "gb", "gb", "es", "es",
+    "gb", "us", "gb", "us", "us", "gb", "scotland")))
 
 FONT_SIZES = map(str, (8, 9, 10, 11, 12, 14, 16, 18, 20, 22, 24, 26, 28, 36,
     48, 72))

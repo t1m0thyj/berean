@@ -16,8 +16,8 @@ class MultiVersePane(wx.Panel):
         self._parent = parent
         self.html = ""
 
-        self.toolbar = aui.AuiToolBar(self, -1, (-1, -1), (-1, -1),
-            aui.AUI_TB_DEFAULT_STYLE | aui.AUI_TB_OVERFLOW | \
+        self.toolbar = aui.AuiToolBar(self, -1, wx.DefaultPosition,
+            wx.DefaultSize, aui.AUI_TB_DEFAULT_STYLE | aui.AUI_TB_OVERFLOW | \
             aui.AUI_TB_HORZ_TEXT)
         self.toolbar.AddLabel(-1, _("Version:"))
         self.version = wx.Choice(self.toolbar, -1, choices=parent.version_list)
@@ -82,8 +82,8 @@ class MultiVersePane(wx.Panel):
                         verses = []
                         for v5 in range(v3, v4 + 1):
                             if len(Bible[b][c3][v5]):
-                                verses.append("<font size=\"-1\">%d&nbsp;" \
-                                    "</font>%s" % (v5, Bible[b][c3][v5]))
+                                verses.append("%d&nbsp;%s" % (v5,
+                                    Bible[b][c3][v5]))
                         if not len(verses):
                             raise IndexError
                         results.append("<p>[%s %d:%d-%d] %s</p>" %

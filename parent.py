@@ -61,12 +61,12 @@ class MainFrame(wx.Frame):
         self.toolbar = toolbar.MainToolBar(self)
         self.aui.AddPane(self.toolbar, aui.AuiPaneInfo().Name("toolbar").
             Caption("Main Toolbar").ToolbarPane().Top())
-        self.statusbar = self.CreateStatusBar(2)
+        self.statusbar = self.CreateStatusBar(3)
         self.zoombar = toolbar.ZoomBar(self.statusbar, self)
         if wx.VERSION_STRING >= "2.9.0.0":
-            self.statusbar.SetStatusWidths([-1, self.zoombar.width - 8])
+            self.statusbar.SetStatusWidths([-1, -1, self.zoombar.width - 8])
         else:
-            self.statusbar.SetStatusWidths([-1, self.zoombar.width + 1])
+            self.statusbar.SetStatusWidths([-1, -1, self.zoombar.width + 1])
 
         self.notebook = aui.AuiNotebook(self, -1, style=wx.BORDER_NONE |
             aui.AUI_NB_TOP | aui.AUI_NB_SCROLL_BUTTONS |
@@ -168,6 +168,11 @@ class MainFrame(wx.Frame):
         self.toolbar.EnableTool(wx.ID_FORWARD,
             self.history_item < len(self.verse_history) - 1)
         self.toolbar.Refresh(False)
+        if book != self.reference[0]:
+            self.toolbar.bookctrl.SetSelection(book - 1)
+            self.toolbar.chapterctrl.SetRange(1, BOOK_LENGTHS[book - 1])
+        if chapter != self.reference[1]:
+            self.toolbar.chapterctrl.SetValue(chapter)
         self.tree.select_chapter(book, chapter)
         if self.search.range_choice.GetSelection() == len(panes.search.RANGES):
             self.search.start.SetSelection(book - 1)
@@ -176,8 +181,9 @@ class MainFrame(wx.Frame):
             page = self.notes.GetPage(i)
             page.save_text()
             page.load_text(book, chapter)
-        self.statusbar.SetStatusText("%s %d (%s)" % (BOOK_NAMES[book - 1],
-            chapter, htmlwindow.description), 0)
+        self.statusbar.SetStatusText("%s %d" % (BOOK_NAMES[book - 1], chapter),
+            0)
+        self.statusbar.SetStatusText(htmlwindow.description, 1)
         self.menubar.Enable(wx.ID_BACKWARD, self.history_item > 0)
         self.menubar.Enable(wx.ID_FORWARD,
             self.history_item < len(self.verse_history) - 1)
@@ -213,9 +219,7 @@ class MainFrame(wx.Frame):
         self.SetTitle("Berean - %s %d (%s)" %
             (BOOK_NAMES[self.reference[0] - 1], self.reference[1],
             self.notebook.GetPageText(tab)))
-        self.statusbar.SetStatusText("%s %d (%s)" %
-            (BOOK_NAMES[self.reference[0] - 1], self.reference[1],
-            htmlwindow.description), 0)
+        self.statusbar.SetStatusText(htmlwindow.description, 1)
         if tab < len(self.version_list):
             self.search.version.SetSelection(tab)
             self.multiverse.version.SetSelection(tab)
@@ -230,7 +234,7 @@ class MainFrame(wx.Frame):
         event.Skip()
 
     def OnSize(self, event):
-        x, y, width, height = self.statusbar.GetFieldRect(1)
+        x, y, width, height = self.statusbar.GetFieldRect(2)
         self.zoombar.SetRect(wx.Rect(x, (y + height - 19) / 2 -
             self.zoombar.GetToolSeparation(), self.zoombar.width, -1))
         if self.HasCapture():

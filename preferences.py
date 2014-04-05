@@ -5,13 +5,14 @@ import wx
 from config import *
 
 _ = wx.GetTranslation
-VERSION_ABBREVS = ("ASV", "DSV", "KJV", "LSG", "RVA", "SEV", "WEB", "Webster",
-    "Wycliffe", "YLT")
-VERSION_NAMES = ("American Standard Version",
-    "Dutch Statenvertaling (Deutsch)", "King James Version",
-    "Louis Segond (Fran\xe7ais)", "Reina-Valera Antigua (Espa\xf1ol)",
-    "Las Sagradas Escrituras (Espa\xf1ol)", "World English Bible",
-    "Webster's Bible", "Wycliffe New Testament", "Young's Literal Translation")
+descriptions = ("American Standard Version (1901)", "Dutch Statenvertaling",
+    "French Traduction de Louis Segond (1910)", "King James Version (1769)",
+    "Revised Version (1895)", "La Santa Biblia Reina-Valera (1909)",
+    "Spanish Sagradas Escrituras Version Antigua (1569)",
+    "William Tyndale Bible (1525/1530)", "World English Bible",
+    "World English Bible: British Edition",
+    "World English Bible: Messianic Edition", "Webster Bible",
+    "John Wycliffe Bible (1395)", "Young's Literal Translation (1898)")
 
 
 class PreferencesDialog(wx.Dialog):
@@ -48,10 +49,10 @@ class PreferencesDialog(wx.Dialog):
 
         self.versions = wx.Panel(self.notebook, -1)
         self.version_list = wx.CheckListBox(self.versions, -1)
-        for i in range(len(VERSION_ABBREVS)):
-            self.version_list.Append("%s - %s" % (VERSION_ABBREVS[i],
-                VERSION_NAMES[i]))
-            if VERSION_ABBREVS[i] in parent.version_list:
+        for i in range(len(VERSION_NAMES)):
+            self.version_list.Append("%s - %s" % (VERSION_NAMES[i],
+                descriptions[i]))
+            if VERSION_NAMES[i] in parent.version_list:
                 self.version_list.Check(i)
         sizer = wx.BoxSizer()
         sizer.Add(self.version_list, 1, wx.EXPAND)
@@ -70,7 +71,7 @@ class PreferencesDialog(wx.Dialog):
 
     def OnOk(self, event):
         version_list = list(filter(lambda version: self.version_list.IsChecked(
-            VERSION_ABBREVS.index(version)), VERSION_ABBREVS))
+            VERSION_NAMES.index(version)), VERSION_NAMES))
         if not len(version_list):
             wx.MessageBox(_("You must have at least one version selected."),
                 _("Berean"), wx.ICON_EXCLAMATION | wx.OK)
@@ -94,7 +95,7 @@ class PreferencesDialog(wx.Dialog):
         if version_list != self._parent.version_list:
             if not hasattr(self._parent, "old_versions"):
                 self._parent.old_versions = []
-            for version in VERSION_ABBREVS:
+            for version in VERSION_NAMES:
                 if (version in self._parent.version_list and
                         version not in version_list):
                     self._parent.old_versions.append(version)

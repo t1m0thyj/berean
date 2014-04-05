@@ -14,8 +14,9 @@ _ = wx.GetTranslation
 
 class BookChapterVerseSelector(aui.AuiToolBar):
     def __init__(self, parent, reference):
-        super(BookChapterVerseSelector, self).__init__(parent, -1, (-1, -1),
-            (-1, -1), aui.AUI_TB_DEFAULT_STYLE | aui.AUI_TB_OVERFLOW)
+        super(BookChapterVerseSelector, self).__init__(parent, -1,
+            wx.DefaultPosition, wx.DefaultSize,
+            aui.AUI_TB_DEFAULT_STYLE | aui.AUI_TB_OVERFLOW)
         self._parent = parent
         self.book = wx.Choice(self, -1, choices=BOOK_NAMES)
         self.AddControl(self.book)
@@ -72,8 +73,8 @@ class BookChapterVerseSelector(aui.AuiToolBar):
 
 class TopicSelector(aui.AuiToolBar):
     def __init__(self, parent):
-        super(TopicSelector, self).__init__(parent, -1, (-1, -1), (-1, -1),
-            aui.AUI_TB_DEFAULT_STYLE | aui.AUI_TB_OVERFLOW)
+        super(TopicSelector, self).__init__(parent, -1, wx.DefaultPosition,
+            wx.DefaultSize, aui.AUI_TB_DEFAULT_STYLE | aui.AUI_TB_OVERFLOW)
         self._parent = parent
         self.topic_list = parent._frame._app.config.ReadList("Notes/TopicList")
         self.topic = wx.Choice(self, -1, choices=self.topic_list)
@@ -100,8 +101,8 @@ class NotesPage(wx.Panel):
                 self.notes_dict = cPickle.load(notes)
 
         ##self.selector = BookChapterVerseSelector(self, self._frame.reference)
-        self.toolbar = aui.AuiToolBar(self, -1, (-1, -1), (-1, -1),
-            aui.AUI_TB_DEFAULT_STYLE | aui.AUI_TB_OVERFLOW)
+        self.toolbar = aui.AuiToolBar(self, -1, wx.DefaultPosition,
+            wx.DefaultSize, aui.AUI_TB_DEFAULT_STYLE | aui.AUI_TB_OVERFLOW)
         self.toolbar.AddTool(wx.ID_SAVE, "", self._frame.get_bitmap("save"),
             _("Save (Ctrl+S)"))
         self.toolbar.Bind(wx.EVT_MENU, self.OnSave, id=wx.ID_SAVE)
