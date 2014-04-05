@@ -72,7 +72,8 @@ class SearchPane(wx.Panel):
         style = aui.AUI_TB_DEFAULT_STYLE
         if wx.VERSION_STRING >= "2.9.5.0":
             style |= aui.AUI_TB_PLAIN_BACKGROUND
-        self.toolbar = aui.AuiToolBar(self, -1, (-1, -1), (-1, -1), style)
+        self.toolbar = aui.AuiToolBar(self, -1, wx.DefaultPosition,
+            wx.DefaultSize, style)
         search_item = self.toolbar.AddTool(-1, "", parent.get_bitmap("search"),
             _("Search"))
         self.toolbar.Bind(wx.EVT_MENU, self.OnSearch, search_item)

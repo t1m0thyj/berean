@@ -64,8 +64,7 @@ class ParallelWindow(BaseChapterWindow):
 
     def load_chapter(self, book, chapter, verse=-1):
         self.SetPage(self.get_html(book, chapter, verse))
-        self._frame.statusbar.SetStatusText("%s %d (%s)" %
-            (BOOK_NAMES[book - 1], chapter, self.description), 0)
+        self._frame.statusbar.SetStatusText(self.description, 1)
         if wx.VERSION_STRING >= "2.9.4.0":
             self._frame.notebook.SetPageToolTip(len(self._frame.version_list),
                 self.description)

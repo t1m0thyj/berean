@@ -11,8 +11,8 @@ _ = wx.GetTranslation
 
 class MainToolBar(aui.AuiToolBar):
     def __init__(self, parent):
-        super(MainToolBar, self).__init__(parent, -1, (-1, -1), (-1, -1),
-            aui.AUI_TB_DEFAULT_STYLE | aui.AUI_TB_OVERFLOW |
+        super(MainToolBar, self).__init__(parent, -1, wx.DefaultPosition,
+            wx.DefaultSize, aui.AUI_TB_DEFAULT_STYLE | aui.AUI_TB_OVERFLOW |
             aui.AUI_TB_HORZ_TEXT)
         self._parent = parent
         self.verse_entry = wx.ComboBox(self, -1,
@@ -34,6 +34,16 @@ class MainToolBar(aui.AuiToolBar):
         self.SetToolDropDown(wx.ID_FORWARD, True)
         self.Bind(aui.EVT_AUITOOLBAR_TOOL_DROPDOWN, self.OnForward,
             id=wx.ID_FORWARD)
+        self.AddSeparator()
+        self.bookctrl = wx.Choice(self, -1, choices=BOOK_NAMES)
+        self.bookctrl.SetSelection(parent.reference[0] - 1)
+        self.AddControl(self.bookctrl)
+        self.bookctrl.Bind(wx.EVT_CHOICE, self.OnBook)
+        self.chapterctrl = wx.SpinCtrl(self, -1, str(parent.reference[1]),
+            size=(60, -1), min=1, max=BOOK_LENGTHS[parent.reference[0] - 1])
+        self.AddControl(self.chapterctrl)
+        self.chapterctrl.Bind(wx.EVT_SPINCTRL, self.OnChapter)
+        self.chapterctrl.Bind(wx.EVT_TEXT_ENTER, self.OnChapter)
         self.AddSeparator()
         self.AddTool(wx.ID_PRINT, "", parent.get_bitmap("print"),
             _("Print (Ctrl+P)"))
@@ -111,6 +121,18 @@ class MainToolBar(aui.AuiToolBar):
                     i + 1)
             x, y, width, height = self.GetToolRect(wx.ID_FORWARD)
             self.PopupMenu(menu, (x, y + height))
+
+    def OnBook(self, event):
+        book = self.bookctrl.GetSelection() + 1
+        chapter = min(self._parent.reference[1], BOOK_LENGTHS[book - 1])
+        self.chapterctrl.SetRange(1, BOOK_LENGTHS[book - 1])
+        if chapter != self._parent.reference[1]:
+            self.chapterctrl.SetValue(chapter)
+        self._parent.load_chapter(book, chapter)
+
+    def OnChapter(self, event):
+        self._parent.load_chapter(self._parent.reference[0],
+            self.chapterctrl.GetValue())
 
 
 class ZoomBar(wx.ToolBar):
