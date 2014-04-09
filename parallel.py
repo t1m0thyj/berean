@@ -34,7 +34,7 @@ class ParallelWindow(BaseChapterWindow):
             Bibles.append(self._frame.notebook.GetPage(selection).Bible)
             version_list.append(self._frame.version_list[selection])
             heading = "<font size=\"+1\"><b>%s %d (%s)</b></font>" % \
-                (Bibles[-1][book][0], chapter, version_list[-1])
+                (BOOK_NAMES[book - 1], chapter, version_list[-1])
             if not Bibles[-1][book][chapter][0]:
                 lines.append("  <td align=center>%s</td>" % heading)
             else:
@@ -56,6 +56,12 @@ class ParallelWindow(BaseChapterWindow):
                 if j == 0:
                     line.insert(1, "<a name=\"%d\">" % i)
                     line.append("</a>")
+                if (i == CHAPTER_LENGTHS[book - 1][chapter - 1] and
+                        chapter == BOOK_LENGTHS[book - 1] and
+                        Bibles[j][book][0]):
+                    line.append("<hr /><div align=\"center\"><i>%s</i>" \
+                        "</div>" % Bibles[j][book][0].replace("]", "<i>"). \
+                        replace("[", "</i>"))
                 lines.append("".join(line) + "</td>")
             lines.append("</tr>")
         self.set_description(version_list)

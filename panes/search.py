@@ -22,8 +22,8 @@ def index_version(version, Bible, indexdir):
         dialog.Update(b - 1, _("Processing %s...") % BOOK_NAMES[b - 1])
         for c in range(1, len(Bible[b])):
             for v in range(1, len(Bible[b][c])):
-                verse = re.sub(r"[^\w\s'\-]", r"", Bible[b][c][v],
-                    flags=re.UNICODE)
+                verse = re.sub(r"[^\w\s'\-]", r"",
+                    Bible[b][c][v].replace("--", " "), flags=re.UNICODE)
                 for word in set(verse.split()):  # Remove duplicates
                     if word not in index:
                         index[word] = []
@@ -401,8 +401,8 @@ class SearchPane(wx.Panel):
         selection = event.GetSelection()
         if selection < len(RANGES) + 1:
             if selection < len(RANGES):
-                self.start.SetSelection(RANGES[selection][0])
-                self.stop.SetSelection(RANGES[selection][1])
+                self.start.SetSelection(RANGES[selection][0] - 1)
+                self.stop.SetSelection(RANGES[selection][1] - 1)
             else:
                 self.start.SetSelection(self._parent.reference[0] - 1)
                 self.stop.SetSelection(self._parent.reference[0] - 1)
@@ -426,5 +426,5 @@ class SearchPane(wx.Panel):
     def OnCollapsiblePaneChanged(self, event):
         self.Layout()
 
-RANGES = ((0, 65), (0, 38), (0, 4), (5, 16), (17, 21), (22, 26), (27, 38),
-    (39, 65), (39, 43), (44, 56), (57, 64), (65, 65))
+RANGES = ((1, 66), (1, 39), (1, 5), (6, 17), (18, 22), (23, 27), (28, 39),
+    (40, 66), (40, 44), (45, 58), (59, 65), (66, 66))
