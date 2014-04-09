@@ -18,7 +18,8 @@ class MainToolBar(aui.AuiToolBar):
         self.verse_entry = wx.ComboBox(self, -1,
             choices=parent._app.config.ReadList("VerseHistory"),
             size=(150, -1), style=wx.TE_PROCESS_ENTER)
-        self.verse_entry.SetValue(parent._app.config.Read("Main/LastVerse"))
+        self.verse_entry.SetValue(
+            parent._app.config.Read("Main/LastVerse", "Genesis 1"))
         self.verse_entry.Bind(wx.EVT_TEXT_ENTER, self.OnGotoVerse)
         self.AddControl(self.verse_entry)
         self.AddTool(parent.menubar.goto_verse_item.GetId(), "",

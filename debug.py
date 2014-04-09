@@ -33,7 +33,7 @@ class ErrorDialog(wx.Dialog):
             _("An error occurred in the application."))
         mac_ver = ""
         if sys.platform == "darwin":
-            mac_ver = "\nmac_ver=%s" % platform.mac_ver()[0]
+            mac_ver = "\nmac_ver: %s" % platform.mac_ver()[0]
         self.send = wx.Button(self, -1, _("send bug report"))
         self.show = wx.Button(self, -1, _("show bug report"))
         self.continue_button = wx.Button(self, -1, _("continue application"))
@@ -107,21 +107,19 @@ class ErrorDialog(wx.Dialog):
         event.Skip()
 
 
-REPORT = """osdescription=%s%s
-architecture=%s
-machine=%s
-byteorder=%s
-[Python]
-version=%s
-defaultencoding=%s
-filesystemencoding=%s
-[wxPython]
-version=%s
-platforminfo=%s
-defaultpyencoding=%s
-[Berean]
-version=%s
-frozen=%s
+REPORT = """OSDescription: %s%s
+architecture: %s
+machine: %s
+byteorder: %s
+Python version: %s
+defaultencoding: %s
+filesystemencoding: %s
+wxPython version: %s
+PlatformInfo: %s
+DefaultPyEncoding: %s
+Berean version: %s
+frozen: %s
 ------------------------------------------------------------------------------
 %s
+------------------------------------------------------------------------------
 """

@@ -148,14 +148,14 @@ class ChapterWindow(BaseChapterWindow):
             wx.MessageBox(_("Could not load %s.\n\nError: %s") % (version,
                 exc_value), _("Error"), wx.ICON_WARNING | wx.OK)
         else:
-            self.description = self.Bible[0]
+            self.description = VERSION_DESCRIPTIONS[version]
             self.version = version
 
     def get_html(self, book, chapter, verse=-1):
         if self.Bible[book][chapter] != (None,):
             header = ["<div align=center>",
-                "<font size=\"+1\"><b>%s %d</b></font>" % (self.Bible[book][0],
-                chapter), "</div>", ""]
+                "<font size=\"+1\"><b>%s %d</b></font>" %
+                (BOOK_NAMES[book - 1], chapter), "</div>", ""]
             if self.Bible[book][chapter][0]:
                 header[1] += "<br />"
                 header.insert(2, "<i>%s</i>" % self.Bible[book][chapter][0].
@@ -170,6 +170,10 @@ class ChapterWindow(BaseChapterWindow):
                 if i == verse:
                     text = "<b>%s</b>" % text
                 verses.append("<a name=\"%d\">%s</a>" % (i, text))
+            if chapter == BOOK_LENGTHS[book - 1] and self.Bible[book][0]:
+                verses[-1] += "<hr /><div align=\"center\"><i>%s</i></div>" % \
+                    self.Bible[book][0].replace("]", "<i>"). \
+                    replace("[", "</i>")
         else:
             header = []
             verses = [_("<font color=gray>%s %d is not in this version." \

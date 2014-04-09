@@ -5,14 +5,6 @@ import wx
 from config import *
 
 _ = wx.GetTranslation
-descriptions = ("American Standard Version (1901)", "Dutch Statenvertaling",
-    "French Traduction de Louis Segond (1910)", "King James Version (1769)",
-    "Revised Version (1895)", "La Santa Biblia Reina-Valera (1909)",
-    "Spanish Sagradas Escrituras Version Antigua (1569)",
-    "William Tyndale Bible (1525/1530)", "World English Bible",
-    "World English Bible: British Edition",
-    "World English Bible: Messianic Edition", "Webster Bible",
-    "John Wycliffe Bible (1395)", "Young's Literal Translation (1898)")
 
 
 class PreferencesDialog(wx.Dialog):
@@ -51,7 +43,7 @@ class PreferencesDialog(wx.Dialog):
         self.version_list = wx.CheckListBox(self.versions, -1)
         for i in range(len(VERSION_NAMES)):
             self.version_list.Append("%s - %s" % (VERSION_NAMES[i],
-                descriptions[i]))
+                VERSION_DESCRIPTIONS[VERSION_NAMES[i]]))
             if VERSION_NAMES[i] in parent.version_list:
                 self.version_list.Check(i)
         sizer = wx.BoxSizer()
