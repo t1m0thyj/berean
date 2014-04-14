@@ -14,15 +14,15 @@ _ = wx.GetTranslation
 
 class BookChapterVerseSelector(aui.AuiToolBar):
     def __init__(self, parent, reference):
-        super(BookChapterVerseSelector, self).__init__(parent, -1,
+        super(BookChapterVerseSelector, self).__init__(parent, wx.ID_ANY,
             wx.DefaultPosition, wx.DefaultSize,
             aui.AUI_TB_DEFAULT_STYLE | aui.AUI_TB_OVERFLOW)
         self._parent = parent
-        self.book = wx.Choice(self, -1, choices=BOOK_NAMES)
+        self.book = wx.Choice(self, choices=BOOK_NAMES)
         self.AddControl(self.book)
-        self.chapter = wx.Choice(self, -1, size=(60, -1))
+        self.chapter = wx.Choice(self, size=(60, -1))
         self.AddControl(self.chapter)
-        self.verse = wx.Choice(self, -1, size=(60, -1))
+        self.verse = wx.Choice(self, size=(60, -1))
         self.AddControl(self.verse)
         self.Bind(wx.EVT_CHOICE, self.OnChoice)
         self.AddTool(wx.ID_DELETE, "", parent._frame.get_bitmap("delete"),
@@ -73,14 +73,16 @@ class BookChapterVerseSelector(aui.AuiToolBar):
 
 class TopicSelector(aui.AuiToolBar):
     def __init__(self, parent):
-        super(TopicSelector, self).__init__(parent, -1, wx.DefaultPosition,
-            wx.DefaultSize, aui.AUI_TB_DEFAULT_STYLE | aui.AUI_TB_OVERFLOW)
+        super(TopicSelector, self).__init__(parent, wx.ID_ANY,
+            wx.DefaultPosition, wx.DefaultSize,
+            aui.AUI_TB_DEFAULT_STYLE | aui.AUI_TB_OVERFLOW)
         self._parent = parent
         self.topic_list = parent._frame._app.config.ReadList("Notes/TopicList")
-        self.topic = wx.Choice(self, -1, choices=self.topic_list)
+        self.topic = wx.Choice(self, choices=self.topic_list)
         self.AddControl(self.topic)
         self.AddTool(wx.ID_NEW, "", parent._frame.get_bitmap("new"), _("New"))
-        self.AddTool(-1, "", parent._frame.get_bitmap("rename"), _("Rename"))
+        self.AddTool(wx.ID_ANY, "", parent._frame.get_bitmap("rename"),
+            _("Rename"))
         self.AddTool(wx.ID_DELETE, "", parent._frame.get_bitmap("delete"),
             _("Delete"))
         self.Realize()
@@ -88,7 +90,7 @@ class TopicSelector(aui.AuiToolBar):
 
 class NotesPage(wx.Panel):
     def __init__(self, parent, name):
-        super(NotesPage, self).__init__(parent, -1)
+        super(NotesPage, self).__init__(parent)
         self._frame = parent.GetParent()
         self.name = name
         filename = os.path.join(self._frame._app.userdatadir, "%s.not" % name)
@@ -101,7 +103,7 @@ class NotesPage(wx.Panel):
                 self.notes_dict = cPickle.load(notes)
 
         ##self.selector = BookChapterVerseSelector(self, self._frame.reference)
-        self.toolbar = aui.AuiToolBar(self, -1, wx.DefaultPosition,
+        self.toolbar = aui.AuiToolBar(self, wx.ID_ANY, wx.DefaultPosition,
             wx.DefaultSize, aui.AUI_TB_DEFAULT_STYLE | aui.AUI_TB_OVERFLOW)
         self.toolbar.AddTool(wx.ID_SAVE, "", self._frame.get_bitmap("save"),
             _("Save (Ctrl+S)"))
@@ -120,16 +122,15 @@ class NotesPage(wx.Panel):
             _("Paste (Ctrl+V)"))
         self.toolbar.Bind(wx.EVT_MENU, self.OnPaste, id=wx.ID_PASTE)
         self.toolbar.AddSeparator()
-        self.font_name = wx.Choice(self.toolbar, -1,
-            choices=self._frame.facenames)
+        self.font_name = wx.Choice(self.toolbar, choices=self._frame.facenames)
         self.font_name.SetSelection(0)
         self.toolbar.AddControl(self.font_name)
         self.font_name.Bind(wx.EVT_CHOICE, self.OnFontName)
         if '__WXGTK__' not in wx.PlatformInfo:
-            self.font_size = wx.ComboBox(self.toolbar, -1, choices=FONT_SIZES,
+            self.font_size = wx.ComboBox(self.toolbar, choices=FONT_SIZES,
                 style=wx.TE_PROCESS_ENTER)
         else:
-            self.font_size = wx.ComboBox(self.toolbar, -1, choices=FONT_SIZES,
+            self.font_size = wx.ComboBox(self.toolbar, choices=FONT_SIZES,
                 size=(60, -1), style=wx.TE_PROCESS_ENTER)
         self.font_size.Bind(wx.EVT_COMBOBOX, self.OnFontSize)
         self.font_size.Bind(wx.EVT_TEXT_ENTER, self.OnFontSize)
@@ -177,14 +178,14 @@ class NotesPage(wx.Panel):
             self._frame.get_bitmap("increase-indent"), _("Increase Indent"))
         self.Bind(wx.EVT_MENU, self.OnIncreaseIndent, id=ID_INCREASE_INDENT)
         self.toolbar.AddSeparator()
-        self.ID_HIGHLIGHTING = wx.NewId()
-        self.toolbar.AddTool(self.ID_HIGHLIGHTING, "",
+        ID_HIGHLIGHTING = wx.NewId()
+        self.toolbar.AddTool(ID_HIGHLIGHTING, "",
             self._frame.get_bitmap("highlighting"), _("Highlighting"))
-        self.Bind(wx.EVT_MENU, self.OnHighlighting, id=self.ID_HIGHLIGHTING)
-        self.ID_FONT_COLOR = wx.NewId()
-        self.toolbar.AddTool(self.ID_FONT_COLOR, "",
+        self.Bind(wx.EVT_MENU, self.OnHighlighting, id=ID_HIGHLIGHTING)
+        ID_FONT_COLOR = wx.NewId()
+        self.toolbar.AddTool(ID_FONT_COLOR, "",
             self._frame.get_bitmap("font-color"), _("Font Color"))
-        self.Bind(wx.EVT_MENU, self.OnFontColor, id=self.ID_FONT_COLOR)
+        self.Bind(wx.EVT_MENU, self.OnFontColor, id=ID_FONT_COLOR)
         self.toolbar.Realize()
         self.SetAcceleratorTable(wx.AcceleratorTable([
             (wx.ACCEL_CTRL, ord("X"), wx.ID_CUT),
@@ -199,8 +200,8 @@ class NotesPage(wx.Panel):
             (wx.ACCEL_SHIFT, 9, ID_DECREASE_INDENT),
             (wx.ACCEL_NORMAL, 9, ID_INCREASE_INDENT)]))
 
-        self.editor = richtext.RichTextCtrl(self, -1, style=wx.BORDER_NONE |
-            wx.WANTS_CHARS)
+        self.editor = richtext.RichTextCtrl(self,
+            style=wx.BORDER_NONE | wx.WANTS_CHARS)
         self.editor.SetFont(wx.FFont(self._frame.default_font["size"],
             wx.DEFAULT, face=self._frame.default_font["normal_face"]))
         self.editor.Bind(wx.EVT_CHAR, self.OnChar)
@@ -510,7 +511,7 @@ class NotesPage(wx.Panel):
 
 class NotesPane(aui.AuiNotebook):
     def __init__(self, parent):
-        super(NotesPane, self).__init__(parent, -1, style=wx.BORDER_NONE |
+        super(NotesPane, self).__init__(parent, style=wx.BORDER_NONE |
             aui.AUI_NB_TOP | aui.AUI_NB_SCROLL_BUTTONS)
         self.AddPage(NotesPage(self, "Study Notes"), _("Study Notes"))
         self.AddPage(NotesPage(self, "Topic Notes"), _("Topic Notes"))

@@ -22,51 +22,52 @@ class ParallelWindow(BaseChapterWindow):
                 version_list[-1])
 
     def get_html(self, book, chapter, verse=-1):
-        Bibles = []
-        lines = ["<tr>"]
         version_list = []
+        Bibles = []
+        text = ["<tr>"]
         for i in range(len(self._parent.choices)):
             selection = self._parent.choices[i].GetSelection()
+            if i > 0 and selection == 0:
+                continue
+            version_list.append(self._parent.choices[i].GetString(selection))
             if i > 0:
-                if selection == 0:
-                    continue
                 selection -= 1
             Bibles.append(self._frame.notebook.GetPage(selection).Bible)
-            version_list.append(self._frame.version_list[selection])
-            heading = "<font size=\"+1\"><b>%s %d (%s)</b></font>" % \
+            title = "<font size=\"+1\"><b>%s %d (%s)</b></font>" % \
                 (BOOK_NAMES[book - 1], chapter, version_list[-1])
-            if not Bibles[-1][book][chapter][0]:
-                lines.append("  <td align=center>%s</td>" % heading)
+            if ((not Bibles[-1][book]) or (not Bibles[-1][book][chapter][0])):
+                text.append("<td align=\"center\">%s</td>" % title)
             else:
-                lines.extend(["  <td align=center>", "  %s<br/>" % heading,
-                    "  <i>%s</i>" % Bibles[-1][book][chapter][0].
-                    replace("]", "<i>").replace("[", "</i>"), "  </td>"])
-        lines.append("</tr>")
+                text.append("<td align=\"center\">%s<br/><i>%s</i></td>" %
+                    (title, Bibles[-1][book][chapter][0].replace("]", "<i>").
+                    replace("[", "</i>")))
+        text.append("</tr>")
         for i in range(1, CHAPTER_LENGTHS[book - 1][chapter - 1] + 1):
-            lines.append("<tr>")
+            text.append("<tr>")
             for j in range(len(Bibles)):
-                line = ["  <td>"]
-                if (i < len(Bibles[j][book][chapter]) and
+                text.append("<td>")
+                if (Bibles[j][book] and i < len(Bibles[j][book][chapter]) and
                         len(Bibles[j][book][chapter][i])):
-                    line.append("<font size=\"-1\">%d&nbsp;</font>%s" %
+                    text.append("<font size=\"-1\">%d&nbsp;</font>%s" %
                         (i, Bibles[j][book][chapter][i].replace("[", "<i>").
                         replace("]", "</i>")))
                     if i == verse:
-                        line[-1] = "<b>%s</b>" % line[-1]
+                        text[-1] = "<b>%s</b>" % text[-1]
                 if j == 0:
-                    line.insert(1, "<a name=\"%d\">" % i)
-                    line.append("</a>")
+                    text.insert(len(text) - 1, "<a name=\"%d\">" % i)
+                    text.append("</a>")
                 if (i == CHAPTER_LENGTHS[book - 1][chapter - 1] and
                         chapter == BOOK_LENGTHS[book - 1] and
-                        Bibles[j][book][0]):
-                    line.append("<hr /><div align=\"center\"><i>%s</i>" \
+                        Bibles[j][book] and Bibles[j][book][0]):
+                    text.append("<hr /><div align=\"center\"><i>%s</i>" \
                         "</div>" % Bibles[j][book][0].replace("]", "<i>"). \
                         replace("[", "</i>"))
-                lines.append("".join(line) + "</td>")
-            lines.append("</tr>")
+                text.append("</td>")
+            text.append("</tr>")
         self.set_description(version_list)
-        title = "%s %d (%s)" % (BOOK_NAMES[book - 1], chapter, _("Parallel"))
-        return HTML % (title, self._frame.zoom_level, "\n      ".join(lines))
+        return "<html><body><font size=\"%d\"><table valign=top cellspacing=" \
+            "2 cellpadding=0><tbody>%s</tbody></table></font></body>" \
+            "</html>" % (self._frame.zoom_level, "".join(text))
 
     def load_chapter(self, book, chapter, verse=-1):
         self.SetPage(self.get_html(book, chapter, verse))
@@ -79,26 +80,6 @@ class ParallelWindow(BaseChapterWindow):
             wx.CallAfter(self.ScrollToAnchor, str(verse))
         self.reference = (book, chapter, verse)
         wx.CallAfter(self.SetFocus)  # Keep the first choice from scrolling
-
-
-HTML = """<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
-<head>
-  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-  <title>%s</title>
-</head>
-<body>
-  <font size=\"%d\">
-  <table valign=top cellspacing=2 cellpadding=0>
-    <tbody>
-      %s
-    </tbody>
-  </table>
-  </font>
-</body>
-</html>
-"""
 
 
 class ChoiceDropTarget(wx.DropTarget):
@@ -129,7 +110,7 @@ class ChoiceDropTarget(wx.DropTarget):
 
 class ParallelPanel(wx.Panel):
     def __init__(self, parent):
-        super(ParallelPanel, self).__init__(parent, -1)
+        super(ParallelPanel, self).__init__(parent)
         self._frame = parent.GetParent()
         self.choice_data = wx.CustomDataObject("ParallelPanel")
 
@@ -137,7 +118,7 @@ class ParallelPanel(wx.Panel):
         version_list = self._frame._app.config.ReadList("ParallelVersions",
             self._frame.version_list[:2])
         for i in range(len(self._frame.version_list)):
-            self.choices.append(wx.Choice(self, -1,
+            self.choices.append(wx.Choice(self,
                 choices=self._frame.version_list))
             if i > 0:
                 self.choices[i].Insert(_("(none)"), 0)

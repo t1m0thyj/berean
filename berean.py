@@ -44,10 +44,10 @@ class FileConfig(wx.FileConfig):
 
     def save(self):
         self.SetPath("/Main")
-        self.Write("WindowPosition", ",".join(map(str,
-            self._app.frame.rect.GetPosition())))
-        self.Write("WindowSize", ",".join(map(str,
-            self._app.frame.rect.GetSize())))
+        self.Write("WindowPosition", ",".join(str(i) for i in
+            self._app.frame.rect.GetPosition()))
+        self.Write("WindowSize", ",".join(str(i) for i in
+            self._app.frame.rect.GetSize()))
         self.WriteBool("IsMaximized", self._app.frame.IsMaximized())
         self.WriteInt("CurrentBook", self._app.frame.reference[0])
         self.WriteInt("CurrentChapter", self._app.frame.reference[1])

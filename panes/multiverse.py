@@ -12,20 +12,20 @@ _ = wx.GetTranslation
 
 class MultiVersePane(wx.Panel):
     def __init__(self, parent):
-        super(MultiVersePane, self).__init__(parent, -1)
+        super(MultiVersePane, self).__init__(parent)
         self._parent = parent
         self.html = ""
 
-        self.toolbar = aui.AuiToolBar(self, -1, wx.DefaultPosition,
+        self.toolbar = aui.AuiToolBar(self, wx.ID_ANY, wx.DefaultPosition,
             wx.DefaultSize, aui.AUI_TB_DEFAULT_STYLE | aui.AUI_TB_OVERFLOW | \
             aui.AUI_TB_HORZ_TEXT)
         self.toolbar.AddLabel(-1, _("Version:"))
-        self.version = wx.Choice(self.toolbar, -1, choices=parent.version_list)
+        self.version = wx.Choice(self.toolbar, choices=parent.version_list)
         tab = parent.notebook.GetSelection()
         self.version.SetSelection(int(tab < len(parent.version_list)) and tab)
         self.toolbar.AddControl(self.version)
         self.toolbar.AddSeparator()
-        search_item = self.toolbar.AddTool(-1, _("Search"),
+        search_item = self.toolbar.AddTool(wx.ID_ANY, _("Search"),
             parent.get_bitmap("search"), _("Search (Ctrl+Enter)"))
         self.Bind(wx.EVT_MENU, self.OnSearch, search_item)
         self.toolbar.AddTool(wx.ID_PRINT, _("Print"),
@@ -37,9 +37,9 @@ class MultiVersePane(wx.Panel):
         self.toolbar.EnableTool(wx.ID_COPY, False)
         self.Bind(wx.EVT_MENU, self.OnCopy, id=wx.ID_COPY)
         self.toolbar.Realize()
-        self.splitter_window = wx.SplitterWindow(self, -1)
-        self.verse_list = wx.TextCtrl(self.splitter_window, -1,
-            parent._app.config.Read("Search/LastMultiVerseRetrieval"),
+        self.splitter_window = wx.SplitterWindow(self)
+        self.verse_list = wx.TextCtrl(self.splitter_window,
+            value=parent._app.config.Read("Search/LastMultiVerseRetrieval"),
             style=wx.TE_MULTILINE)
         self.verse_list.SetAcceleratorTable(wx.AcceleratorTable([
             (wx.ACCEL_CTRL, wx.WXK_RETURN, search_item.GetId()),

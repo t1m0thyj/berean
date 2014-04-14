@@ -27,7 +27,8 @@ class MainFrame(wx.Frame):
                 0 - size[1] < pos[1] < display_size[1]):
             pos, size = wx.DefaultPosition, best_size
         self.rect = wx.RectPS(pos, size)
-        super(MainFrame, self).__init__(None, -1, "Berean", pos, size)
+        super(MainFrame, self).__init__(None, title="Berean", pos=pos,
+            size=size)
         icons = wx.IconBundle()
         icons.AddIconFromFile(os.path.join(app.cwd, "images", "berean-16.png"),
             wx.BITMAP_TYPE_PNG)
@@ -68,7 +69,7 @@ class MainFrame(wx.Frame):
         else:
             self.statusbar.SetStatusWidths([-1, -1, self.zoombar.width + 1])
 
-        self.notebook = aui.AuiNotebook(self, -1, style=wx.BORDER_NONE |
+        self.notebook = aui.AuiNotebook(self, style=wx.BORDER_NONE |
             aui.AUI_NB_TOP | aui.AUI_NB_SCROLL_BUTTONS |
             aui.AUI_NB_WINDOWLIST_BUTTON)
         versiondir = os.path.join(app.userdatadir, "versions")
@@ -151,10 +152,9 @@ class MainFrame(wx.Frame):
         tab = self.notebook.GetSelection()
         self.SetTitle("Berean - %s %d (%s)" % (BOOK_NAMES[book - 1], chapter,
             self.notebook.GetPageText(tab)))
-        if verse == -1:
-            reference = "%s %d" % (BOOK_NAMES[book - 1], chapter)
-        else:
-            reference = "%s %d:%d" % (BOOK_NAMES[book - 1], chapter, verse)
+        reference = "%s %d" % (BOOK_NAMES[book - 1], chapter)
+        if verse != -1:
+            reference += ":%d" % verse
         if reference not in self.verse_history:
             self.verse_history = self.verse_history[:self.history_item + 1]
             self.verse_history.append(reference)
@@ -277,7 +277,7 @@ class TaskBarIcon(wx.TaskBarIcon):
 
     def CreatePopupMenu(self):
         menu = wx.Menu()
-        restore_item = menu.Append(-1, _("Restore"))
+        restore_item = menu.Append(wx.ID_ANY, _("Restore"))
         self.Bind(wx.EVT_MENU, self.OnRestore, restore_item)
         exit_item = menu.Append(wx.ID_EXIT, _("Exit"))
         self.Bind(wx.EVT_MENU, self.OnExit, exit_item)

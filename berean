@@ -1,4 +1,6 @@
 #!/usr/bin/env python
 """berean - command line launcher for Berean"""
 
-__import__("berean").main()
+import berean
+
+berean.main()

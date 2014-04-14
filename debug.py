@@ -15,36 +15,37 @@ _ = wx.GetTranslation
 def OnError(*exception):
     exc_info = "".join(traceback.format_exception(*exception))
     print exc_info
-    if not ErrorDialog.ACTIVE:
+    if not ErrorDialog.active:
         dialog = ErrorDialog(exc_info)
         dialog.ShowModal()
         dialog.Destroy()
 
 
 class ErrorDialog(wx.Dialog):
-    ACTIVE = False
+    active = False
 
     def __init__(self, exc_info):
-        ErrorDialog.ACTIVE = True
-        super(ErrorDialog, self).__init__(None, -1, _("Error"))
-        bitmap = wx.StaticBitmap(self, -1, wx.ArtProvider.GetBitmap(
-            wx.ART_ERROR))
-        label = wx.StaticText(self, -1,
-            _("An error occurred in the application."))
+        ErrorDialog.active = True
+        super(ErrorDialog, self).__init__(None, title=_("Error"))
+        bitmap = wx.StaticBitmap(self,
+            bitmap=wx.ArtProvider.GetBitmap(wx.ART_ERROR))
+        label = wx.StaticText(self,
+            label=_("An error occurred in the application."))
         mac_ver = ""
         if sys.platform == "darwin":
             mac_ver = "\nmac_ver: %s" % platform.mac_ver()[0]
-        self.send = wx.Button(self, -1, _("send bug report"))
-        self.show = wx.Button(self, -1, _("show bug report"))
-        self.continue_button = wx.Button(self, -1, _("continue application"))
-        self.restart = wx.Button(self, -1, _("restart application"))
-        self.restart.Disable()
-        self.close = wx.Button(self, -1, _("close application"))
-        self.textctrl = wx.TextCtrl(self, -1, REPORT % (wx.GetOsDescription(),
-            mac_ver, platform.architecture()[0], platform.machine(),
-            sys.byteorder, sys.version, sys.getdefaultencoding(),
-            sys.getfilesystemencoding(), wx.version(), wx.PlatformInfo,
-            wx.GetDefaultPyEncoding(), VERSION, hasattr(sys, "frozen"),
+        self.send = wx.Button(self, label=_("send bug report"))
+        self.show = wx.Button(self, label=_("show bug report"))
+        self.continue_button = wx.Button(self, label=_("continue application"))
+        self.restart = wx.Button(self, label=_("restart application"))
+        self.restart.Disable()  # TODO: How to restart application?
+        self.close = wx.Button(self, label=_("close application"))
+        self.textctrl = wx.TextCtrl(self, value=report %
+            (wx.GetOsDescription(), mac_ver, platform.architecture()[0],
+            platform.machine(), sys.byteorder, sys.version,
+            sys.getdefaultencoding(), sys.getfilesystemencoding(),
+            wx.version(), wx.PlatformInfo, wx.GetDefaultPyEncoding(),
+            VERSION, hasattr(sys, "frozen"),
             exc_info.rstrip()), style=wx.TE_MULTILINE | wx.TE_READONLY)
         self.textctrl.Hide()
         self.Bind(wx.EVT_BUTTON, self.OnSend, self.send)
@@ -103,11 +104,11 @@ class ErrorDialog(wx.Dialog):
         sys.exit(1)
 
     def OnClose(self, event):
-        ErrorDialog.ACTIVE = False
+        ErrorDialog.active = False
         event.Skip()
 
 
-REPORT = """OSDescription: %s%s
+report = """OSDescription: %s%s
 architecture: %s
 machine: %s
 byteorder: %s
