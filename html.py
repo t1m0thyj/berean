@@ -61,12 +61,18 @@ class PrintingSystem(html.HtmlEasyPrinting):
 
     def print_chapter(self):
         if wx.VERSION_STRING >= "2.8.11.0" and wx.VERSION_STRING != "2.9.0.0":
-            self.SetName(self._frame.get_htmlwindow().GetOpenedPageTitle())
+            self.SetName("%s %d (%s)" %
+                (BOOK_NAMES[self._frame.reference[0] - 1],
+                self._frame.reference[1], self._frame.notebook.GetPageText(
+                self.frame.notebook.GetSelection())))
         self.PrintText(self.get_chapter())
 
     def preview_chapter(self):
         if wx.VERSION_STRING >= "2.8.11.0" and wx.VERSION_STRING != "2.9.0.0":
-            self.SetName(self._frame.get_htmlwindow().GetOpenedPageTitle())
+            self.SetName("%s %d (%s)" %
+                (BOOK_NAMES[self._frame.reference[0] - 1],
+                self._frame.reference[1], self._frame.notebook.GetPageText(
+                self.frame.notebook.GetSelection())))
         self.PreviewText(self.get_chapter())
 
 
@@ -117,7 +123,7 @@ class BaseChapterWindow(BaseHtmlWindow):
             menu.Append(wx.ID_COPY, _("&Copy"))
         menu.Append(wx.ID_SELECTALL, _("Select &All"))
         menu.AppendSeparator()
-        search_item = menu.Append(-1, _("&Search for Selected Text"))
+        search_item = menu.Append(wx.ID_ANY, _("&Search for Selected Text"))
         self.Bind(wx.EVT_MENU, self.OnSearch, search_item)
         menu.Enable(search_item.GetId(), selected)
         menu.AppendSeparator()
@@ -152,14 +158,12 @@ class ChapterWindow(BaseChapterWindow):
             self.version = version
 
     def get_html(self, book, chapter, verse=-1):
-        if self.Bible[book][chapter] != (None,):
-            header = ["<div align=center>",
-                "<font size=\"+1\"><b>%s %d</b></font>" %
-                (BOOK_NAMES[book - 1], chapter), "</div>", ""]
+        if self.Bible[book]:
+            header = "<font size=\"+1\"><b>%s %d</b></font>" % \
+                (BOOK_NAMES[book - 1], chapter)
             if self.Bible[book][chapter][0]:
-                header[1] += "<br />"
-                header.insert(2, "<i>%s</i>" % self.Bible[book][chapter][0].
-                    replace("]", "<i>").replace("[", "</i>"))
+                header += "<br /><i>%s</i>" % self.Bible[book][chapter][0]. \
+                    replace("]", "<i>").replace("[", "</i>")
             verses = []
             for i in range(1, len(self.Bible[book][chapter])):
                 if not len(self.Bible[book][chapter][i]):
@@ -175,24 +179,9 @@ class ChapterWindow(BaseChapterWindow):
                     self.Bible[book][0].replace("]", "<i>"). \
                     replace("[", "</i>")
         else:
-            header = []
+            header = ""
             verses = [_("<font color=gray>%s %d is not in this version." \
                 "</font>") % (BOOK_NAMES[book - 1], chapter)]
-        title = "%s %d (%s)" % (BOOK_NAMES[book - 1], chapter, self.version)
-        return HTML % (title, self._frame.zoom_level, "\n  ".join(header) +
-            "<br />\n  ".join(verses))
-
-
-HTML = """<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
-<head>
-  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-  <title>%s</title>
-</head>
-<body>
-  <font size=\"%d\">
-  %s
-  </font>
-</body>
-</html>"""
+        return "<html><body><font size=\"%d\"><div align=center>%s</div>%s" \
+            "</font></body></html>" % (self._frame.zoom_level, header,
+            "<br />".join(verses))

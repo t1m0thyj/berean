@@ -9,38 +9,37 @@ _ = wx.GetTranslation
 
 class PreferencesDialog(wx.Dialog):
     def __init__(self, parent):
-        super(PreferencesDialog, self).__init__(parent, -1, _("Preferences"),
+        super(PreferencesDialog, self).__init__(parent, title=_("Preferences"),
             style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER)
         self._parent = parent
-        self.notebook = wx.Notebook(self, -1, style=wx.NB_MULTILINE)
+        self.notebook = wx.Notebook(self, style=wx.NB_MULTILINE)
 
-        self.general = wx.Panel(self.notebook, -1)
-        self.minimize_to_tray = wx.CheckBox(self.general, -1,
-            _("Minimize to system tray"))
+        self.general = wx.Panel(self.notebook)
+        self.minimize_to_tray = wx.CheckBox(self.general,
+            label=_("Minimize to system tray"))
         self.minimize_to_tray.SetValue(parent.minimize_to_tray)
-        self.default_font_face = wx.Choice(self.general, -1,
+        self.default_font_face = wx.Choice(self.general,
             choices=parent.facenames)
         self.default_font_face.SetStringSelection(
             parent.default_font["normal_face"])
-        self.default_font_size = wx.ComboBox(self.general, -1,
-            choices=FONT_SIZES)
+        self.default_font_size = wx.ComboBox(self.general, choices=FONT_SIZES)
         self.default_font_size.SetStringSelection(str(
             parent.default_font["size"]))
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add(self.minimize_to_tray, 0, wx.ALL, 5)
         sizer2 = wx.BoxSizer(wx.HORIZONTAL)
-        sizer2.Add(wx.StaticText(self.general, -1, _("Default font:")), 0,
+        sizer2.Add(wx.StaticText(self.general, label=_("Default font:")), 0,
             wx.ALIGN_CENTER_VERTICAL)
         sizer2.Add(self.default_font_face, 0, wx.ALL, 5)
-        sizer2.Add(wx.StaticText(self.general, -1, _("Size:")), 0,
+        sizer2.Add(wx.StaticText(self.general, label=_("Size:")), 0,
             wx.LEFT | wx.ALIGN_CENTER_VERTICAL, 5)
         sizer2.Add(self.default_font_size, 0, wx.ALL, 5)
         sizer.Add(sizer2, 0, wx.ALL ^ wx.TOP, 5)
         self.general.SetSizer(sizer)
         self.notebook.AddPage(self.general, _("General"))
 
-        self.versions = wx.Panel(self.notebook, -1)
-        self.version_list = wx.CheckListBox(self.versions, -1)
+        self.versions = wx.Panel(self.notebook)
+        self.version_list = wx.CheckListBox(self.versions)
         for i in range(len(VERSION_NAMES)):
             self.version_list.Append("%s - %s" % (VERSION_NAMES[i],
                 VERSION_DESCRIPTIONS[VERSION_NAMES[i]]))

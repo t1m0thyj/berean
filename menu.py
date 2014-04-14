@@ -1,4 +1,4 @@
-"""menu.py - menubar class and favorites management"""
+"""menu.py - menubar and favorites dialog class"""
 
 import wx
 from wx import gizmos
@@ -52,7 +52,7 @@ class MenuBar(wx.MenuBar):
         self.Append(self.edit_menu, _("&Edit"))
 
         self.view_menu = wx.Menu()
-        self.goto_verse_item = self.view_menu.Append(-1,
+        self.goto_verse_item = self.view_menu.Append(wx.ID_ANY,
             _("&Go to Verse"), _("Goes to the specified verse"))
         frame.Bind(wx.EVT_MENU, self.OnGotoVerse, self.goto_verse_item)
         self.view_menu.Append(wx.ID_BACKWARD, _("Go &Back\tAlt+Left"),
@@ -74,21 +74,21 @@ class MenuBar(wx.MenuBar):
             _("Resets the text size to the default"))
         frame.Bind(wx.EVT_MENU, self.OnZoomDefault, id=wx.ID_ZOOM_100)
         self.view_menu.AppendSeparator()
-        self.toolbar_item = self.view_menu.AppendCheckItem(-1, _("&Toolbar"),
-            _("Shows or hides the main toolbar"))
+        self.toolbar_item = self.view_menu.AppendCheckItem(wx.ID_ANY,
+            _("&Toolbar"), _("Shows or hides the main toolbar"))
         frame.Bind(wx.EVT_MENU, self.OnToolbar, self.toolbar_item)
         self.view_menu.AppendSeparator()
-        self.tree_pane_item = self.view_menu.AppendCheckItem(-1,
+        self.tree_pane_item = self.view_menu.AppendCheckItem(wx.ID_ANY,
             _("T&ree Pane\tCtrl+Shift+T"), _("Shows or hides the tree pane"))
         frame.Bind(wx.EVT_MENU, self.OnTreePane, self.tree_pane_item)
-        self.search_pane_item = self.view_menu.AppendCheckItem(-1,
+        self.search_pane_item = self.view_menu.AppendCheckItem(wx.ID_ANY,
             _("&Search Pane\tCtrl+Shift+S"),
             _("Shows or hides the search pane"))
         frame.Bind(wx.EVT_MENU, self.OnSearchPane, self.search_pane_item)
-        self.notes_pane_item = self.view_menu.AppendCheckItem(-1,
+        self.notes_pane_item = self.view_menu.AppendCheckItem(wx.ID_ANY,
             _("&Notes Pane\tCtrl+Shift+N"), _("Shows or hides the notes pane"))
         frame.Bind(wx.EVT_MENU, self.OnNotesPane, self.notes_pane_item)
-        self.multiverse_pane_item = self.view_menu.AppendCheckItem(-1,
+        self.multiverse_pane_item = self.view_menu.AppendCheckItem(wx.ID_ANY,
             _("&Multi-Verse Retrieval\tCtrl+M"),
             _("Shows or hides the Multi-Verse Retrieval pane"))
         frame.Bind(wx.EVT_MENU, self.OnMultiVersePane,
@@ -96,18 +96,19 @@ class MenuBar(wx.MenuBar):
         self.Append(self.view_menu, _("&View"))
 
         self.favorites_menu = wx.Menu()
-        self.add_to_favorites_item = self.favorites_menu.Append(-1,
+        self.add_to_favorites_item = self.favorites_menu.Append(wx.ID_ANY,
             _("&Add to Favorites\tCtrl+D"))
         frame.Bind(wx.EVT_MENU, self.OnAddToFavorites,
             self.add_to_favorites_item)
-        self.manage_favorites_item = self.favorites_menu.Append(-1,
+        self.manage_favorites_item = self.favorites_menu.Append(wx.ID_ANY,
             _("&Manage Favorites..."))
         frame.Bind(wx.EVT_MENU, self.OnManageFavorites,
             self.manage_favorites_item)
         self.favorites_menu.AppendSeparator()
         self.favorites_menu.AppendSeparator()
-        view_all_item = self.favorites_menu.Append(-1, _("View All"))
-        frame.Bind(wx.EVT_MENU, self.OnViewAll, view_all_item)
+        self.view_all_item = self.favorites_menu.Append(wx.ID_ANY,
+            _("View All"))
+        frame.Bind(wx.EVT_MENU, self.OnViewAll, self.view_all_item)
         self.update_favorites()
         self.Append(self.favorites_menu, _("F&avorites"))
 
@@ -132,6 +133,8 @@ class MenuBar(wx.MenuBar):
         else:
             self.favorites_menu.Insert(3, wx.ID_HIGHEST + 1, _("(Empty)"))
             self.favorites_menu.Enable(wx.ID_HIGHEST + 1, False)
+        self.favorites_menu.Enable(self.view_all_item.GetId(),
+            len(self.favorites_list))
 
     def OnPrint(self, event):
         self._frame.printing.print_chapter()
@@ -199,21 +202,19 @@ class MenuBar(wx.MenuBar):
         self._frame.show_multiverse_pane(event.IsChecked())
 
     def OnAddToFavorites(self, event):
-        if self._frame.reference[2] == -1:
-            favorite = "%s %s" % (BOOK_NAMES[self._frame.reference[0] - 1],
-                self._frame.reference[1])
-        else:
-            favorite = "%s %s:%s" % (BOOK_NAMES[self._frame.reference[0] - 1],
-                self._frame.reference[1], self._frame.reference[2])
-        if find_favorite(refalize(favorite), self.favorites_list) == -1:
-            self.favorites_list.append(favorite)
+        name = "%s %d" % (BOOK_NAMES[self._frame.reference[0] - 1],
+            self._frame.reference[1])
+        if self._frame.reference[2] != -1:
+            name += ":%d" % self._frame.reference[2]
+        if find_favorite(refalize(name), self.favorites_list) == -1:
+            self.favorites_list.append(name)
             self.update_favorites()
         else:
-            wx.MessageBox(_("%s is already in the favorites list.") % favorite,
+            wx.MessageBox(_("%s is already in the favorites list.") % name,
                 "Berean", wx.ICON_EXCLAMATION | wx.OK)
 
     def OnManageFavorites(self, event):
-        dialog = FavoritesManager(self._frame)
+        dialog = FavoritesDialog(self._frame)
         dialog.Show()
 
     def OnFavorite(self, event):
@@ -245,13 +246,13 @@ class MenuBar(wx.MenuBar):
         wx.AboutBox(info)
 
 
-class FavoritesManager(wx.Dialog):
+class FavoritesDialog(wx.Dialog):
     def __init__(self, parent):
-        super(FavoritesManager, self).__init__(parent, -1,
-            _("Manage Favorites"),
+        super(FavoritesDialog, self).__init__(parent,
+            title=_("Manage Favorites"),
             style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER)
         self._parent = parent
-        self.listbox = gizmos.EditableListBox(self, -1, _("Favorites List"))
+        self.listbox = gizmos.EditableListBox(self, label=_("Favorites"))
         self.listbox.SetStrings(parent.menubar.favorites_list)
         self.listbox.Bind(wx.EVT_LIST_END_LABEL_EDIT, self.OnListEndLabelEdit)
         sizer = wx.BoxSizer(wx.VERTICAL)
@@ -264,35 +265,31 @@ class FavoritesManager(wx.Dialog):
         self.Center()
 
     def OnListEndLabelEdit(self, event):
-        if not event.IsEditCancelled():
-            label = event.GetLabel()
-            try:
-                reference = refalize(label)
-            except Exception:
-                wx.MessageBox(_("'%s' is not a valid reference.") % label,
-                    _("Manage Favorites"), wx.ICON_EXCLAMATION | wx.OK)
-                event.Veto()
-                return
+        if event.IsEditCancelled():
+            return
+        label = event.GetLabel()
+        try:
+            reference = refalize(label)
+        except Exception:
+            wx.MessageBox(_("'%s' is not a valid reference.") % label,
+                _("Manage Favorites"), wx.ICON_EXCLAMATION | wx.OK)
+            event.Veto()
+        else:
             index = find_favorite(reference, self.listbox.GetStrings())
             if index != -1 and index != event.GetIndex():
-                if reference[2] == -1:
-                    wx.MessageBox(_("%s %d is already in the favorites " \
-                        "list.") % (BOOK_NAMES[reference[0] - 1],
-                        reference[1]), _("Manage Favorites"),
-                        wx.ICON_EXCLAMATION | wx.OK)
-                else:
-                    wx.MessageBox(_("%s %d:%d is already in the favorites " \
-                        "list.") % (BOOK_NAMES[reference[0] - 1], reference[1],
-                        reference[2]), _("Manage Favorites"),
-                        wx.ICON_EXCLAMATION | wx.OK)
+                name = "%s %d" % (BOOK_NAMES[reference[0] - 1], reference[1])
+                if reference[2] != -1:
+                    name += ":%d" % reference[2]
+                wx.MessageBox(_("%s is already in the favorites list.") % name,
+                    _("Manage Favorites"), wx.ICON_EXCLAMATION | wx.OK)
                 event.Veto()
-                return
-        event.Skip()
+            else:
+                event.Skip()
 
     def OnOk(self, event):
         self._parent.menubar.favorites_list = self.listbox.GetStrings()
         self._parent.menubar.update_favorites()
-        self.Close()
+        self.Destroy()
 
 
 LICENSE = """This program is free software: you can redistribute it and/or modify

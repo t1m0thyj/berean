@@ -11,11 +11,11 @@ _ = wx.GetTranslation
 
 class MainToolBar(aui.AuiToolBar):
     def __init__(self, parent):
-        super(MainToolBar, self).__init__(parent, -1, wx.DefaultPosition,
-            wx.DefaultSize, aui.AUI_TB_DEFAULT_STYLE | aui.AUI_TB_OVERFLOW |
-            aui.AUI_TB_HORZ_TEXT)
+        super(MainToolBar, self).__init__(parent, wx.ID_ANY,
+            wx.DefaultPosition, wx.DefaultSize, aui.AUI_TB_DEFAULT_STYLE |
+            aui.AUI_TB_OVERFLOW | aui.AUI_TB_HORZ_TEXT)
         self._parent = parent
-        self.verse_entry = wx.ComboBox(self, -1,
+        self.verse_entry = wx.ComboBox(self,
             choices=parent._app.config.ReadList("VerseHistory"),
             size=(150, -1), style=wx.TE_PROCESS_ENTER)
         self.verse_entry.SetValue(
@@ -36,11 +36,11 @@ class MainToolBar(aui.AuiToolBar):
         self.Bind(aui.EVT_AUITOOLBAR_TOOL_DROPDOWN, self.OnForward,
             id=wx.ID_FORWARD)
         self.AddSeparator()
-        self.bookctrl = wx.Choice(self, -1, choices=BOOK_NAMES)
+        self.bookctrl = wx.Choice(self, choices=BOOK_NAMES)
         self.bookctrl.SetSelection(parent.reference[0] - 1)
         self.AddControl(self.bookctrl)
         self.bookctrl.Bind(wx.EVT_CHOICE, self.OnBook)
-        self.chapterctrl = wx.SpinCtrl(self, -1, str(parent.reference[1]),
+        self.chapterctrl = wx.SpinCtrl(self, value=str(parent.reference[1]),
             size=(60, -1), min=1, max=BOOK_LENGTHS[parent.reference[0] - 1])
         self.AddControl(self.chapterctrl)
         self.chapterctrl.Bind(wx.EVT_SPINCTRL, self.OnChapter)
@@ -72,8 +72,8 @@ class MainToolBar(aui.AuiToolBar):
             book, chapter, verse = refalize(reference)
             if chapter > BOOK_LENGTHS[book - 1]:
                 wx.MessageBox(_("The book of %s has only %d chapters.") %
-                    (BOOK_NAMES[book - 1], BOOK_LENGTHS[book - 1], "Berean",
-                    wx.ICON_EXCLAMATION | wx.OK))
+                    (BOOK_NAMES[book - 1], BOOK_LENGTHS[book - 1]), "Berean",
+                    wx.ICON_EXCLAMATION | wx.OK)
                 return
             elif verse > CHAPTER_LENGTHS[book - 1][chapter - 1]:
                 wx.MessageBox(_("%s chapter %d has only %d verses.") %
@@ -138,14 +138,14 @@ class MainToolBar(aui.AuiToolBar):
 
 class ZoomBar(wx.ToolBar):
     def __init__(self, parent, frame):
-        super(ZoomBar, self).__init__(parent, -1,
+        super(ZoomBar, self).__init__(parent,
             style=wx.TB_FLAT | wx.TB_NODIVIDER)
         self._frame = frame
         self.AddLabelTool(wx.ID_ZOOM_OUT, "", frame.get_bitmap("zoom-out"),
             shortHelp=_("Zoom Out (Ctrl+-)"))
         self.EnableTool(wx.ID_ZOOM_OUT, frame.zoom_level > 1)
-        self.slider = wx.Slider(self, -1, frame.zoom_level, 1, 7,
-            size=(100, -1))
+        self.slider = wx.Slider(self, value=frame.zoom_level, minValue=1,
+            maxValue=7, size=(100, -1))
         self.slider.Bind(wx.EVT_SLIDER, self.OnSlider)
         self.AddControl(self.slider)
         self.AddLabelTool(wx.ID_ZOOM_IN, "", frame.get_bitmap("zoom-in"),

@@ -25,9 +25,7 @@ def index_version(version, Bible, indexdir):
                 verse = re.sub(r"[^\w\s'\-]", r"",
                     Bible[b][c][v].replace("--", " "), flags=re.UNICODE)
                 for word in set(verse.split()):  # Remove duplicates
-                    if word not in index:
-                        index[word] = []
-                    index[word].extend([chr(i) for i in (b, c, v)])
+                    index.setdefault(word, []).extend([chr(i) for i in (b, c, v)])
     dialog.Update(66, _("Saving index..."))
     for word in index:
         index[word] = "".join(index[word])
@@ -41,7 +39,7 @@ def index_version(version, Bible, indexdir):
 
 class SearchPane(wx.Panel):
     def __init__(self, parent):
-        super(SearchPane, self).__init__(parent, -1)
+        super(SearchPane, self).__init__(parent)
         self._parent = parent
         self.html = ""
         self.indexes = {}
@@ -64,7 +62,7 @@ class SearchPane(wx.Panel):
             thread.start()
             wx.CallAfter(thread.join)
 
-        self.text = wx.ComboBox(self, -1,
+        self.text = wx.ComboBox(self,
             choices=parent._app.config.ReadList("Search/SearchHistory"),
             style=wx.TE_PROCESS_ENTER)
         self.text.SetValue(parent._app.config.Read("Search/LastSearch"))
@@ -72,10 +70,10 @@ class SearchPane(wx.Panel):
         style = aui.AUI_TB_DEFAULT_STYLE
         if wx.VERSION_STRING >= "2.9.5.0":
             style |= aui.AUI_TB_PLAIN_BACKGROUND
-        self.toolbar = aui.AuiToolBar(self, -1, wx.DefaultPosition,
+        self.toolbar = aui.AuiToolBar(self, wx.ID_ANY, wx.DefaultPosition,
             wx.DefaultSize, style)
-        search_item = self.toolbar.AddTool(-1, "", parent.get_bitmap("search"),
-            _("Search"))
+        search_item = self.toolbar.AddTool(wx.ID_ANY, "",
+            parent.get_bitmap("search"), _("Search"))
         self.toolbar.Bind(wx.EVT_MENU, self.OnSearch, search_item)
         self.toolbar.AddTool(wx.ID_PRINT, "", parent.get_bitmap("print"),
             _("Print Results"))
@@ -88,13 +86,14 @@ class SearchPane(wx.Panel):
             self.results.Bind(wx.EVT_CONTEXT_MENU, self.OnContextMenu)
         else:  # wxHtmlWindow doesn't generate EVT_CONTEXT_MENU in 2.8
             self.results.Bind(wx.EVT_RIGHT_UP, self.OnContextMenu)
-        self.optionspane = wx.CollapsiblePane(self, -1, _("Options"),
+        self.optionspane = wx.CollapsiblePane(self, label=_("Options"),
             style=wx.CP_DEFAULT_STYLE | wx.CP_NO_TLW_RESIZE)
         optionspane = self.optionspane.GetPane()
         for i, label in enumerate((_("All Words in Verse"),
                 _("Case Sensitive"), _("Exact Match Needed"),
                 _("Phrase in Order"), _("Regular Expression"))):
-            setattr(self, self.options[i], wx.CheckBox(optionspane, -1, label))
+            setattr(self, self.options[i],
+                wx.CheckBox(optionspane, label=label))
             getattr(self, self.options[i]).SetValue(
                 parent._app.config.ReadBool("Search/" + self.options[i],
                 i == 0))
@@ -102,7 +101,7 @@ class SearchPane(wx.Panel):
             for option in ("AllWords", "ExactMatch", "Phrase"):
                 getattr(self, option).Disable()
         self.Bind(wx.EVT_CHECKBOX, self.OnCheckbox)
-        self.version = wx.Choice(optionspane, -1, choices=parent.version_list)
+        self.version = wx.Choice(optionspane, choices=parent.version_list)
         tab = parent.notebook.GetSelection()
         self.version.SetSelection(int(tab < len(parent.version_list)) and tab)
         ranges = (_("Entire Bible"), _("Old Testament"),
@@ -112,14 +111,14 @@ class SearchPane(wx.Panel):
             _("Gospels & Acts (Matt - Acts)"), _("Paul's Letters (Rom - Heb)"),
             _("General Letters (Jas - Jude)"), _("Apocalypse (Rev)"),
             _("Just Current Book"), _("Custom..."))
-        self.range_choice = wx.Choice(optionspane, -1, choices=ranges)
+        self.range_choice = wx.Choice(optionspane, choices=ranges)
         self.range_choice.SetSelection(0)
         self.range_choice.Bind(wx.EVT_CHOICE, self.OnRange)
-        self.start = wx.Choice(optionspane, -1, choices=BOOK_NAMES)
+        self.start = wx.Choice(optionspane, choices=BOOK_NAMES)
         self.start.SetSelection(0)
         self.start.Bind(wx.EVT_CHOICE, self.OnStart)
-        self.rangetext = wx.StaticText(optionspane, -1, _("to"))
-        self.stop = wx.Choice(optionspane, -1, choices=BOOK_NAMES)
+        self.rangetext = wx.StaticText(optionspane, label=_("to"))
+        self.stop = wx.Choice(optionspane, choices=BOOK_NAMES)
         self.stop.SetSelection(65)
         self.stop.Bind(wx.EVT_CHOICE, self.OnStop)
         for item in (self.start, self.rangetext, self.stop):
@@ -138,7 +137,7 @@ class SearchPane(wx.Panel):
         sizer3 = wx.BoxSizer(wx.VERTICAL)
         for option in self.options:
             sizer3.Add(getattr(self, option), 1, wx.ALL, 2)
-        box = wx.StaticBox(optionspane, -1, _("Search in"))
+        box = wx.StaticBox(optionspane, label=_("Search in"))
         sizer4 = wx.StaticBoxSizer(box, wx.VERTICAL)
         sizer5 = wx.BoxSizer(wx.HORIZONTAL)
         sizer5.Add(self.version, 0, wx.ALL, 2)
