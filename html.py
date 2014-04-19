@@ -159,7 +159,7 @@ class ChapterWindow(BaseChapterWindow):
 
     def get_html(self, book, chapter, verse=-1):
         if self.Bible[book]:
-            header = "<font size=\"+1\"><b>%s %d</b></font>" % \
+            header = "<font size=\"+2\"><b>%s %d</b></font>" % \
                 (BOOK_NAMES[book - 1], chapter)
             if self.Bible[book][chapter][0]:
                 header += "<br /><i>%s</i>" % self.Bible[book][chapter][0]. \

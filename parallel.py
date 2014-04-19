@@ -33,7 +33,7 @@ class ParallelWindow(BaseChapterWindow):
             if i > 0:
                 selection -= 1
             Bibles.append(self._frame.notebook.GetPage(selection).Bible)
-            title = "<font size=\"+1\"><b>%s %d (%s)</b></font>" % \
+            title = "<font size=\"+2\"><b>%s %d (%s)</b></font>" % \
                 (BOOK_NAMES[book - 1], chapter, version_list[-1])
             if ((not Bibles[-1][book]) or (not Bibles[-1][book][chapter][0])):
                 text.append("<td align=\"center\">%s</td>" % title)

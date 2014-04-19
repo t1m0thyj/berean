@@ -197,6 +197,7 @@ class SearchPane(wx.Panel):
         options = {}
         for option in self.options:
             options[option] = getattr(self, option).GetValue()
+        text = text.replace(u"\u2019", "'")
         flags = re.UNICODE
         if not options["CaseSensitive"]:
             flags |= re.IGNORECASE
