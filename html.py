@@ -54,25 +54,21 @@ class PrintingSystem(html.HtmlEasyPrinting):
         htmlwindow = self._frame.get_htmlwindow()
         text = htmlwindow.get_html(self._frame.reference[0],
             self._frame.reference[1])
-        if self._frame.notebook.GetSelection() < len(self._frame.version_list):
-            pos = text.index("</b>")
-            text = text[:pos] + " (%s)" % htmlwindow.version + text[pos:]
+        tab = self._frame.notebook.GetSelection()
+        if tab < len(self._frame.version_list):
+            index = text.index("</b>")
+            text = text[:index] + " (%s)" % \
+                self._frame.notebook.GetPageText(tab) + text[index:]
         return text
 
     def print_chapter(self):
         if wx.VERSION_STRING >= "2.8.11.0" and wx.VERSION_STRING != "2.9.0.0":
-            self.SetName("%s %d (%s)" %
-                (BOOK_NAMES[self._frame.reference[0] - 1],
-                self._frame.reference[1], self._frame.notebook.GetPageText(
-                self.frame.notebook.GetSelection())))
+            self.SetName(self._frame.GetTitle()[9:])
         self.PrintText(self.get_chapter())
 
     def preview_chapter(self):
         if wx.VERSION_STRING >= "2.8.11.0" and wx.VERSION_STRING != "2.9.0.0":
-            self.SetName("%s %d (%s)" %
-                (BOOK_NAMES[self._frame.reference[0] - 1],
-                self._frame.reference[1], self._frame.notebook.GetPageText(
-                self.frame.notebook.GetSelection())))
+            self.SetName(self._frame.GetTitle()[9:])
         self.PreviewText(self.get_chapter())
 
 
@@ -155,7 +151,6 @@ class ChapterWindow(BaseChapterWindow):
                 exc_value), _("Error"), wx.ICON_WARNING | wx.OK)
         else:
             self.description = VERSION_DESCRIPTIONS[version]
-            self.version = version
 
     def get_html(self, book, chapter, verse=-1):
         if self.Bible[book]:

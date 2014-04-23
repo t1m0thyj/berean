@@ -136,7 +136,7 @@ class SearchPane(wx.Panel):
         sizer.Add(self.results, 1, wx.EXPAND)
         sizer3 = wx.BoxSizer(wx.VERTICAL)
         for option in self.options:
-            sizer3.Add(getattr(self, option), 1, wx.ALL, 2)
+            sizer3.Add(getattr(self, option), 0, wx.ALL, 2)
         box = wx.StaticBox(optionspane, label=_("Search in"))
         sizer4 = wx.StaticBoxSizer(box, wx.VERTICAL)
         sizer5 = wx.BoxSizer(wx.HORIZONTAL)
@@ -144,10 +144,10 @@ class SearchPane(wx.Panel):
         sizer5.Add(self.range_choice, 1, wx.ALL | wx.EXPAND, 2)
         sizer4.Add(sizer5, 1, wx.EXPAND)
         sizer6 = wx.BoxSizer(wx.HORIZONTAL)
-        sizer6.Add(self.start, 1, wx.ALL | wx.EXPAND, 2)
+        sizer6.Add(self.start, 1, wx.ALL, 2)
         sizer6.Add(self.rangetext, 0,
             wx.LEFT | wx.RIGHT | wx.ALIGN_CENTER_VERTICAL, 5)
-        sizer6.Add(self.stop, 1, wx.ALL | wx.EXPAND, 2)
+        sizer6.Add(self.stop, 1, wx.ALL, 2)
         sizer4.Add(sizer6, 1, wx.EXPAND)
         sizer3.Add(sizer4, 0, wx.ALL, 2)
         optionspane.SetSizer(sizer3)
@@ -368,7 +368,7 @@ class SearchPane(wx.Panel):
 
     def OnHtmlLinkClicked(self, event):
         if self._parent.notebook.GetSelection() != self.last_version and \
-                not wx.GetKeyState(wx.WXK_SHIFT):
+                not wx.GetKeyState(wx.WXK_CONTROL):
             self._parent.notebook.SetSelection(self.last_version)
         self._parent.load_chapter(*map(int,
             event.GetLinkInfo().GetHref().split(".")))

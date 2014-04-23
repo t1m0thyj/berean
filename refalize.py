@@ -99,7 +99,7 @@ def refalize(reference):
     if groups[2]:
         return (book, int(groups[1]), int(groups[2]))
     elif groups[1]:
-        if book not in (31, 57, 63, 64, 65):
+        if BOOK_LENGTHS[book - 1] > 1:
             return (book, int(groups[1]), -1)
         else:
             return (book, 1, int(groups[1]))
@@ -130,7 +130,7 @@ def refalize2(references):
             has_verse2 = True
             if start_groups[2]:
                 chapter, verse = int(start_groups[1]), int(start_groups[2])
-            elif book in (31, 57, 63, 64, 65):
+            elif BOOK_LENGTHS[book - 1] == 1:
                 chapter, verse = 1, int(start_groups[1])
             elif (not has_verse) or start_groups[0]:
                 chapter, verse = int(start_groups[1]), 1
@@ -143,7 +143,7 @@ def refalize2(references):
                 stop_groups = stop_pattern.match(stop.lstrip()).groups()
                 if stop_groups[1]:
                     chapter, verse = int(stop_groups[0]), int(stop_groups[1])
-                elif book in (31, 57, 63, 64, 65):
+                elif BOOK_LENGTHS[book - 1] == 1:
                     chapter, verse = 1, int(stop_groups[0])
                 elif not has_verse:
                     chapter = int(stop_groups[0])
