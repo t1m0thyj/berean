@@ -10,103 +10,99 @@
 		</object>
 	<li><object type="text/sitemap">
 			<param name="Name" value="File menu">
-			<param name="Local" value="file-menu.html">
+			<param name="Local" value="menu-file.html">
 		</object>
 	<li><object type="text/sitemap">
 			<param name="Name" value="Print">
-			<param name="Local" value="file-menu.html#Print">
+			<param name="Local" value="menu-file.html#Print">
 		</object>
 	<li><object type="text/sitemap">
 			<param name="Name" value="Page setup">
-			<param name="Local" value="file-menu.html#PageSetup">
+			<param name="Local" value="menu-file.html#PageSetup">
 		</object>
 	<li><object type="text/sitemap">
 			<param name="Name" value="Print preview">
-			<param name="Local" value="file-menu.html#PrintPreview">
+			<param name="Local" value="menu-file.html#PrintPreview">
 		</object>
 	<li><object type="text/sitemap">
 			<param name="Name" value="Edit menu">
-			<param name="Local" value="edit-menu.html">
+			<param name="Local" value="menu-edit.html">
 		</object>
 	<li><object type="text/sitemap">
 			<param name="Name" value="Copy">
-			<param name="Local" value="edit-menu.html#Copy">
-		</object>
-	<li><object type="text/sitemap">
-			<param name="Name" value="Preferences">
-			<param name="Local" value="edit-menu.html#Preferences">
+			<param name="Local" value="menu-edit.html#Copy">
 		</object>
 	<li><object type="text/sitemap">
 			<param name="Name" value="View menu">
-			<param name="Local" value="view-menu.html">
+			<param name="Local" value="menu-view.html">
 		</object>
 	<li><object type="text/sitemap">
 			<param name="Name" value="Go to verse">
-			<param name="Local" value="view-menu.html#GotoVerse">
+			<param name="Local" value="menu-view.html#GotoVerse">
 		</object>
 	<li><object type="text/sitemap">
 			<param name="Name" value="Go back">
-			<param name="Local" value="view-menu.html#GoBack">
+			<param name="Local" value="menu-view.html#GoBack">
 		</object>
 	<li><object type="text/sitemap">
 			<param name="Name" value="Go forward">
-			<param name="Local" value="view-menu.html#GoForward">
+			<param name="Local" value="menu-view.html#GoForward">
 		</object>
 	<li><object type="text/sitemap">
 			<param name="Name" value="Zoom in">
-			<param name="Local" value="view-menu.html#ZoomIn">
+			<param name="Local" value="menu-view.html#ZoomIn">
 		</object>
 	<li><object type="text/sitemap">
 			<param name="Name" value="Zoom out">
-			<param name="Local" value="view-menu.html#ZoomOut">
+			<param name="Local" value="menu-view.html#ZoomOut">
 		</object>
 	<li><object type="text/sitemap">
 			<param name="Name" value="Reset zoom">
-			<param name="Local" value="view-menu.html#ResetZoom">
+			<param name="Local" value="menu-view.html#ResetZoom">
 		</object>
 	<li><object type="text/sitemap">
 			<param name="Name" value="Toolbar">
-			<param name="Local" value="view-menu.html#Toolbar">
+			<param name="Local" value="menu-view.html#Toolbar">
 		</object>
 	<li><object type="text/sitemap">
 			<param name="Name" value="Tree pane">
-			<param name="Local" value="view-menu.html#TreePane">
+			<param name="Local" value="menu-view.html#TreePane">
 		</object>
 	<li><object type="text/sitemap">
 			<param name="Name" value="Search pane">
-			<param name="Local" value="view-menu.html#SearchPane">
+			<param name="Local" value="menu-view.html#SearchPane">
 		</object>
 	<li><object type="text/sitemap">
 			<param name="Name" value="Notes pane">
-			<param name="Local" value="view-menu.html#NotesPane">
+			<param name="Local" value="menu-view.html#NotesPane">
 		</object>
 	<li><object type="text/sitemap">
 			<param name="Name" value="Multi-verse retrieval">
-			<param name="Local" value="view-menu.html#MultiVerseRetrieval">
+			<param name="Local" value="menu-view.html#MultiVerseRetrieval">
 		</object>
 	<li><object type="text/sitemap">
 			<param name="Name" value="Favorites menu">
-			<param name="Local" value="favorites-menu.html">
+			<param name="Local" value="menu-favorites.html">
 		</object>
 	<li><object type="text/sitemap">
 			<param name="Name" value="Add to favorites">
-			<param name="Local" value="favorites-menu.html#AddToFavorites">
+			<param name="Local" value="menu-favorites.html#AddToFavorites">
 		</object>
 	<li><object type="text/sitemap">
 			<param name="Name" value="Manage favorites">
-			<param name="Local" value="favorites-menu.html#ManageFavorites">
+			<param name="Local" value="menu-favorites.html#ManageFavorites">
 		</object>
 	<li><object type="text/sitemap">
 			<param name="Name" value="Favorites">
-			<param name="Local" value="favorites-menu.html#Favorites">
+			<param name="Local" value="menu-favorites.html#Favorites">
 		</object>
 	<li><object type="text/sitemap">
 			<param name="Name" value="View all favorites">
-			<param name="Local" value="favorites-menu.html#ViewAll">
+			<param name="Local" value="menu-favorites.html#ViewAll">
 		</object>
 	<li><object type="text/sitemap">
 			<param name="Name" value="Help menu">
-			<param name="Local" value="help-menu.html">
+			<param name="Local" value="menu-help.html">
 		</object>
 </ul>
 </body>

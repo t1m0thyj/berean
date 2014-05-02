@@ -130,6 +130,9 @@ def refalize2(references):
             has_verse2 = True
             if start_groups[2]:
                 chapter, verse = int(start_groups[1]), int(start_groups[2])
+            elif not start_groups[1]:
+                chapter, verse = 1, 1
+                has_verse2 = False
             elif BOOK_LENGTHS[book - 1] == 1:
                 chapter, verse = 1, int(start_groups[1])
             elif (not has_verse) or start_groups[0]:
@@ -152,8 +155,12 @@ def refalize2(references):
                     chapter, verse = reference[1], int(stop_groups[0])
                 reference.extend([chapter, verse])
             elif not has_verse:
-                reference.extend([chapter,
-                    CHAPTER_LENGTHS[book - 1][chapter - 1]])
+                if start_groups[1]:
+                    reference.extend([chapter,
+                        CHAPTER_LENGTHS[book - 1][chapter - 1]])
+                else:
+                    reference.extend([BOOK_LENGTHS[book - 1],
+                        CHAPTER_LENGTHS[book - 1][-1]])
             else:
                 reference.extend([-1, -1])
             references[i] = reference + [references[i]]
