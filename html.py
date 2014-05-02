@@ -50,26 +50,24 @@ class PrintingSystem(html.HtmlEasyPrinting):
             "@PAGENUM@</font></div>"))
         self.SetStandardFonts(**frame.default_font)
 
-    def get_chapter(self):
-        htmlwindow = self._frame.get_htmlwindow()
-        text = htmlwindow.get_html(self._frame.reference[0],
+    def get_chapter_text(self):
+        text = self._frame.get_htmlwindow().get_html(self._frame.reference[0],
             self._frame.reference[1])
         tab = self._frame.notebook.GetSelection()
         if tab < len(self._frame.version_list):
-            index = text.index("</b>")
-            text = text[:index] + " (%s)" % \
-                self._frame.notebook.GetPageText(tab) + text[index:]
+            text = text.replace("</b>",
+                " (%s)</b>" % self._frame.notebook.GetPageText(tab), 1)
         return text
 
-    def print_chapter(self):
+    def print_(self):
         if wx.VERSION_STRING >= "2.8.11.0" and wx.VERSION_STRING != "2.9.0.0":
             self.SetName(self._frame.GetTitle()[9:])
-        self.PrintText(self.get_chapter())
+        self.PrintText(self.get_chapter_text())
 
-    def preview_chapter(self):
+    def preview(self):
         if wx.VERSION_STRING >= "2.8.11.0" and wx.VERSION_STRING != "2.9.0.0":
             self.SetName(self._frame.GetTitle()[9:])
-        self.PreviewText(self.get_chapter())
+        self.PreviewText(self.get_chapter_text())
 
 
 class BaseHtmlWindow(html.HtmlWindow):
@@ -87,7 +85,7 @@ class BaseHtmlWindow(html.HtmlWindow):
         self.SelectAll()
 
     def OnMiddleDown(self, event):
-        if not self.HasCapture():  # Do nothing if context menu is shown
+        if not self.HasCapture():  # Skip event if context menu is shown
             self.dragscroller.Start(event.GetPosition())
 
     def OnMiddleUp(self, event):
@@ -175,7 +173,7 @@ class ChapterWindow(BaseChapterWindow):
                     replace("[", "</i>")
         else:
             header = ""
-            verses = [_("<font color=gray>%s %d is not in this version." \
+            verses = [_("<font color=\"gray\">%s %d is not in this version." \
                 "</font>") % (BOOK_NAMES[book - 1], chapter)]
         return "<html><body><font size=\"%d\"><div align=center>%s</div>%s" \
             "</font></body></html>" % (self._frame.zoom_level, header,

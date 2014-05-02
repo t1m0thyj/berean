@@ -10,140 +10,132 @@ from refalize import refalize
 _ = wx.GetTranslation
 
 
-def find_favorite(reference, favorites_list):
-    for i in range(len(favorites_list)):
-        if refalize(favorites_list[i]) == reference:
-            return i
-    return -1
-
-
 class MenuBar(wx.MenuBar):
     def __init__(self, frame):
         super(MenuBar, self).__init__()
         self._frame = frame
         self.favorites_list = frame._app.config.ReadList("FavoritesList")
 
-        self.file_menu = wx.Menu()
-        self.file_menu.Append(wx.ID_PRINT, _("&Print...\tCtrl+P"),
+        self.menu_file = wx.Menu()
+        self.menu_file.Append(wx.ID_PRINT, _("&Print...\tCtrl+P"),
             _("Prints the current chapter"))
         frame.Bind(wx.EVT_MENU, self.OnPrint, id=wx.ID_PRINT)
-        self.file_menu.Append(wx.ID_PRINT_SETUP, _("Page &Setup..."),
+        self.menu_file.Append(wx.ID_PRINT_SETUP, _("Page &Setup..."),
             _("Changes page layout settings"))
         frame.Bind(wx.EVT_MENU, self.OnPageSetup, id=wx.ID_PRINT_SETUP)
-        self.file_menu.Append(wx.ID_PREVIEW, _("P&rint Preview..."),
+        self.menu_file.Append(wx.ID_PREVIEW, _("P&rint Preview..."),
             _("Previews the current chapter"))
         frame.Bind(wx.EVT_MENU, self.OnPrintPreview, id=wx.ID_PREVIEW)
         if '__WXMAC__' not in wx.PlatformInfo:
-            self.file_menu.AppendSeparator()
-        self.file_menu.Append(wx.ID_EXIT, _("E&xit\tAlt+F4"),
+            self.menu_file.AppendSeparator()
+        self.menu_file.Append(wx.ID_EXIT, _("E&xit\tAlt+F4"),
             _("Exits the application"))
         frame.Bind(wx.EVT_MENU, frame.OnClose, id=wx.ID_EXIT)
-        self.Append(self.file_menu, _("&File"))
+        self.Append(self.menu_file, _("&File"))
 
-        self.edit_menu = wx.Menu()
-        self.edit_menu.Append(wx.ID_COPY, _("&Copy\tCtrl+C"),
+        self.menu_edit = wx.Menu()
+        self.menu_edit.Append(wx.ID_COPY, _("&Copy\tCtrl+C"),
             _("Copies the selected text to the clipboard"))
         frame.Bind(wx.EVT_MENU, self.OnCopy, id=wx.ID_COPY)
         if '__WXMAC__' not in wx.PlatformInfo:
-            self.edit_menu.AppendSeparator()
-        self.edit_menu.Append(wx.ID_PREFERENCES, _("&Preferences..."),
+            self.menu_edit.AppendSeparator()
+        self.menu_edit.Append(wx.ID_PREFERENCES, _("&Preferences..."),
             _("Configures program settings"))
         frame.Bind(wx.EVT_MENU, self.OnPreferences, id=wx.ID_PREFERENCES)
-        self.Append(self.edit_menu, _("&Edit"))
+        self.Append(self.menu_edit, _("&Edit"))
 
-        self.view_menu = wx.Menu()
-        self.goto_verse_item = self.view_menu.Append(wx.ID_ANY,
+        self.menu_view = wx.Menu()
+        self.goto_verse_item = self.menu_view.Append(wx.ID_ANY,
             _("&Go to Verse"), _("Goes to the specified verse"))
         frame.Bind(wx.EVT_MENU, self.OnGotoVerse, self.goto_verse_item)
-        self.view_menu.Append(wx.ID_BACKWARD, _("Go &Back\tAlt+Left"),
+        self.menu_view.Append(wx.ID_BACKWARD, _("Go &Back\tAlt+Left"),
             _("Goes to the previous chapter"))
         frame.Bind(wx.EVT_MENU, self.OnBack, id=wx.ID_BACKWARD)
-        self.view_menu.Append(wx.ID_FORWARD, _("Go &Forward\tAlt+Right"),
+        self.menu_view.Append(wx.ID_FORWARD, _("Go &Forward\tAlt+Right"),
             _("Goes to the next chapter"))
         frame.Bind(wx.EVT_MENU, self.OnForward, id=wx.ID_FORWARD)
-        self.view_menu.AppendSeparator()
-        self.view_menu.Append(wx.ID_ZOOM_IN, _("Zoom &In\tCtrl++"),
+        self.menu_view.AppendSeparator()
+        self.menu_view.Append(wx.ID_ZOOM_IN, _("Zoom &In\tCtrl++"),
             _("Increases the text size"))
-        self.view_menu.Enable(wx.ID_ZOOM_IN, frame.zoom_level < 7)
+        self.menu_view.Enable(wx.ID_ZOOM_IN, frame.zoom_level < 7)
         frame.Bind(wx.EVT_MENU, self.OnZoomIn, id=wx.ID_ZOOM_IN)
-        self.view_menu.Append(wx.ID_ZOOM_OUT, _("Zoom &Out\tCtrl+-"),
+        self.menu_view.Append(wx.ID_ZOOM_OUT, _("Zoom &Out\tCtrl+-"),
             _("Decreases the text size"))
-        self.view_menu.Enable(wx.ID_ZOOM_OUT, frame.zoom_level > 1)
+        self.menu_view.Enable(wx.ID_ZOOM_OUT, frame.zoom_level > 1)
         frame.Bind(wx.EVT_MENU, self.OnZoomOut, id=wx.ID_ZOOM_OUT)
-        self.view_menu.Append(wx.ID_ZOOM_100, _("Reset Zoom\tCtrl+0"),
+        self.menu_view.Append(wx.ID_ZOOM_100, _("Reset Zoom\tCtrl+0"),
             _("Resets the text size to the default"))
         frame.Bind(wx.EVT_MENU, self.OnZoomDefault, id=wx.ID_ZOOM_100)
-        self.view_menu.AppendSeparator()
-        self.toolbar_item = self.view_menu.AppendCheckItem(wx.ID_ANY,
-            _("&Toolbar"), _("Shows or hides the main toolbar"))
+        self.menu_view.AppendSeparator()
+        self.toolbar_item = self.menu_view.AppendCheckItem(wx.ID_ANY,
+            _("&Toolbar"))
         frame.Bind(wx.EVT_MENU, self.OnToolbar, self.toolbar_item)
-        self.view_menu.AppendSeparator()
-        self.tree_pane_item = self.view_menu.AppendCheckItem(wx.ID_ANY,
-            _("T&ree Pane\tCtrl+Shift+T"), _("Shows or hides the tree pane"))
+        self.menu_view.AppendSeparator()
+        self.tree_pane_item = self.menu_view.AppendCheckItem(wx.ID_ANY,
+            _("T&ree Pane\tCtrl+Shift+T"))
         frame.Bind(wx.EVT_MENU, self.OnTreePane, self.tree_pane_item)
-        self.search_pane_item = self.view_menu.AppendCheckItem(wx.ID_ANY,
-            _("&Search Pane\tCtrl+Shift+S"),
-            _("Shows or hides the search pane"))
+        self.search_pane_item = self.menu_view.AppendCheckItem(wx.ID_ANY,
+            _("&Search Pane\tCtrl+Shift+S"))
         frame.Bind(wx.EVT_MENU, self.OnSearchPane, self.search_pane_item)
-        self.notes_pane_item = self.view_menu.AppendCheckItem(wx.ID_ANY,
-            _("&Notes Pane\tCtrl+Shift+N"), _("Shows or hides the notes pane"))
+        self.notes_pane_item = self.menu_view.AppendCheckItem(wx.ID_ANY,
+            _("&Notes Pane\tCtrl+Shift+N"))
         frame.Bind(wx.EVT_MENU, self.OnNotesPane, self.notes_pane_item)
-        self.multiverse_pane_item = self.view_menu.AppendCheckItem(wx.ID_ANY,
-            _("&Multi-Verse Retrieval\tCtrl+M"),
-            _("Shows or hides the Multi-Verse Retrieval pane"))
+        self.multiverse_pane_item = self.menu_view.AppendCheckItem(wx.ID_ANY,
+            _("&Multi-Verse Retrieval\tCtrl+M"))
         frame.Bind(wx.EVT_MENU, self.OnMultiVersePane,
             self.multiverse_pane_item)
-        self.Append(self.view_menu, _("&View"))
+        self.Append(self.menu_view, _("&View"))
 
-        self.favorites_menu = wx.Menu()
-        self.add_to_favorites_item = self.favorites_menu.Append(wx.ID_ANY,
-            _("&Add to Favorites\tCtrl+D"))
+        self.menu_favorites = wx.Menu()
+        self.add_to_favorites_item = self.menu_favorites.Append(wx.ID_ANY,
+            _("&Add to Favorites\tCtrl+D"),
+            _("Adds the current chapter to your favorites list"))
         frame.Bind(wx.EVT_MENU, self.OnAddToFavorites,
             self.add_to_favorites_item)
-        self.manage_favorites_item = self.favorites_menu.Append(wx.ID_ANY,
+        self.manage_favorites_item = self.menu_favorites.Append(wx.ID_ANY,
             _("&Manage Favorites..."))
         frame.Bind(wx.EVT_MENU, self.OnManageFavorites,
             self.manage_favorites_item)
-        self.favorites_menu.AppendSeparator()
-        self.favorites_menu.AppendSeparator()
-        self.view_all_item = self.favorites_menu.Append(wx.ID_ANY,
+        self.menu_favorites.AppendSeparator()
+        self.menu_favorites.AppendSeparator()
+        self.view_all_item = self.menu_favorites.Append(wx.ID_ANY,
             _("View All"))
         frame.Bind(wx.EVT_MENU, self.OnViewAll, self.view_all_item)
         self.update_favorites()
-        self.Append(self.favorites_menu, _("F&avorites"))
+        self.Append(self.menu_favorites, _("F&avorites"))
 
-        self.help_menu = wx.Menu()
-        self.help_menu.Append(wx.ID_HELP, _("&Contents...\tF1"),
+        self.menu_help = wx.Menu()
+        self.menu_help.Append(wx.ID_HELP, _("&Help...\tF1"),
             _("Shows the contents of the help file"))
         frame.Bind(wx.EVT_MENU, self.OnHelp, id=wx.ID_HELP)
-        self.help_menu.Append(wx.ID_ABOUT, _("&About..."),
+        self.menu_help.Append(wx.ID_ABOUT, _("&About Berean..."),
             _("Displays program information, version number, and copyright"))
         frame.Bind(wx.EVT_MENU, self.OnAbout, id=wx.ID_ABOUT)
-        self.Append(self.help_menu, _("&Help"))
+        self.Append(self.menu_help, _("&Help"))
 
     def update_favorites(self):
-        for i in range(2, self.favorites_menu.GetMenuItemCount() - 3):
-            self.favorites_menu.Remove(wx.ID_HIGHEST + i - 1)
+        for i in range(2, self.menu_favorites.GetMenuItemCount() - 3):
+            self.menu_favorites.Remove(wx.ID_HIGHEST + i - 1)
         if len(self.favorites_list):
             for i in range(len(self.favorites_list)):
-                self.favorites_menu.Insert(i + 3, wx.ID_HIGHEST + i + 1,
+                self.menu_favorites.Insert(i + 3, wx.ID_HIGHEST + i + 1,
                     self.favorites_list[i])
                 self._frame.Bind(wx.EVT_MENU, self.OnFavorite,
                     id=wx.ID_HIGHEST + i + 1)
         else:
-            self.favorites_menu.Insert(3, wx.ID_HIGHEST + 1, _("(Empty)"))
-            self.favorites_menu.Enable(wx.ID_HIGHEST + 1, False)
-        self.favorites_menu.Enable(self.view_all_item.GetId(),
+            self.menu_favorites.Insert(3, wx.ID_HIGHEST + 1, _("(Empty)"))
+            self.menu_favorites.Enable(wx.ID_HIGHEST + 1, False)
+        self.menu_favorites.Enable(self.view_all_item.GetId(),
             len(self.favorites_list))
 
     def OnPrint(self, event):
-        self._frame.printing.print_chapter()
+        self._frame.printing.print_()
 
     def OnPageSetup(self, event):
         self._frame.printing.PageSetup()
 
     def OnPrintPreview(self, event):
-        self._frame.printing.preview_chapter()
+        self._frame.printing.preview()
 
     def OnCopy(self, event):
         window = self._frame.FindFocus()
@@ -241,9 +233,16 @@ class MenuBar(wx.MenuBar):
         info.SetCopyright("Copyright (C) 2011-2014 Timothy Johnson")
         info.SetDescription(
             _("An open source, cross-platform Bible study tool"))
-        info.SetWebSite("http://berean.sf.net")
-        info.SetLicense(LICENSE)
+        ##info.SetWebSite("http://berean.sf.net")
+        info.SetLicense(license)
         wx.AboutBox(info)
+
+
+def find_favorite(reference, favorites_list):
+    for i in range(len(favorites_list)):
+        if refalize(favorites_list[i]) == reference:
+            return i
+    return -1
 
 
 class FavoritesDialog(wx.Dialog):
@@ -292,7 +291,7 @@ class FavoritesDialog(wx.Dialog):
         self.Destroy()
 
 
-LICENSE = """This program is free software: you can redistribute it and/or modify
+license = """This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
@@ -303,5 +302,4 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with this program.  If not, see <http://www.gnu.org/licenses/>.
-"""
+along with this program.  If not, see <http://www.gnu.org/licenses/>."""
