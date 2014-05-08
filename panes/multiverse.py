@@ -44,13 +44,13 @@ class MultiVersePane(wx.Panel):
         self.verse_list.SetAcceleratorTable(wx.AcceleratorTable([
             (wx.ACCEL_CTRL, wx.WXK_RETURN, search_item.GetId()),
             (wx.ACCEL_CTRL, ord("A"), wx.ID_SELECTALL)]))
-        self.verses = BaseHtmlWindow(self.splitter_window, parent)
+        self.htmlwindow = BaseHtmlWindow(self.splitter_window, parent)
         if wx.VERSION_STRING >= "2.9.0.0":
-            self.verses.Bind(wx.EVT_CONTEXT_MENU, self.OnContextMenu)
+            self.htmlwindow.Bind(wx.EVT_CONTEXT_MENU, self.OnContextMenu)
         else:  # wxHtmlWindow doesn't generate EVT_CONTEXT_MENU in 2.8
-            self.verses.Bind(wx.EVT_RIGHT_UP, self.OnContextMenu)
-        self.splitter_window.SplitHorizontally(self.verse_list, self.verses,
-            60)
+            self.htmlwindow.Bind(wx.EVT_RIGHT_UP, self.OnContextMenu)
+        self.splitter_window.SplitHorizontally(self.verse_list,
+            self.htmlwindow, 60)
 
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add(self.toolbar, 0)
@@ -96,11 +96,11 @@ class MultiVersePane(wx.Panel):
                 "<br />".join(failed))
         self.html = "<html><body><font size=\"%d\">%s</font></body>" \
             "</html>" % (self._parent.zoom_level, "".join(results))
-        self.verses.SetPage(self.html)
+        self.htmlwindow.SetPage(self.html)
         self.toolbar.EnableTool(wx.ID_PRINT, True)
         self.toolbar.EnableTool(wx.ID_COPY, True)
         self.toolbar.Refresh(False)
-        wx.CallAfter(self.verses.SetFocus)
+        wx.CallAfter(self.htmlwindow.SetFocus)
 
     def OnPrint(self, event):
         if wx.VERSION_STRING >= "2.8.11.0" and wx.VERSION_STRING != "2.9.0.0":
@@ -111,8 +111,8 @@ class MultiVersePane(wx.Panel):
             self._parent.printing.PreviewText(self.html)
 
     def OnCopy(self, event):
-        self.verses.SelectAll()
-        text = self.verses.SelectionToText()
+        self.htmlwindow.SelectAll()
+        text = self.htmlwindow.SelectionToText()
         data = wx.TextDataObject()
         data.SetText(text)
         if wx.TheClipboard.Open():
@@ -124,7 +124,7 @@ class MultiVersePane(wx.Panel):
         if not len(self.html):
             return
         menu = wx.Menu()
-        if len(self.verses.SelectionToText()):
+        if len(self.htmlwindow.SelectionToText()):
             menu.Append(wx.ID_COPY, _("&Copy"))
         menu.Append(wx.ID_SELECTALL, _("Select &All"))
         menu.AppendSeparator()
@@ -132,4 +132,4 @@ class MultiVersePane(wx.Panel):
         self.Bind(wx.EVT_MENU, self.OnPrint, print_item)
         preview_item = menu.Append(wx.ID_PREVIEW, _("P&rint Preview..."))
         self.Bind(wx.EVT_MENU, self.OnPrint, preview_item)
-        self.verses.PopupMenu(menu)
+        self.htmlwindow.PopupMenu(menu)

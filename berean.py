@@ -22,7 +22,7 @@ import sys
 import wx
 
 import debug
-import parent
+import mainwindow
 
 
 class FileConfig(wx.FileConfig):
@@ -139,12 +139,12 @@ class Berean(wx.App):
         if os.path.isfile(os.path.join(localedir, language, "LC_MESSAGES",
                 "berean.mo")):
             self.locale.AddCatalog(language)
-        self.frame = parent.MainFrame(self)
+        self.frame = mainwindow.MainWindow(self)
         self.SetTopWindow(self.frame)
         if "--systemtray" not in options:
             self.frame.Show()
         else:
-            self.frame.taskbaricon = parent.TaskBarIcon(self.frame)
+            self.frame.taskbaricon = mainwindow.TaskBarIcon(self.frame)
         if show_splash:
             splash.Destroy()
         return True

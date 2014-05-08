@@ -1,4 +1,4 @@
-"""parent.py - parent frame class"""
+"""mainwindow.py - main window and taskbar icon classes"""
 
 import os
 
@@ -6,7 +6,7 @@ import wx
 from wx import aui
 
 import html
-import menu
+import menubar
 import panes
 import parallel
 import toolbar
@@ -15,7 +15,7 @@ from config import *
 _ = wx.GetTranslation
 
 
-class MainFrame(wx.Frame):
+class MainWindow(wx.Frame):
     def __init__(self, app):
         display_size = wx.GetDisplaySize()
         best_size = (int(display_size[0] * 0.8), int(display_size[1] * 0.8))
@@ -27,7 +27,7 @@ class MainFrame(wx.Frame):
                 0 - size[1] < pos[1] < display_size[1]):
             pos, size = wx.DefaultPosition, best_size
         self.rect = wx.RectPS(pos, size)
-        super(MainFrame, self).__init__(None, title="Berean", pos=pos,
+        super(MainWindow, self).__init__(None, title="Berean", pos=pos,
             size=size)
         icons = wx.IconBundle()
         icons.AddIconFromFile(os.path.join(app.cwd, "images", "berean-16.png"),
@@ -57,9 +57,9 @@ class MainFrame(wx.Frame):
 
         self.aui = aui.AuiManager(self, aui.AUI_MGR_DEFAULT |
             aui.AUI_MGR_ALLOW_ACTIVE_PANE)
-        self.menubar = menu.MenuBar(self)
+        self.menubar = menubar.MenuBar(self)
         self.SetMenuBar(self.menubar)
-        self.toolbar = toolbar.MainToolBar(self)
+        self.toolbar = toolbar.ToolBar(self)
         self.aui.AddPane(self.toolbar, aui.AuiPaneInfo().Name("toolbar").
             Caption("Main Toolbar").ToolbarPane().Top())
         self.statusbar = self.CreateStatusBar(3)
@@ -174,7 +174,7 @@ class MainFrame(wx.Frame):
         if chapter != self.reference[1]:
             self.toolbar.chapterctrl.SetValue(chapter)
         self.tree.select_chapter(book, chapter)
-        if self.search.range_choice.GetSelection() == len(panes.search.RANGES):
+        if self.search.range_choice.GetSelection() == len(BOOK_RANGES):
             self.search.start.SetSelection(book - 1)
             self.search.stop.SetSelection(book - 1)
         for i in range(self.notes.GetPageCount()):

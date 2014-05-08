@@ -1,4 +1,4 @@
-"""toolbar.py - main toolbar class"""
+"""toolbar.py - toolbar classes"""
 
 import wx
 from wx import aui
@@ -9,9 +9,9 @@ from refalize import refalize, validate
 _ = wx.GetTranslation
 
 
-class MainToolBar(aui.AuiToolBar):
+class ToolBar(aui.AuiToolBar):
     def __init__(self, parent):
-        super(MainToolBar, self).__init__(parent, wx.ID_ANY,
+        super(ToolBar, self).__init__(parent, wx.ID_ANY,
             wx.DefaultPosition, wx.DefaultSize, aui.AUI_TB_DEFAULT_STYLE |
             aui.AUI_TB_OVERFLOW | aui.AUI_TB_HORZ_TEXT)
         self._parent = parent
@@ -145,7 +145,7 @@ class ZoomBar(wx.ToolBar):
             shortHelp=_("Zoom Out (Ctrl+-)"))
         self.EnableTool(wx.ID_ZOOM_OUT, frame.zoom_level > 1)
         self.slider = wx.Slider(self, value=frame.zoom_level, minValue=1,
-            maxValue=7, size=(100, -1))
+            maxValue=7)
         self.slider.Bind(wx.EVT_SLIDER, self.OnSlider)
         self.AddControl(self.slider)
         self.AddLabelTool(wx.ID_ZOOM_IN, "", frame.get_bitmap("zoom-in"),
