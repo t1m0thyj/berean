@@ -84,7 +84,7 @@ class ErrorDialog(wx.Dialog):
         body = self.textctrl.GetValue()
         if '__WXMAC__' not in wx.PlatformInfo:
             body = urllib2.quote(body)
-        wx.LaunchDefaultBrowser("mailto:berean_bugs@snapunit.com?subject=" \
+        wx.LaunchDefaultBrowser("mailto:berean_bugs@objectmail.com?subject=" \
             "Berean Bug Report&body=%s" % body.replace("'", ""))
 
     def OnShow(self, event):

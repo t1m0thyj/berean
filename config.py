@@ -1,6 +1,6 @@
 """config.py - global variables used throughout Berean"""
 
-VERSION = "0.4.4"
+VERSION = "0.4.5"
 
 VERSION_NAMES = ("ASV", "BBE", "Darby", "DutSVV", "FreSegond", "GerLut1545",
     "JPS", "KJV", "RV", "SpaRV", "SpaSEV", "Tyndale", "WEB", "WEBBE", "WEBME",
@@ -106,6 +106,9 @@ CHAPTER_LENGTHS = ((31, 25, 24, 26, 32, 22, 24, 22, 29, 32, 32, 20, 18, 24, 21,
 FLAG_NAMES = dict(zip(VERSION_NAMES, ("us", "gb", "gb", "nl", "fr", "de", "us",
     "gb", "gb", "es", "es", "gb", "us", "gb", "us", "us", "gb", "gb",
     "scotland")))
+
+BOOK_RANGES = ((1, 66), (1, 39), (1, 5), (6, 17), (18, 22), (23, 27), (28, 39),
+    (40, 66), (40, 44), (45, 58), (59, 65), (66, 66))
 
 FONT_SIZES = map(str, (8, 9, 10, 11, 12, 14, 16, 18, 20, 22, 24, 26, 28, 36,
     48, 72))

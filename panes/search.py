@@ -16,7 +16,7 @@ _ = wx.GetTranslation
 
 
 def index_version(version, Bible, indexdir):
-    dialog = wx.ProgressDialog(_("Indexing %s") % version, "", 70)
+    dialog = wx.ProgressDialog(_("Indexing %s") % version, "", 68)
     index = {}
     for b in range(1, 67):
         dialog.Update(b - 1, _("Processing %s...") % BOOK_NAMES[b - 1])
@@ -25,14 +25,14 @@ def index_version(version, Bible, indexdir):
                 verse = re.sub(r"[^\w\s'\-]", r"",
                     Bible[b][c][v].replace("--", " "), flags=re.UNICODE)
                 for word in set(verse.split()):  # Remove duplicates
-                    index.setdefault(word, []).extend([chr(i) for i in (b, c, v)])
+                    index.setdefault(word, []).extend(
+                        [chr(i) for i in (b, c, v)])
     dialog.Update(66, _("Saving index..."))
     for word in index:
         index[word] = "".join(index[word])
-    dialog.Update(68)
     with open(os.path.join(indexdir, "%s.idx" % version), 'wb') as fileobj:
         cPickle.dump(index, fileobj, -1)
-    dialog.Update(70)
+    dialog.Update(68)
     dialog.Destroy()
     return index
 
@@ -46,7 +46,6 @@ class SearchPane(wx.Panel):
         self.last_version = -1
         self.options = ("AllWords", "CaseSensitive", "ExactMatch", "Phrase",
             "RegularExpression")
-        self.verses = 0
 
         indexdir = os.path.join(parent._app.userdatadir, "indexes")
         if not os.path.isdir(indexdir):
@@ -80,12 +79,13 @@ class SearchPane(wx.Panel):
         self.toolbar.EnableTool(wx.ID_PRINT, False)
         self.toolbar.Bind(wx.EVT_MENU, self.OnPrint, id=wx.ID_PRINT)
         self.toolbar.Realize()
-        self.results = BaseHtmlWindow(self, parent)
-        self.results.Bind(html.EVT_HTML_LINK_CLICKED, self.OnHtmlLinkClicked)
+        self.htmlwindow = BaseHtmlWindow(self, parent)
+        self.htmlwindow.Bind(html.EVT_HTML_LINK_CLICKED,
+            self.OnHtmlLinkClicked)
         if wx.VERSION_STRING >= "2.9.0.0":
-            self.results.Bind(wx.EVT_CONTEXT_MENU, self.OnContextMenu)
+            self.htmlwindow.Bind(wx.EVT_CONTEXT_MENU, self.OnContextMenu)
         else:  # wxHtmlWindow doesn't generate EVT_CONTEXT_MENU in 2.8
-            self.results.Bind(wx.EVT_RIGHT_UP, self.OnContextMenu)
+            self.htmlwindow.Bind(wx.EVT_RIGHT_UP, self.OnContextMenu)
         self.optionspane = wx.CollapsiblePane(self, label=_("Options"),
             style=wx.CP_DEFAULT_STYLE | wx.CP_NO_TLW_RESIZE)
         optionspane = self.optionspane.GetPane()
@@ -104,14 +104,13 @@ class SearchPane(wx.Panel):
         self.version = wx.Choice(optionspane, choices=parent.version_list)
         tab = parent.notebook.GetSelection()
         self.version.SetSelection(int(tab < len(parent.version_list)) and tab)
-        ranges = (_("Entire Bible"), _("Old Testament"),
-            _("Pentateuch (Gen - Deut)"), _("History (Josh - Esth)"),
-            _("Wisdom (Job - Song)"), _("Major Prophets (Isa - Dan)"),
-            _("Minor Prophets (Hos - Mal)"), _("New Testament"),
-            _("Gospels & Acts (Matt - Acts)"), _("Paul's Letters (Rom - Heb)"),
-            _("General Letters (Jas - Jude)"), _("Apocalypse (Rev)"),
-            _("Just Current Book"), _("Custom..."))
-        self.range_choice = wx.Choice(optionspane, choices=ranges)
+        self.range_choice = wx.Choice(optionspane, choices=(_("Entire Bible"),
+            _("Old Testament"), _("Pentateuch (Gen - Deut)"),
+            _("History (Josh - Esth)"), _("Wisdom (Job - Song)"),
+            _("Major Prophets (Isa - Dan)"), _("Minor Prophets (Hos - Mal)"),
+            _("New Testament"), _("Gospels & Acts (Matt - Acts)"),
+            _("Paul's Letters (Rom - Heb)"), _("General Letters (Jas - Jude)"),
+            _("Apocalypse (Rev)"), _("Just Current Book"), _("Custom...")))
         self.range_choice.SetSelection(0)
         self.range_choice.Bind(wx.EVT_CHOICE, self.OnRange)
         self.start = wx.Choice(optionspane, choices=BOOK_NAMES)
@@ -133,7 +132,7 @@ class SearchPane(wx.Panel):
         sizer2.Add(self.text, 1, wx.ALL ^ wx.RIGHT, 2)
         sizer2.Add(self.toolbar, 0, wx.ALIGN_CENTER_VERTICAL)
         sizer.Add(sizer2, 0, wx.EXPAND)
-        sizer.Add(self.results, 1, wx.EXPAND)
+        sizer.Add(self.htmlwindow, 1, wx.EXPAND)
         sizer3 = wx.BoxSizer(wx.VERTICAL)
         for option in self.options:
             sizer3.Add(getattr(self, option), 0, wx.ALL, 2)
@@ -182,7 +181,7 @@ class SearchPane(wx.Panel):
                 results.append(_("<p>No results were found.</p>"))
             self.html = "<html><body><font size=\"%d\">%s</font></body>" \
                 "</html>" % (self._parent.zoom_level, "".join(results))
-            self.results.SetPage(self.html)
+            self.htmlwindow.SetPage(self.html)
         if self.text.FindString(text) == -1:
             self.text.Insert(text, 0)
             if self.text.GetCount() > 10:
@@ -190,8 +189,7 @@ class SearchPane(wx.Panel):
         self.toolbar.EnableTool(wx.ID_PRINT, number > 0)
         self.toolbar.Refresh(False)
         self.last_version = self.version.GetSelection()
-        self.verses = number
-        wx.CallAfter(self.results.SetFocus)
+        wx.CallAfter(self.htmlwindow.SetFocus)
 
     def find_text(self, text):
         options = {}
@@ -353,9 +351,11 @@ class SearchPane(wx.Panel):
         return results
 
     def OnPrint(self, event):
+        index = self.html.index("color=\"gray\">") + 13
         header = _("<div align=\"center\"><font color=\"gray\">\"%s\"<br />" \
-            "occurs in %d verses in the %s.</font></div>") % \
-            (self.text.GetValue(), self.verses,
+            "occurs in %s verses in the %s.</font></div>") % \
+            (self.text.GetValue(),
+            self.html[index:self.html.index(" ", index)],
             self.version.GetString(self.last_version))
         text = self.html[:12] + header + \
             self.html[self.html.index("</font>") + 7:]
@@ -377,7 +377,7 @@ class SearchPane(wx.Panel):
         if not len(self.html):
             return
         menu = wx.Menu()
-        if len(self.results.SelectionToText()):
+        if len(self.htmlwindow.SelectionToText()):
             menu.Append(wx.ID_COPY, _("&Copy"))
         menu.Append(wx.ID_SELECTALL, _("Select &All"))
         menu.AppendSeparator()
@@ -385,7 +385,7 @@ class SearchPane(wx.Panel):
         self.Bind(wx.EVT_MENU, self.OnPrint, print_item)
         preview_item = menu.Append(wx.ID_PREVIEW, _("P&rint Preview..."))
         self.Bind(wx.EVT_MENU, self.OnPrint, preview_item)
-        self.results.PopupMenu(menu)
+        self.htmlwindow.PopupMenu(menu)
 
     def OnCheckbox(self, event):
         checkbox = event.GetEventObject()
@@ -399,10 +399,10 @@ class SearchPane(wx.Panel):
 
     def OnRange(self, event):
         selection = event.GetSelection()
-        if selection < len(RANGES) + 1:
-            if selection < len(RANGES):
-                self.start.SetSelection(RANGES[selection][0] - 1)
-                self.stop.SetSelection(RANGES[selection][1] - 1)
+        if selection < len(BOOK_RANGES) + 1:
+            if selection < len(BOOK_RANGES):
+                self.start.SetSelection(BOOK_RANGES[selection][0] - 1)
+                self.stop.SetSelection(BOOK_RANGES[selection][1] - 1)
             else:
                 self.start.SetSelection(self._parent.reference[0] - 1)
                 self.stop.SetSelection(self._parent.reference[0] - 1)
@@ -425,6 +425,3 @@ class SearchPane(wx.Panel):
 
     def OnCollapsiblePaneChanged(self, event):
         self.Layout()
-
-RANGES = ((1, 66), (1, 39), (1, 5), (6, 17), (18, 22), (23, 27), (28, 39),
-    (40, 66), (40, 44), (45, 58), (59, 65), (66, 66))

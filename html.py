@@ -26,14 +26,18 @@ class HelpSystem(html.HtmlHelpController):
                 "header.hhp")
         self.AddBook(filename)
 
-    def show_help_window(self):
-        self.DisplayContents()
-        self.GetHelpWindow().Bind(html.EVT_HTML_LINK_CLICKED,
-            self.OnHtmlLinkClicked)
+    def show_frame(self):
+        frame = self.GetFrame()
+        if not frame:
+            self.DisplayContents()
+            self.GetHelpWindow().Bind(html.EVT_HTML_LINK_CLICKED,
+                self.OnHtmlLinkClicked)
+        else:
+            frame.Raise()
 
     def OnHtmlLinkClicked(self, event):
         link = event.GetLinkInfo().GetHref()
-        if link.startswith("http://"):
+        if link.startswith("http:") or link.startswith("mailto:"):
             wx.LaunchDefaultBrowser(link)
         else:
             event.Skip()

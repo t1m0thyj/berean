@@ -14,61 +14,60 @@ class TreePane(wx.TreeCtrl):
             wx.TR_FULL_ROW_HIGHLIGHT | wx.TR_HIDE_ROOT)
         self._parent = parent
         root = self.AddRoot("")
-        self.root_nodes = []
+        self.top_level_items = []
         for i in range(66):
-            self.root_nodes.append(self.AppendItem(root, BOOK_NAMES[i]))
+            self.top_level_items.append(self.AppendItem(root, BOOK_NAMES[i]))
             if BOOK_LENGTHS[i] > 1:
-                self.SetItemHasChildren(self.root_nodes[-1], True)
-        self.expand_book(parent.reference[0])
+                self.SetItemHasChildren(self.top_level_items[-1], True)
+        self.add_children(parent.reference[0], True)
         self.Bind(wx.EVT_TREE_ITEM_COLLAPSED, self.OnItemCollapsed)
         self.Bind(wx.EVT_TREE_ITEM_EXPANDING, self.OnItemExpanding)
         self.Bind(wx.EVT_TREE_SEL_CHANGED, self.OnSelChanged)
         self.Bind(wx.EVT_WINDOW_DESTROY, self.OnWindowDestroy)
 
-    def expand_book(self, book):
-        item = self.root_nodes[book - 1]
+    def add_children(self, book, expand=False):
+        item = self.top_level_items[book - 1]
         if (not self.GetChildrenCount(item)) and BOOK_LENGTHS[book - 1] > 1:
             for i in range(BOOK_LENGTHS[book - 1]):
                 self.AppendItem(item, str(i + 1))
-            self.Expand(item)
+            if expand:
+                self.Expand(item)
 
     def OnItemCollapsed(self, event):
         self.DeleteChildren(event.GetItem())
 
     def OnItemExpanding(self, event):
-        item = event.GetItem()
-        if not self.GetChildrenCount(item):
-            self.expand_book(BOOK_NAMES.index(self.GetItemText(item)) + 1)
+        self.add_children(self.top_level_items.index(event.GetItem()) + 1)
 
     def OnSelChanged(self, event):
         item = event.GetItem()
         if self.ItemHasChildren(item):
-            self.expand_book(BOOK_NAMES.index(self.GetItemText(item)) + 1)
+            self.add_children(self.top_level_items.index(event.GetItem()) + 1,
+                True)
         else:
             parent = self.GetItemParent(item)
             if parent != self.GetRootItem():
-                book = BOOK_NAMES.index(self.GetItemText(parent)) + 1
+                book = self.top_level_items.index(parent) + 1
                 chapter = int(self.GetItemText(item))
             else:
-                book = BOOK_NAMES.index(self.GetItemText(item)) + 1
+                book = self.top_level_items.index(event.GetItem()) + 1
                 chapter = 1
             for i in range(66):
-                if i + 1 != book and self.IsExpanded(self.root_nodes[i]):
-                    self.CollapseAndReset(self.root_nodes[i])
+                if self.IsExpanded(self.top_level_items[i]) and i + 1 != book:
+                    self.Collapse(self.top_level_items[i])
             if not self.IsFrozen():
                 self._parent.load_chapter(book, chapter)
 
     def OnWindowDestroy(self, event):
-        # Eliminate flicker when items are deleted
-        self.Unbind(wx.EVT_TREE_SEL_CHANGED)
+        self.Unbind(wx.EVT_TREE_SEL_CHANGED)  # Eliminate flicker
         event.Skip()
 
     def select_chapter(self, book, chapter):
         self.Freeze()
         if book != self._parent.reference[0]:
-            self.expand_book(book)
+            self.add_children(book, True)
         if BOOK_LENGTHS[book - 1] > 1:
-            item = self.root_nodes[book - 1]
+            item = self.top_level_items[book - 1]
             child, cookie = self.GetFirstChild(item)
             i = 1
             while i < chapter:
@@ -77,6 +76,6 @@ class TreePane(wx.TreeCtrl):
             self.SelectItem(child)
             self.ScrollTo(child)
         else:
-            self.SelectItem(self.root_nodes[book - 1])
-            self.ScrollTo(self.root_nodes[book - 1])
+            self.SelectItem(self.top_level_items[book - 1])
+            self.ScrollTo(self.top_level_items[book - 1])
         self.Thaw()

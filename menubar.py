@@ -1,4 +1,4 @@
-"""menu.py - menubar and favorites dialog class"""
+"""menubar.py - menubar and favorites dialog classes"""
 
 import wx
 from wx import gizmos
@@ -224,7 +224,7 @@ class MenuBar(wx.MenuBar):
         self._frame.multiverse.OnSearch(None)
 
     def OnHelp(self, event):
-        self._frame.help.show_help_window()
+        self._frame.help.show_frame()
 
     def OnAbout(self, event):
         info = wx.AboutDialogInfo()

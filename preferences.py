@@ -73,8 +73,8 @@ class PreferencesDialog(wx.Dialog):
         if default_font != self._parent.default_font:
             for i in range(self._parent.notebook.GetPageCount()):
                 self._parent.get_htmlwindow(i).SetStandardFonts(**default_font)
-            for htmlwindow in (self._parent.search.results,
-                    self._parent.multiverse.verses, self._parent.printing):
+            for htmlwindow in (self._parent.search.htmlwindow,
+                    self._parent.multiverse.htmlwindow, self._parent.printing):
                 htmlwindow.SetStandardFonts(**default_font)
             for i in range(self._parent.notes.GetPageCount()):
                 page = self._parent.notes.GetPage(i)
