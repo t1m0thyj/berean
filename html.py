@@ -55,8 +55,8 @@ class PrintingSystem(html.HtmlEasyPrinting):
         self.SetStandardFonts(**frame.default_font)
 
     def get_chapter_text(self):
-        text = self._frame.get_htmlwindow().get_html(self._frame.reference[0],
-            self._frame.reference[1])
+        text = self._frame.get_htmlwindow().get_html(
+            *self._frame.reference[:2])
         tab = self._frame.notebook.GetSelection()
         if tab < len(self._frame.version_list):
             text = text.replace("</b>",
@@ -148,7 +148,7 @@ class ChapterWindow(BaseChapterWindow):
         try:
             with open(filename, 'rb') as Bible:
                 self.Bible = cPickle.load(Bible)
-        except Exception, exc_value:
+        except Exception as exc_value:
             wx.MessageBox(_("Could not load %s.\n\nError: %s") % (version,
                 exc_value), _("Error"), wx.ICON_WARNING | wx.OK)
         else:

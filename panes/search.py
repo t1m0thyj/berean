@@ -4,6 +4,7 @@ import cPickle
 import os
 import re
 import threading
+import time
 
 import wx
 from wx import aui, html
@@ -171,12 +172,12 @@ class SearchPane(wx.Panel):
             self._parent.toolbar.OnGotoVerse(None)
             return
         with wx.BusyCursor():
-            msec = wx.GetLocalTimeMillis()
+            sec = time.time()
             results, number = self.find_text(text)
-            version_abbrev = self.version.GetStringSelection()
-            msec = max(1, wx.GetLocalTimeMillis() - msec)
             results.insert(0, _("<font color=\"gray\">%d verses in the %s " \
-                "(%d&nbsp;msec)</font>") % (number, version_abbrev, msec))
+                "(%d&nbsp;msec)</font>") % (number,
+                self.version.GetStringSelection(),
+                max(1, (time.time() - sec) * 1000)))
             if number == 0:
                 results.append(_("<p>No results were found.</p>"))
             self.html = "<html><body><font size=\"%d\">%s</font></body>" \
@@ -278,11 +279,11 @@ class SearchPane(wx.Panel):
                 cases.append(word.title())
             for case in cases:
                 if case in index:
-                    matches.extend([tuple(bytearray(index[case][i:i + 3]
-                        )) for i in range(0, len(index[case]), 3)])
+                    matches.extend([tuple(bytearray(index[case][i:i + 3])) for
+                        i in range(0, len(index[case]), 3)])
         elif word in index:
-            matches.extend([tuple(bytearray(index[word][i:i + 3])) for \
-                i in range(0, len(index[word]), 3)])
+            matches.extend([tuple(bytearray(index[word][i:i + 3])) for i in
+                range(0, len(index[word]), 3)])
         if not (recursive or options["ExactMatch"] or options["Phrase"]):
             if not options["CaseSensitive"]:
                 lower = word.lower()
