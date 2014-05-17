@@ -169,7 +169,7 @@ class SearchPane(wx.Panel):
         elif validate(text, False):
             self._parent.toolbar.verse_entry.SetValue(text)
             self.text.SetValue(self.text.GetString(0))
-            self._parent.toolbar.OnGotoVerse(None)
+            self._parent.toolbar.OnGoToVerse(None)
             return
         with wx.BusyCursor():
             sec = time.time()
@@ -190,7 +190,7 @@ class SearchPane(wx.Panel):
         self.toolbar.EnableTool(wx.ID_PRINT, number > 0)
         self.toolbar.Refresh(False)
         self.last_version = self.version.GetSelection()
-        wx.CallAfter(self.htmlwindow.SetFocus)
+        self.htmlwindow.SetFocus()
 
     def find_text(self, text):
         options = {}
@@ -206,7 +206,7 @@ class SearchPane(wx.Panel):
         if not options["RegularExpression"]:
             matches, pattern = self.get_matches(re.escape(text), Bible,
                 options, flags)
-            matches = filter(lambda item: start <= item[0] <= stop, matches)
+            matches = [item for item in matches if start <= item[0] <= stop]
             if len(matches):
                 matches.sort()
                 last = matches[-1]
@@ -241,8 +241,8 @@ class SearchPane(wx.Panel):
             if options["Phrase"]:
                 pattern = re.compile(r"\[?\b%s\b\]?" % r"\W+".join(words),
                     flags)
-                matches = filter(lambda item:
-                    pattern.search(Bible[item[0]][item[1]][item[2]]), matches)
+                matches = [item for item in matches if
+                    pattern.search(Bible[item[0]][item[1]][item[2]])]
             elif options["AllWords"]:
                 words.remove(longest)
                 if options["ExactMatch"]:
@@ -250,9 +250,8 @@ class SearchPane(wx.Panel):
                     longest = r"\b%s\b" % longest
                 for word in words:
                     pattern = re.compile(word, flags)
-                    matches = filter(lambda item:
-                        pattern.search(Bible[item[0]][item[1]][item[2]]),
-                        matches)
+                    matches = [item for item in matches if
+                        pattern.search(Bible[item[0]][item[1]][item[2]])]
                 words.insert(0, longest)
                 pattern = re.compile("(%s)" % "|".join(words), flags)
         else:
@@ -264,8 +263,8 @@ class SearchPane(wx.Panel):
             if options["ExactMatch"]:
                 pattern = re.compile("(%s)" %
                     "|".join([r"\b%s\b" % word for word in words]), flags)
-                matches = filter(lambda item:
-                    pattern.search(Bible[item[0]][item[1]][item[2]]), matches)
+                matches = [item for item in matches if
+                    pattern.search(Bible[item[0]][item[1]][item[2]])]
             else:
                 pattern = re.compile("(%s)" % "|".join(words), flags)
         return (matches, pattern)

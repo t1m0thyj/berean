@@ -45,9 +45,9 @@ class MenuBar(wx.MenuBar):
         self.Append(self.menu_edit, _("&Edit"))
 
         self.menu_view = wx.Menu()
-        self.goto_verse_item = self.menu_view.Append(wx.ID_ANY,
+        self.go_to_verse_item = self.menu_view.Append(wx.ID_ANY,
             _("&Go to Verse"), _("Goes to the specified verse"))
-        frame.Bind(wx.EVT_MENU, self.OnGotoVerse, self.goto_verse_item)
+        frame.Bind(wx.EVT_MENU, self.OnGoToVerse, self.go_to_verse_item)
         self.menu_view.Append(wx.ID_BACKWARD, _("Go &Back\tAlt+Left"),
             _("Goes to the previous chapter"))
         frame.Bind(wx.EVT_MENU, self.OnBack, id=wx.ID_BACKWARD)
@@ -153,8 +153,8 @@ class MenuBar(wx.MenuBar):
         dialog = preferences.PreferencesDialog(self._frame)
         dialog.Show()
 
-    def OnGotoVerse(self, event):
-        self._frame.toolbar.OnGotoVerse(None)
+    def OnGoToVerse(self, event):
+        self._frame.toolbar.OnGoToVerse(None)
 
     def OnBack(self, event):
         book, chapter, verse = refalize(
@@ -282,8 +282,6 @@ class FavoritesDialog(wx.Dialog):
                 wx.MessageBox(_("%s is already in the favorites list.") % name,
                     _("Manage Favorites"), wx.ICON_EXCLAMATION | wx.OK)
                 event.Veto()
-            else:
-                event.Skip()
 
     def OnOk(self, event):
         self._parent.menubar.favorites_list = self.listbox.GetStrings()

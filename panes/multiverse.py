@@ -15,9 +15,8 @@ class MultiVersePane(wx.Panel):
         super(MultiVersePane, self).__init__(parent)
         self._parent = parent
         self.html = ""
-
         self.toolbar = aui.AuiToolBar(self, wx.ID_ANY, wx.DefaultPosition,
-            wx.DefaultSize, aui.AUI_TB_DEFAULT_STYLE | aui.AUI_TB_OVERFLOW | \
+            wx.DefaultSize, aui.AUI_TB_DEFAULT_STYLE | aui.AUI_TB_OVERFLOW |
             aui.AUI_TB_HORZ_TEXT)
         self.toolbar.AddLabel(-1, _("Version:"))
         self.version = wx.Choice(self.toolbar, choices=parent.version_list)
@@ -37,24 +36,24 @@ class MultiVersePane(wx.Panel):
         self.toolbar.EnableTool(wx.ID_COPY, False)
         self.Bind(wx.EVT_MENU, self.OnCopy, id=wx.ID_COPY)
         self.toolbar.Realize()
-        self.splitter_window = wx.SplitterWindow(self)
-        self.verse_list = wx.TextCtrl(self.splitter_window,
-            value=parent._app.config.Read("Search/LastMultiVerseRetrieval"),
+        self.splitter = wx.SplitterWindow(self)
+        self.splitter.SetMinimumPaneSize(60)
+        self.verse_list = wx.TextCtrl(self.splitter,
+            value=parent._app.config.Read("MultiVerse/LastVerseList"),
             style=wx.TE_MULTILINE)
         self.verse_list.SetAcceleratorTable(wx.AcceleratorTable([
             (wx.ACCEL_CTRL, wx.WXK_RETURN, search_item.GetId()),
             (wx.ACCEL_CTRL, ord("A"), wx.ID_SELECTALL)]))
-        self.htmlwindow = BaseHtmlWindow(self.splitter_window, parent)
+        self.htmlwindow = BaseHtmlWindow(self.splitter, parent)
         if wx.VERSION_STRING >= "2.9.0.0":
             self.htmlwindow.Bind(wx.EVT_CONTEXT_MENU, self.OnContextMenu)
         else:  # wxHtmlWindow doesn't generate EVT_CONTEXT_MENU in 2.8
             self.htmlwindow.Bind(wx.EVT_RIGHT_UP, self.OnContextMenu)
-        self.splitter_window.SplitHorizontally(self.verse_list,
-            self.htmlwindow, 60)
-
+        self.splitter.SplitHorizontally(self.verse_list, self.htmlwindow,
+            parent._app.config.ReadInt("MultiVerse/SplitterPosition", 60))
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add(self.toolbar, 0)
-        sizer.Add(self.splitter_window, 1, wx.ALL | wx.EXPAND, 0)
+        sizer.Add(self.splitter, 1, wx.ALL | wx.EXPAND, 0)
         self.SetSizer(sizer)
 
     def OnSearch(self, event):
@@ -97,10 +96,10 @@ class MultiVersePane(wx.Panel):
         self.html = "<html><body><font size=\"%d\">%s</font></body>" \
             "</html>" % (self._parent.zoom_level, "".join(results))
         self.htmlwindow.SetPage(self.html)
+        wx.CallAfter(self.htmlwindow.SetFocus)
         self.toolbar.EnableTool(wx.ID_PRINT, True)
         self.toolbar.EnableTool(wx.ID_COPY, True)
         self.toolbar.Refresh(False)
-        wx.CallAfter(self.htmlwindow.SetFocus)
 
     def OnPrint(self, event):
         if wx.VERSION_STRING >= "2.8.11.0" and wx.VERSION_STRING != "2.9.0.0":

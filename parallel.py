@@ -79,7 +79,7 @@ class ParallelWindow(BaseChapterWindow):
             self.current_verse = -1
             wx.CallAfter(self.ScrollToAnchor, str(verse))
         self.reference = (book, chapter, verse)
-        wx.CallAfter(self.SetFocus)  # Keep the first choice from scrolling
+        self.SetFocus()  # Keep the first choice from scrolling accidentally
 
 
 class ChoiceDropTarget(wx.DropTarget):
@@ -157,7 +157,7 @@ class ParallelPanel(wx.Panel):
         elif index < len(self.choices) - 1:
             self.choices[index + 1].Enable()
         self.htmlwindow.load_chapter(*self._frame.reference)
-        wx.CallAfter(self.htmlwindow.SetFocus)
+        self.htmlwindow.SetFocus()
 
     def OnChoiceMiddleUp(self, event):
         index = self.choices.index(event.GetEventObject())
@@ -173,7 +173,7 @@ class ParallelPanel(wx.Panel):
             source = wx.DropSource(self)
             source.SetData(self.choice_data)
             source.DoDragDrop(wx.Drag_DefaultMove)
-            wx.CallAfter(self.htmlwindow.SetFocus)
+            self.htmlwindow.SetFocus()
 
     def OnChoice(self, event):
         self.select(self.choices.index(event.GetEventObject()),

@@ -83,12 +83,15 @@ class FileConfig(wx.FileConfig):
         for option in self._app.frame.search.options:
             self.WriteBool(option,
                 getattr(self._app.frame.search, option).GetValue())
-        self.Write("LastMultiVerseRetrieval",
-            self._app.frame.multiverse.verse_list.GetValue())
         self.SetPath("/Notes")
-        self.WriteInt("ActiveNotesTab", self._app.frame.notes.GetSelection())
-        ##self.WriteList("TopicList",
-        ##    self._app.frame.notes.GetPage(1).selector.topic_list)
+        self.WriteInt("ActiveTab", self._app.frame.notes.GetSelection())
+        ##self.Write("CurrentReference", self._app.frame.notes.GetPage(0).db_key)
+        ##self.Write("CurrentTopic", self._app.frame.notes.GetPage(1).db_key)
+        self.SetPath("/MultiVerse")
+        self.Write("LastVerseList",
+            self._app.frame.multiverse.verse_list.GetValue())
+        self.WriteInt("SplitterPosition",
+            self._app.frame.multiverse.splitter.GetSashPosition())
         self.Flush()
 
     def WriteList(self, key, value):

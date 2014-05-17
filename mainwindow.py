@@ -45,8 +45,8 @@ class MainWindow(wx.Frame):
         self.default_font = {"size": app.config.ReadInt("Main/HtmlFontSize",
             12), "normal_face": app.config.Read("Main/HtmlFontFace",
             wx.FFont(-1, wx.ROMAN).GetFaceName())}
-        self.facenames = sorted(filter(lambda facename:
-            not facename.startswith("@"), wx.FontEnumerator.GetFacenames()))
+        self.facenames = sorted([facename for facename in
+            wx.FontEnumerator.GetFacenames() if not facename.startswith("@")])
         self.zoom_level = app.config.ReadInt("Main/ZoomLevel", 3)
         self.minimize_to_tray = app.config.ReadBool("Main/MinimizeToTray")
         self.version_list = app.config.ReadList("VersionList", ["KJV"])
@@ -61,7 +61,7 @@ class MainWindow(wx.Frame):
         self.SetMenuBar(self.menubar)
         self.toolbar = toolbar.ToolBar(self)
         self.aui.AddPane(self.toolbar, aui.AuiPaneInfo().Name("toolbar").
-            Caption("Main Toolbar").ToolbarPane().Top())
+            Caption("Toolbar").ToolbarPane().Top())
         self.statusbar = self.CreateStatusBar(3)
         self.zoombar = toolbar.ZoomBar(self.statusbar, self)
         if wx.VERSION_STRING >= "2.9.0.0":
@@ -104,19 +104,19 @@ class MainWindow(wx.Frame):
 
         self.tree = panes.TreePane(self)
         self.aui.AddPane(self.tree, aui.AuiPaneInfo().Name("tree_pane").
-            Caption(_("Tree")).Left().Layer(1).BestSize((150, -1)))
+            Caption(_("Tree")).BestSize((150, -1)).Left().Layer(1))
         self.search = panes.SearchPane(self)
         self.aui.AddPane(self.search, aui.AuiPaneInfo().Name("search_pane").
-            Caption(_("Search")).MaximizeButton(True).Right().Layer(1).
-            BestSize((300, -1)))
+            Caption(_("Search")).BestSize((300, -1)).Right().Layer(1).
+            MaximizeButton(True))
         self.notes = panes.NotesPane(self)
         self.aui.AddPane(self.notes, aui.AuiPaneInfo().Name("notes_pane").
-            Caption(_("Notes")).MaximizeButton(True).Bottom().Layer(0).
-            BestSize((-1, 220)))
+            Caption(_("Notes")).BestSize((-1, 270)).Bottom().
+            MaximizeButton(True))
         self.multiverse = panes.MultiVersePane(self)
         self.aui.AddPane(self.multiverse, aui.AuiPaneInfo().
             Name("multiverse_pane").Caption(_("Multi-Verse Retrieval")).
-            MaximizeButton(True).Float().BestSize((600, 440)).Hide())
+            BestSize((600, 440)).Float().Hide().MaximizeButton(True))
 
         filename = os.path.join(app.userdatadir, "layout.dat")
         if os.path.isfile(filename):
@@ -149,6 +149,7 @@ class MainWindow(wx.Frame):
     def load_chapter(self, book, chapter, verse=-1, edit_history=True):
         htmlwindow = self.get_htmlwindow()
         htmlwindow.load_chapter(book, chapter, verse)
+        wx.CallAfter(htmlwindow.SetFocus)
         tab = self.notebook.GetSelection()
         self.SetTitle("Berean - %s %d (%s)" % (BOOK_NAMES[book - 1], chapter,
             self.notebook.GetPageText(tab)))
@@ -177,9 +178,10 @@ class MainWindow(wx.Frame):
         if self.search.range_choice.GetSelection() == len(BOOK_RANGES):
             self.search.start.SetSelection(book - 1)
             self.search.stop.SetSelection(book - 1)
-        page = self.notes.GetCurrentPage()
-        page.save_text()
-        page.load_text(book, chapter)
+        if self.notes.GetSelection() == 0:
+            page = self.notes.GetPage(0)
+            page.save_text()
+            page.load_text("%d.%d" % (book, chapter))
         self.statusbar.SetStatusText("%s %d" % (BOOK_NAMES[book - 1], chapter),
             0)
         self.statusbar.SetStatusText(htmlwindow.description, 1)
@@ -190,7 +192,6 @@ class MainWindow(wx.Frame):
         for i in range(self.notebook.GetPageCount()):
             if i != tab:
                 self.get_htmlwindow(i).current_verse = verse
-        wx.CallAfter(htmlwindow.SetFocus)
 
     def set_zoom(self, zoom):
         self.zoom_level = zoom
