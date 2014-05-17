@@ -20,10 +20,10 @@ class ToolBar(aui.AuiToolBar):
             size=(150, -1), style=wx.TE_PROCESS_ENTER)
         self.verse_entry.SetValue(
             parent._app.config.Read("Main/LastVerse", "Genesis 1"))
-        self.verse_entry.Bind(wx.EVT_TEXT_ENTER, self.OnGotoVerse)
+        self.verse_entry.Bind(wx.EVT_TEXT_ENTER, self.OnGoToVerse)
         self.AddControl(self.verse_entry)
-        self.AddTool(parent.menubar.goto_verse_item.GetId(), "",
-            parent.get_bitmap("goto-verse"), _("Go to Verse"))
+        self.AddTool(parent.menubar.go_to_verse_item.GetId(), "",
+            parent.get_bitmap("go-to-verse"), _("Go to Verse"))
         self.AddSeparator()
         self.AddTool(wx.ID_BACKWARD, _("Back"), parent.get_bitmap("go-back"),
             _("Go Back (Alt+Left)"))
@@ -52,12 +52,13 @@ class ToolBar(aui.AuiToolBar):
             _("Copy (Ctrl+C)"))
         self.AddSeparator()
         self.AddTool(parent.menubar.add_to_favorites_item.GetId(), "",
-            parent.get_bitmap("add-favorite"), _("Add to Favorites (Ctrl+D)"))
+            parent.get_bitmap("add-to-favorites"),
+            _("Add to Favorites (Ctrl+D)"))
         self.AddTool(parent.menubar.manage_favorites_item.GetId(), "",
             parent.get_bitmap("manage-favorites"), _("Manage Favorites"))
         self.Realize()
 
-    def OnGotoVerse(self, event):
+    def OnGoToVerse(self, event):
         reference = self.verse_entry.GetValue()
         if not len(reference):
             return

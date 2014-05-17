@@ -5,95 +5,52 @@ import cStringIO
 import os.path
 
 import wx
-from wx import aui, richtext
+from wx import aui, gizmos, richtext
 
 from config import *
 
 _ = wx.GetTranslation
 
 
-class BookChapterVerseSelector(aui.AuiToolBar):
-    def __init__(self, parent, reference):
-        super(BookChapterVerseSelector, self).__init__(parent, wx.ID_ANY,
-            wx.DefaultPosition, wx.DefaultSize,
-            aui.AUI_TB_DEFAULT_STYLE | aui.AUI_TB_OVERFLOW)
-        self._parent = parent
-        self.book = wx.Choice(self, choices=BOOK_NAMES)
-        self.AddControl(self.book)
-        self.chapter = wx.Choice(self, size=(60, -1))
-        self.AddControl(self.chapter)
-        self.verse = wx.Choice(self, size=(60, -1))
-        self.AddControl(self.verse)
-        self.Bind(wx.EVT_CHOICE, self.OnChoice)
-        self.AddTool(wx.ID_DELETE, "", parent._frame.get_bitmap("delete"),
-            _("Delete"))
-        self.Bind(wx.EVT_MENU, self.OnDelete, id=wx.ID_DELETE)
-        self.Realize()
-
-    def set_reference(self, book, chapter, verse=-1, update_choices=True):
-        if update_choices:
-            self.book.SetSelection(book - 1)
-            self.chapter.SetItems(
-                map(str, range(1, BOOK_LENGTHS[book - 1] + 1)))
-            self.chapter.SetSelection(chapter - 1)
-            self.verse.SetItems(["--"] +
-                map(str, range(1, CHAPTER_LENGTHS[book - 1][chapter - 1] + 1)))
-            self.verse.SetSelection(max(0, verse))
-        self.EnableTool(wx.ID_DELETE,
-            self._parent.db_key in self._parent.notes_db)
-        self.Refresh(False)
-
-    def get_reference(self):
-        verse = self.verse.GetSelection()
-        return (self.book.GetSelection() + 1, self.chapter.GetSelection() + 1,
-            verse if verse == 0 else -1)
-
-    def OnChoice(self, event):
-        verse = self.verse.GetSelection()
-        if verse == 0:
-            verse = -1
-        self._parent.load_text(self.book.GetSelection() + 1,
-            self.chapter.GetSelection() + 1, verse)
-
-    def OnDelete(self, event):
-        delete = wx.MessageBox(_("Are you sure you want to delete your " \
-            "notes on this passage?"), _("Berean"),
-            wx.ICON_QUESTION | wx.YES_NO)
-        if delete == wx.YES:
-            if self._parent.db_key in self._parent.notes_db:
-                del self._parent.notes_db[self._parent.db_key]
-            self._parent.editor.Clear()
-            self.EnableTool(wx.ID_DELETE, False)
-            self.Refresh(False)
-
-
-class TopicSelector(aui.AuiToolBar):
+class BaseSelector(gizmos.EditableListBox):
     def __init__(self, parent):
-        super(TopicSelector, self).__init__(parent, wx.ID_ANY,
-            wx.DefaultPosition, wx.DefaultSize,
-            aui.AUI_TB_DEFAULT_STYLE | aui.AUI_TB_OVERFLOW)
-        self._parent = parent
-        self.topic_list = parent._frame._app.config.ReadList("Notes/TopicList")
-        self.topic = wx.Choice(self, choices=self.topic_list)
-        self.AddControl(self.topic)
-        self.AddTool(wx.ID_NEW, "", parent._frame.get_bitmap("new"), _("New"))
-        self.AddTool(wx.ID_ANY, "", parent._frame.get_bitmap("rename"),
-            _("Rename"))
-        self.AddTool(wx.ID_DELETE, "", parent._frame.get_bitmap("delete"),
-            _("Delete"))
-        self.Realize()
+        super(BaseSelector, self).__init__(parent, label=_("Notes"),
+            style=gizmos.EL_DEFAULT_STYLE | gizmos.EL_NO_REORDER)
+        self._grandparent = parent.GetParent()
+        self.searchctrl = wx.SearchCtrl(self)
+        self.searchctrl.Bind(wx.EVT_TEXT, self.OnSearchCtrlText)
+        for child in self.GetChildren():
+            if isinstance(child, wx.ListCtrl):
+                self.listctrl = child
+                break
+        self.SetStrings(
+            sorted(self._grandparent.notes_db.keys(), key=str.lower))
+        self.GetSizer().Insert(1, self.searchctrl, 0,
+            (wx.ALL ^ wx.TOP) | wx.EXPAND, 1)
+
+    def OnSearchCtrlText(self, event):
+        self.searchctrl.ShowCancelButton(not self.searchctrl.IsEmpty())
+
+
+class ReferenceSelector(BaseSelector):
+    def __init__(self, parent):
+        super(ReferenceSelector, self).__init__(parent)
+
+
+class TopicSelector(BaseSelector):
+    def __init__(self, parent):
+        super(TopicSelector, self).__init__(parent)
 
 
 class NotesPage(wx.Panel):
-    def __init__(self, parent, name):
+    def __init__(self, parent, tab):
         super(NotesPage, self).__init__(parent)
+        self._parent = parent
         self._frame = parent.GetParent()
         self.db_key = "%d.%d" % self._frame.reference[:2]
-        self.name = name
-        self.notes_db = anydbm.open(
-            os.path.join(self._frame._app.userdatadir, "%s.db" % name), 'c')
+        self.notes_db = anydbm.open(os.path.join(self._frame._app.userdatadir,
+            "%s.db" % NotesPane.names[tab]), 'c')
 
-        self.selector = BookChapterVerseSelector(self, self._frame.reference)
         self.toolbar = aui.AuiToolBar(self, wx.ID_ANY, wx.DefaultPosition,
             wx.DefaultSize, aui.AUI_TB_DEFAULT_STYLE | aui.AUI_TB_OVERFLOW)
         self.toolbar.AddTool(wx.ID_SAVE, "", self._frame.get_bitmap("save"),
@@ -179,7 +136,13 @@ class NotesPage(wx.Panel):
         self.Bind(wx.EVT_MENU, self.OnFontColor, id=ID_FONT_COLOR)
         self.toolbar.Realize()
 
-        self.editor = richtext.RichTextCtrl(self,
+        self.splitter = wx.SplitterWindow(self)
+        self.splitter.SetMinimumPaneSize(1)
+        if tab == 0:
+            self.selector = ReferenceSelector(self.splitter)
+        else:
+            self.selector = TopicSelector(self.splitter)
+        self.editor = richtext.RichTextCtrl(self.splitter,
             style=wx.BORDER_NONE | wx.WANTS_CHARS)
         style = self.editor.GetBasicStyle()
         style.SetFontFaceName(self._frame.default_font["normal_face"])
@@ -189,6 +152,7 @@ class NotesPage(wx.Panel):
         self.editor.Bind(wx.EVT_CHAR, self.OnChar)
         self.editor.Bind(wx.EVT_KEY_UP, self.OnModified)
         self.editor.Bind(wx.EVT_LEFT_UP, self.OnModified)
+        self.splitter.SplitVertically(self.selector, self.editor, 150)
 
         self.SetAcceleratorTable(wx.AcceleratorTable([
             (wx.ACCEL_CTRL, ord("S"), wx.ID_SAVE),
@@ -204,25 +168,21 @@ class NotesPage(wx.Panel):
             (wx.ACCEL_SHIFT, 9, ID_DECREASE_INDENT),
             (wx.ACCEL_NORMAL, 9, ID_INCREASE_INDENT)]))
         sizer = wx.BoxSizer(wx.VERTICAL)
-        sizer.Add(self.selector, 0)
         sizer.Add(self.toolbar, 0)
-        sizer.Add(self.editor, 1, wx.EXPAND)
+        sizer.Add(self.splitter, 1, wx.EXPAND)
         self.SetSizer(sizer)
         self.update_toolbar()
 
-    def load_text(self, book, chapter, verse=-1):
-        self.db_key = "%d.%d" % (book, chapter)
-        ##self.db_key = "%d.%d.%d" % (book, chapter, verse)
-        if self.db_key in self.notes_db:
-            stream = cStringIO.StringIO(self.notes_db[self.db_key])
+    def load_text(self, db_key):
+        if db_key in self.notes_db:
+            stream = cStringIO.StringIO(self.notes_db[db_key])
             self.editor.GetBuffer().LoadStream(stream,
                 richtext.RICHTEXT_TYPE_XML)
             self.editor.Refresh()
         else:
             self.editor.Clear()
-        self.selector.set_reference(book, chapter, verse,
-            self.selector.get_reference() != (book, chapter, verse))
         self.update_toolbar()
+        self.db_key = db_key
 
     def update_toolbar(self):
         self.toolbar.EnableTool(wx.ID_CUT, self.editor.CanCut())
@@ -238,10 +198,10 @@ class NotesPage(wx.Panel):
         self.toolbar.ToggleTool(wx.ID_UNDERLINE,
             self.editor.IsSelectionUnderlined())
         for alignment in ("LEFT", "CENTER", "RIGHT"):
-            if self.editor.IsSelectionAligned(getattr(wx,
-                    "TEXT_ALIGNMENT_%s" % alignment)):
-                self.toolbar.ToggleTool(getattr(wx, "ID_JUSTIFY_%s" % \
-                    alignment), True)
+            if self.editor.IsSelectionAligned(
+                    getattr(wx, "TEXT_ALIGNMENT_%s" % alignment)):
+                self.toolbar.ToggleTool(
+                    getattr(wx, "ID_JUSTIFY_%s" % alignment), True)
                 break
         self.toolbar.Refresh(False)
 
@@ -263,8 +223,8 @@ class NotesPage(wx.Panel):
 
     def OnPrint(self, event):
         if wx.VERSION_STRING >= "2.8.11.0" and wx.VERSION_STRING != "2.9.0.0":
-            ##self._frame.printing.SetName(_(self.name))
-            self._frame.printing.SetName(self.name)
+            self._frame.printing.SetName(
+                NotesPane.names[self._parent.GetPageIndex(self)])
         stream = cStringIO.StringIO()
         richtext.RichTextHTMLHandler().SaveStream(self.editor.GetBuffer(),
             stream)
@@ -284,18 +244,20 @@ class NotesPage(wx.Panel):
         style.SetFlags(wx.TEXT_ATTR_FONT_FACE)
         style.SetFontFaceName(event.GetString())
         if not self.editor.HasSelection():
-            self.BeginStyle(style)
+            self.editor.BeginStyle(style)
         else:
             self.editor.SetStyle(self.editor.GetSelectionRange(), style)
+        self.editor.SetFocus()
 
     def OnFontSize(self, event):
         style = richtext.RichTextAttr()
         style.SetFlags(wx.TEXT_ATTR_FONT_SIZE)
         style.SetFontSize(int(self.font_size.GetValue()))
         if not self.editor.HasSelection():
-            self.BeginStyle(style)
+            self.editor.BeginStyle(style)
         else:
             self.editor.SetStyle(self.editor.GetSelectionRange(), style)
+        self.editor.SetFocus()
 
     def OnBold(self, event):
         # Toolbar item needs to be toggled if hotkey was used
@@ -504,20 +466,21 @@ class NotesPage(wx.Panel):
 
 
 class NotesPane(aui.AuiNotebook):
+    names = (_("Study Notes"), _("Topic Notes"))
     def __init__(self, parent):
         super(NotesPane, self).__init__(parent, style=wx.BORDER_NONE |
             aui.AUI_NB_TOP | aui.AUI_NB_SCROLL_BUTTONS)
         self._parent = parent
         richtext.RichTextBuffer.AddHandler(richtext.RichTextXMLHandler())
-        self.AddPage(NotesPage(self, "Study Notes"), _("Study Notes"))
-        self.AddPage(NotesPage(self, "Topic Notes"), _("Topic Notes"))
-        self.SetSelection(parent._app.config.ReadInt("Notes/ActiveNotesTab"))
+        self.AddPage(NotesPage(self, 0), NotesPane.names[0])
+        self.AddPage(NotesPage(self, 1), NotesPane.names[1])
+        self.SetSelection(parent._app.config.ReadInt("Notes/ActiveTab"))
         self.Bind(aui.EVT_AUINOTEBOOK_PAGE_CHANGED,
             self.OnAuiNotebookPageChanged)
 
     def OnAuiNotebookPageChanged(self, event):
         page = self.GetCurrentPage()
-        if page.db_key != "%d.%d" % self._parent.reference[:2]:
-        ##if page.db_key != "%d.%d.%d" % self._parent.reference:
+        if (event.GetSelection() == 0 and
+                page.db_key != "%d.%d" % self._parent.reference[:2]):
             page.save_text()
             page.load_text(*self._parent.reference[:2])
