@@ -120,8 +120,8 @@ class MainWindow(wx.Frame):
 
         filename = os.path.join(app.userdatadir, "layout.dat")
         if os.path.isfile(filename):
-            with open(filename, 'r') as layout:
-                self.aui.LoadPerspective(layout.read())
+            with open(filename, 'r') as fileobj:
+                self.aui.LoadPerspective(fileobj.read())
         self.aui.Update()
         for pane in ("toolbar", "tree_pane", "search_pane", "notes_pane",
                 "multiverse_pane"):
@@ -260,8 +260,8 @@ class MainWindow(wx.Frame):
             page.notes_db.close()
         self._app.config.save()
         with open(os.path.join(self._app.userdatadir, "layout.dat"), 'w') as \
-                layout:
-            layout.write(self.aui.SavePerspective())
+                fileobj:
+            fileobj.write(self.aui.SavePerspective())
         self.aui.UnInit()
         del self.help
         self.Destroy()

@@ -265,6 +265,7 @@ class FavoritesDialog(wx.Dialog):
 
     def OnListEndLabelEdit(self, event):
         if event.IsEditCancelled():
+            event.Skip()
             return
         label = event.GetLabel()
         try:
@@ -282,6 +283,8 @@ class FavoritesDialog(wx.Dialog):
                 wx.MessageBox(_("%s is already in the favorites list.") % name,
                     _("Manage Favorites"), wx.ICON_EXCLAMATION | wx.OK)
                 event.Veto()
+            else:
+                event.Skip()
 
     def OnOk(self, event):
         self._parent.menubar.favorites_list = self.listbox.GetStrings()
