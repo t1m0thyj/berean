@@ -5,31 +5,31 @@ import cStringIO
 import os.path
 
 import wx
-from wx import aui, gizmos, richtext
+from wx import aui, richtext
 
 from config import *
 
 _ = wx.GetTranslation
 
-
-class BaseSelector(gizmos.EditableListBox):
+class BaseSelector(wx.Panel):
     def __init__(self, parent):
-        super(BaseSelector, self).__init__(parent, label=_("Notes"),
-            style=gizmos.EL_DEFAULT_STYLE | gizmos.EL_NO_REORDER)
-        self._grandparent = parent.GetParent()
+        super(BaseSelector, self).__init__(parent)
         self.searchctrl = wx.SearchCtrl(self)
         self.searchctrl.Bind(wx.EVT_TEXT, self.OnSearchCtrlText)
-        for child in self.GetChildren():
-            if isinstance(child, wx.ListCtrl):
-                self.listctrl = child
-                break
-        self.SetStrings(
-            sorted(self._grandparent.notes_db.keys(), key=str.lower))
-        self.GetSizer().Insert(1, self.searchctrl, 0,
-            (wx.ALL ^ wx.TOP) | wx.EXPAND, 1)
+        self.listbox = wx.ListBox(self)
+        sizer = wx.BoxSizer(wx.VERTICAL)
+        sizer.Add(self.searchctrl, 0, wx.ALL | wx.EXPAND, 1)
+        sizer.Add(self.listbox, 1, wx.EXPAND)
+        self.SetSizer(sizer)
 
     def OnSearchCtrlText(self, event):
-        self.searchctrl.ShowCancelButton(not self.searchctrl.IsEmpty())
+        text = self.searchctrl.GetValue()
+        if len(text):
+            for i, string in enumerate(self.listbox.GetStrings()):
+                if string.startswith(text):
+                    self.listbox.SetSelection(i)
+                    break
+        self.searchctrl.ShowCancelButton(len(text) > 0)
 
 
 class ReferenceSelector(BaseSelector):
@@ -152,7 +152,9 @@ class NotesPage(wx.Panel):
         self.editor.Bind(wx.EVT_CHAR, self.OnChar)
         self.editor.Bind(wx.EVT_KEY_UP, self.OnModified)
         self.editor.Bind(wx.EVT_LEFT_UP, self.OnModified)
-        self.splitter.SplitVertically(self.selector, self.editor, 150)
+        self.splitter.SplitVertically(self.selector, self.editor,
+            self._frame._app.config.ReadInt(
+            "Notes/SplitterPosition%d" % (tab + 1), 150))
 
         self.SetAcceleratorTable(wx.AcceleratorTable([
             (wx.ACCEL_CTRL, ord("S"), wx.ID_SAVE),
@@ -480,7 +482,7 @@ class NotesPane(aui.AuiNotebook):
 
     def OnAuiNotebookPageChanged(self, event):
         page = self.GetCurrentPage()
-        if (event.GetSelection() == 0 and
-                page.db_key != "%d.%d" % self._parent.reference[:2]):
+        db_key = "%d.%d" % self._parent.reference[:2]
+        if event.GetSelection() == 0 and page.db_key != db_key:
             page.save_text()
-            page.load_text(*self._parent.reference[:2])
+            page.load_text(db_key)
