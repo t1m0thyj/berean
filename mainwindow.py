@@ -64,7 +64,7 @@ class MainWindow(wx.Frame):
             Caption("Toolbar").ToolbarPane().Top())
         self.statusbar = self.CreateStatusBar(3)
         self.zoombar = toolbar.ZoomBar(self.statusbar, self)
-        if wx.VERSION_STRING >= "2.9.0.0":
+        if wx.VERSION_STRING >= "2.9":
             self.statusbar.SetStatusWidths([-1, -1, self.zoombar.width - 8])
         else:
             self.statusbar.SetStatusWidths([-1, -1, self.zoombar.width + 1])
@@ -83,7 +83,7 @@ class MainWindow(wx.Frame):
                 self.notebook.AddPage(window, self.version_list[i])
                 self.notebook.SetPageBitmap(i, self.get_bitmap(
                     os.path.join("flags", FLAG_NAMES[self.version_list[i]])))
-                if wx.VERSION_STRING >= "2.9.4.0":
+                if wx.VERSION_STRING >= "2.9.4":
                     self.notebook.SetPageToolTip(i, window.description)
                 i += 1
             else:
@@ -93,7 +93,7 @@ class MainWindow(wx.Frame):
         if len(self.version_list) > 1:
             self.parallel = parallel.ParallelPanel(self.notebook)
             self.notebook.AddPage(self.parallel, _("Parallel"))
-            if wx.VERSION_STRING >= "2.9.4.0":
+            if wx.VERSION_STRING >= "2.9.4":
                 self.notebook.SetPageToolTip(len(self.version_list),
                     self.parallel.htmlwindow.description)
             self.notebook.SetSelection(min(tab, self.notebook.GetPageCount()))
