@@ -45,7 +45,7 @@ class MultiVersePane(wx.Panel):
             (wx.ACCEL_CTRL, wx.WXK_RETURN, search_item.GetId()),
             (wx.ACCEL_CTRL, ord("A"), wx.ID_SELECTALL)]))
         self.htmlwindow = BaseHtmlWindow(self.splitter, parent)
-        if wx.VERSION_STRING >= "2.9.0.0":
+        if wx.VERSION_STRING >= "2.9":
             self.htmlwindow.Bind(wx.EVT_CONTEXT_MENU, self.OnContextMenu)
         else:  # wxHtmlWindow doesn't generate EVT_CONTEXT_MENU in 2.8
             self.htmlwindow.Bind(wx.EVT_RIGHT_UP, self.OnContextMenu)
@@ -102,7 +102,7 @@ class MultiVersePane(wx.Panel):
         self.toolbar.Refresh(False)
 
     def OnPrint(self, event):
-        if wx.VERSION_STRING >= "2.8.11.0" and wx.VERSION_STRING != "2.9.0.0":
+        if wx.VERSION_STRING >= "2.8.11" and wx.VERSION_STRING != "2.9.0.0":
             self._parent.printing.SetName(_("Multi-Verse Retrieval"))
         if event.GetId() == wx.ID_PRINT:
             self._parent.printing.PrintText(self.html)

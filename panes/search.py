@@ -68,7 +68,7 @@ class SearchPane(wx.Panel):
         self.text.SetValue(parent._app.config.Read("Search/LastSearch"))
         self.text.Bind(wx.EVT_TEXT_ENTER, self.OnSearch)
         style = aui.AUI_TB_DEFAULT_STYLE
-        if wx.VERSION_STRING >= "2.9.5.0":
+        if wx.VERSION_STRING >= "2.9.5":
             style |= aui.AUI_TB_PLAIN_BACKGROUND
         self.toolbar = aui.AuiToolBar(self, wx.ID_ANY, wx.DefaultPosition,
             wx.DefaultSize, style)
@@ -83,7 +83,7 @@ class SearchPane(wx.Panel):
         self.htmlwindow = BaseHtmlWindow(self, parent)
         self.htmlwindow.Bind(html.EVT_HTML_LINK_CLICKED,
             self.OnHtmlLinkClicked)
-        if wx.VERSION_STRING >= "2.9.0.0":
+        if wx.VERSION_STRING >= "2.9":
             self.htmlwindow.Bind(wx.EVT_CONTEXT_MENU, self.OnContextMenu)
         else:  # wxHtmlWindow doesn't generate EVT_CONTEXT_MENU in 2.8
             self.htmlwindow.Bind(wx.EVT_RIGHT_UP, self.OnContextMenu)
@@ -359,7 +359,7 @@ class SearchPane(wx.Panel):
             self.version.GetString(self.last_version))
         text = self.html[:12] + header + \
             self.html[self.html.index("</font>") + 7:]
-        if wx.VERSION_STRING >= "2.8.11.0" and wx.VERSION_STRING != "2.9.0.0":
+        if wx.VERSION_STRING >= "2.8.11" and wx.VERSION_STRING != "2.9.0.0":
             self._parent.printing.SetName(_("Search Results"))
         if event.GetId() == wx.ID_PRINT:
             self._parent.printing.PrintText(text)

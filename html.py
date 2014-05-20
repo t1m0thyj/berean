@@ -64,12 +64,12 @@ class PrintingSystem(html.HtmlEasyPrinting):
         return text
 
     def print_(self):
-        if wx.VERSION_STRING >= "2.8.11.0" and wx.VERSION_STRING != "2.9.0.0":
+        if wx.VERSION_STRING >= "2.8.11" and wx.VERSION_STRING != "2.9.0.0":
             self.SetName(self._frame.GetTitle()[9:])
         self.PrintText(self.get_chapter_text())
 
     def preview(self):
-        if wx.VERSION_STRING >= "2.8.11.0" and wx.VERSION_STRING != "2.9.0.0":
+        if wx.VERSION_STRING >= "2.8.11" and wx.VERSION_STRING != "2.9.0.0":
             self.SetName(self._frame.GetTitle()[9:])
         self.PreviewText(self.get_chapter_text())
 
@@ -102,7 +102,7 @@ class BaseChapterWindow(BaseHtmlWindow):
         self._frame = frame
         self.current_verse = -1
         self.reference = None
-        if wx.VERSION_STRING >= "2.9.0.0":
+        if wx.VERSION_STRING >= "2.9":
             self.Bind(wx.EVT_CONTEXT_MENU, self.OnContextMenu)
         else:  # wxHtmlWindow doesn't generate EVT_CONTEXT_MENU in 2.8
             self.Bind(wx.EVT_RIGHT_UP, self.OnContextMenu)
