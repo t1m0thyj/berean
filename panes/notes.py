@@ -11,9 +11,9 @@ from config import *
 
 _ = wx.GetTranslation
 
-class BaseSidebar(wx.Panel):
+class BaseTopicsPane(wx.Panel):
     def __init__(self, parent):
-        super(BaseSidebar, self).__init__(parent)
+        super(BaseTopicsPane, self).__init__(parent)
         self.searchctrl = wx.SearchCtrl(self)
         self.searchctrl.Bind(wx.EVT_TEXT, self.OnSearchCtrlText)
         self.listbox = wx.ListBox(self)
@@ -32,14 +32,14 @@ class BaseSidebar(wx.Panel):
         self.searchctrl.ShowCancelButton(len(text) > 0)
 
 
-class StudyNotesSidebar(BaseSidebar):
+class SubjectTopicsPane(BaseTopicsPane):
     def __init__(self, parent):
-        super(StudyNotesSidebar, self).__init__(parent)
+        super(SubjectTopicsPane, self).__init__(parent)
 
 
-class TopicNotesSidebar(BaseSidebar):
+class VerseTopicsPane(BaseTopicsPane):
     def __init__(self, parent):
-        super(TopicNotesSidebar, self).__init__(parent)
+        super(VerseTopicsPane, self).__init__(parent)
 
 
 class NotesPage(wx.Panel):
@@ -53,16 +53,16 @@ class NotesPage(wx.Panel):
 
         self.toolbar = aui.AuiToolBar(self, wx.ID_ANY, wx.DefaultPosition,
             wx.DefaultSize, aui.AUI_TB_DEFAULT_STYLE | aui.AUI_TB_OVERFLOW)
-        self.ID_SHOW_SIDEBAR = wx.NewId()
-        self.toolbar.AddTool(self.ID_SHOW_SIDEBAR, "",
-            self._frame.get_bitmap("show-sidebar"), _("Show Sidebar"),
+        self.ID_SHOW_TOPICS_PANE = wx.NewId()
+        self.toolbar.AddTool(self.ID_SHOW_TOPICS_PANE, "",
+            self._frame.get_bitmap("show-topics-pane"), _("Show Topics Pane"),
             wx.ITEM_CHECK)
         sash_pos = self._frame._app.config.ReadInt(
             "Notes/SplitterPosition%d" % (tab + 1), 150)
         if sash_pos > 0:
-            self.toolbar.ToggleTool(self.ID_SHOW_SIDEBAR, True)
-        self.toolbar.Bind(wx.EVT_MENU, self.OnShowSidebar,
-            id=self.ID_SHOW_SIDEBAR)
+            self.toolbar.ToggleTool(self.ID_SHOW_TOPICS_PANE, True)
+        self.toolbar.Bind(wx.EVT_MENU, self.OnShowTopicsPane,
+            id=self.ID_SHOW_TOPICS_PANE)
         self.toolbar.AddSeparator()
         self.toolbar.AddTool(wx.ID_SAVE, "", self._frame.get_bitmap("save"),
             _("Save (Ctrl+S)"))
@@ -149,9 +149,9 @@ class NotesPage(wx.Panel):
 
         self.splitter = wx.SplitterWindow(self)
         if tab == 0:
-            self.sidebar = StudyNotesSidebar(self.splitter)
+            self.topics_pane = SubjectTopicsPane(self.splitter)
         else:
-            self.sidebar = TopicNotesSidebar(self.splitter)
+            self.topics_pane = VerseTopicsPane(self.splitter)
         self.editor = richtext.RichTextCtrl(self.splitter,
             style=wx.BORDER_NONE | wx.WANTS_CHARS)
         style = self.editor.GetBasicStyle()
@@ -163,7 +163,8 @@ class NotesPage(wx.Panel):
         self.editor.Bind(wx.EVT_KEY_UP, self.OnModified)
         self.editor.Bind(wx.EVT_LEFT_UP, self.OnModified)
         if sash_pos > 0:
-            self.splitter.SplitVertically(self.sidebar, self.editor, sash_pos)
+            self.splitter.SplitVertically(self.topics_pane, self.editor,
+                sash_pos)
         else:
             self.splitter.Initialize(self.editor)
         self.splitter.Bind(wx.EVT_SPLITTER_UNSPLIT, self.OnSplitterUnsplit)
@@ -232,11 +233,11 @@ class NotesPage(wx.Panel):
         elif self.db_key in self.notes_db:
             del self.notes_db[self.db_key]
 
-    def OnShowSidebar(self, event):
+    def OnShowTopicsPane(self, event):
         if self.splitter.IsSplit():
-            self.splitter.Unsplit(self.sidebar)
+            self.splitter.Unsplit(self.topics_pane)
         else:
-            self.splitter.SplitVertically(self.sidebar, self.editor, 150)
+            self.splitter.SplitVertically(self.topics_pane, self.editor, 150)
 
     def OnSave(self, event):
         self.save_text()
@@ -486,17 +487,17 @@ class NotesPage(wx.Panel):
         event.Skip()
 
     def OnSplitterUnsplit(self, event):
-        self.toolbar.ToggleTool(self.ID_SHOW_SIDEBAR, False)
+        self.toolbar.ToggleTool(self.ID_SHOW_TOPICS_PANE, False)
         self.toolbar.Refresh(False)
 
     def OnSplitterDclick(self, event):
-        self.splitter.Unsplit(self.sidebar)
+        self.splitter.Unsplit(self.topics_pane)
         self.OnSplitterUnsplit(None)
         event.Veto()
 
 
 class NotesPane(aui.AuiNotebook):
-    names = (_("Study Notes"), _("Topic Notes"))
+    names = (_("Subject Notes"), _("Verse Notes"))
     def __init__(self, parent):
         super(NotesPane, self).__init__(parent, style=wx.BORDER_NONE |
             aui.AUI_NB_TOP | aui.AUI_NB_SCROLL_BUTTONS)
@@ -511,6 +512,6 @@ class NotesPane(aui.AuiNotebook):
     def OnAuiNotebookPageChanged(self, event):
         page = self.GetCurrentPage()
         db_key = "%d.%d" % self._parent.reference[:2]
-        if event.GetSelection() == 0 and page.db_key != db_key:
+        if event.GetSelection() == 1 and page.db_key != db_key:
             page.save_text()
             page.load_text(db_key)
