@@ -85,14 +85,14 @@ class FileConfig(wx.FileConfig):
                 getattr(self._app.frame.search, option).GetValue())
         self.SetPath("/Notes")
         self.WriteInt("ActiveTab", self._app.frame.notes.GetSelection())
-        study_notes = self._app.frame.notes.GetPage(0)
-        ##self.Write("CurrentReference", study_notes.db_key)
+        subject_notes = self._app.frame.notes.GetPage(0)
+        ##self.Write("CurrentSubjectTopic", subject_notes.db_key)
         self.WriteInt("SplitterPosition1",
-            study_notes.splitter.GetSashPosition())
-        topic_notes = self._app.frame.notes.GetPage(1)
-        ##self.Write("CurrentTopic", topic_notes.db_key)
+            subject_notes.splitter.GetSashPosition())
+        verse_notes = self._app.frame.notes.GetPage(1)
+        ##self.Write("CurrentVerseTopic", verse_notes.db_key)
         self.WriteInt("SplitterPosition2",
-            topic_notes.splitter.GetSashPosition())
+            verse_notes.splitter.GetSashPosition())
         self.SetPath("/MultiVerse")
         self.Write("LastVerseList",
             self._app.frame.multiverse.verse_list.GetValue())

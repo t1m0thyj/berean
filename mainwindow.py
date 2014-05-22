@@ -178,7 +178,7 @@ class MainWindow(wx.Frame):
         if self.search.range_choice.GetSelection() == len(BOOK_RANGES):
             self.search.start.SetSelection(book - 1)
             self.search.stop.SetSelection(book - 1)
-        if self.notes.GetSelection() == 0:
+        if self.notes.GetSelection() == 1:
             page = self.notes.GetPage(0)
             page.save_text()
             page.load_text("%d.%d" % (book, chapter))
