@@ -148,9 +148,9 @@ class ChapterWindow(BaseChapterWindow):
         try:
             with open(filename, 'rb') as Bible:
                 self.Bible = cPickle.load(Bible)
-        except Exception as exc_value:
+        except Exception as exc:
             wx.MessageBox(_("Could not load %s.\n\nError: %s") % (version,
-                exc_value), _("Error"), wx.ICON_WARNING | wx.OK)
+                exc), _("Error"), wx.ICON_WARNING | wx.OK)
         else:
             self.description = VERSION_DESCRIPTIONS[version]
 
