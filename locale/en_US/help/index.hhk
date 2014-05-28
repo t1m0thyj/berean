@@ -99,4 +99,8 @@
 			<param name="Name" value="Help menu">
 			<param name="Local" value="menu-help.html">
 		</object>
+	<li><object type="text/sitemap">
+			<param name="Name" value="Report bug">
+			<param name="Local" value="menu-help.html#ReportBug">
+		</object>
 </ul>
