@@ -108,6 +108,9 @@ class MenuBar(wx.MenuBar):
         self.menu_help.Append(wx.ID_HELP, _("&Help...\tF1"),
             _("Shows the contents of the help file"))
         frame.Bind(wx.EVT_MENU, self.OnHelp, id=wx.ID_HELP)
+        report_bug_item = self.menu_help.Append(-1, _("&Report Bug..."))
+        frame.Bind(wx.EVT_MENU, self.OnReportBug, report_bug_item)
+        self.menu_help.AppendSeparator()
         self.menu_help.Append(wx.ID_ABOUT, _("&About Berean..."),
             _("Displays program information, version number, and copyright"))
         frame.Bind(wx.EVT_MENU, self.OnAbout, id=wx.ID_ABOUT)
@@ -225,6 +228,9 @@ class MenuBar(wx.MenuBar):
 
     def OnHelp(self, event):
         self._frame.help.show_frame()
+
+    def OnReportBug(self, event):
+        wx.LaunchDefaultBrowser("mailto:berean_bugs@objectmail.com")
 
     def OnAbout(self, event):
         info = wx.AboutDialogInfo()

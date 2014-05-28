@@ -11,6 +11,7 @@ from config import *
 
 _ = wx.GetTranslation
 
+
 class BaseTopicsPane(wx.Panel):
     def __init__(self, parent):
         super(BaseTopicsPane, self).__init__(parent)
@@ -498,6 +499,7 @@ class NotesPage(wx.Panel):
 
 class NotesPane(aui.AuiNotebook):
     names = (_("Subject Notes"), _("Verse Notes"))
+
     def __init__(self, parent):
         super(NotesPane, self).__init__(parent, style=wx.BORDER_NONE |
             aui.AUI_NB_TOP | aui.AUI_NB_SCROLL_BUTTONS)
