@@ -4,7 +4,7 @@ import wx
 from wx import aui
 
 from config import *
-from html import BaseHtmlWindow
+from html import HtmlWindowBase
 from refalize import refalize2
 
 _ = wx.GetTranslation
@@ -44,7 +44,7 @@ class MultiVersePane(wx.Panel):
         self.verse_list.SetAcceleratorTable(wx.AcceleratorTable([
             (wx.ACCEL_CTRL, wx.WXK_RETURN, search_item.GetId()),
             (wx.ACCEL_CTRL, ord("A"), wx.ID_SELECTALL)]))
-        self.htmlwindow = BaseHtmlWindow(self.splitter, parent)
+        self.htmlwindow = HtmlWindowBase(self.splitter, parent)
         if wx.VERSION_STRING >= "2.9":
             self.htmlwindow.Bind(wx.EVT_CONTEXT_MENU, self.OnContextMenu)
         else:  # wxHtmlWindow doesn't generate EVT_CONTEXT_MENU in 2.8

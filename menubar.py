@@ -142,7 +142,7 @@ class MenuBar(wx.MenuBar):
 
     def OnCopy(self, event):
         window = self._frame.FindFocus()
-        if not isinstance(window, html.BaseHtmlWindow):
+        if not isinstance(window, html.HtmlWindowBase):
             return
         data = wx.TextDataObject()
         data.SetText(window.SelectionToText())
