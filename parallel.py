@@ -3,12 +3,12 @@
 import wx
 
 from config import *
-from html import BaseChapterWindow
+from html import ChapterWindowBase
 
 _ = wx.GetTranslation
 
 
-class ParallelWindow(BaseChapterWindow):
+class ParallelWindow(ChapterWindowBase):
     def __init__(self, parent, version_list):
         super(ParallelWindow, self).__init__(parent, parent.GetGrandParent())
         self._parent = parent

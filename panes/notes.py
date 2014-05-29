@@ -12,9 +12,9 @@ from config import *
 _ = wx.GetTranslation
 
 
-class BaseTopicsPane(wx.Panel):
+class TopicsPaneBase(wx.Panel):
     def __init__(self, parent):
-        super(BaseTopicsPane, self).__init__(parent)
+        super(TopicsPaneBase, self).__init__(parent)
         self.searchctrl = wx.SearchCtrl(self)
         self.searchctrl.Bind(wx.EVT_TEXT, self.OnSearchCtrlText)
         self.listbox = wx.ListBox(self)
@@ -33,12 +33,12 @@ class BaseTopicsPane(wx.Panel):
         self.searchctrl.ShowCancelButton(len(text) > 0)
 
 
-class SubjectTopicsPane(BaseTopicsPane):
+class SubjectTopicsPane(TopicsPaneBase):
     def __init__(self, parent):
         super(SubjectTopicsPane, self).__init__(parent)
 
 
-class VerseTopicsPane(BaseTopicsPane):
+class VerseTopicsPane(TopicsPaneBase):
     def __init__(self, parent):
         super(VerseTopicsPane, self).__init__(parent)
 

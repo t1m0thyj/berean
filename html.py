@@ -74,9 +74,9 @@ class PrintingSystem(html.HtmlEasyPrinting):
         self.PreviewText(self.get_chapter_text())
 
 
-class BaseHtmlWindow(html.HtmlWindow):
+class HtmlWindowBase(html.HtmlWindow):
     def __init__(self, parent, frame):
-        super(BaseHtmlWindow, self).__init__(parent)
+        super(HtmlWindowBase, self).__init__(parent)
         self.SetAcceleratorTable(wx.AcceleratorTable([(wx.ACCEL_CTRL, ord("A"),
             wx.ID_SELECTALL)]))
         self.SetStandardFonts(**frame.default_font)
@@ -96,9 +96,9 @@ class BaseHtmlWindow(html.HtmlWindow):
         self.dragscroller.Stop()
 
 
-class BaseChapterWindow(BaseHtmlWindow):
+class ChapterWindowBase(HtmlWindowBase):
     def __init__(self, parent, frame):
-        super(BaseChapterWindow, self).__init__(parent, frame)
+        super(ChapterWindowBase, self).__init__(parent, frame)
         self._frame = frame
         self.current_verse = -1
         self.reference = None
@@ -137,7 +137,7 @@ class BaseChapterWindow(BaseHtmlWindow):
         self._frame.search.OnSearch(None)
 
 
-class ChapterWindow(BaseChapterWindow):
+class ChapterWindow(ChapterWindowBase):
     def __init__(self, parent, version):
         super(ChapterWindow, self).__init__(parent, parent.GetParent())
         filename = os.path.join(self._frame._app.cwd, "versions",
