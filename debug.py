@@ -38,7 +38,6 @@ class ErrorDialog(wx.Dialog):
         self.show = wx.Button(self, label=_("show bug report"))
         self.continue_button = wx.Button(self, label=_("continue application"))
         self.restart = wx.Button(self, label=_("restart application"))
-        self.restart.Disable()  # TODO: How to restart application?
         self.close = wx.Button(self, label=_("close application"))
         self.textctrl = wx.TextCtrl(self, value=report %
             (wx.GetOsDescription(), mac_ver, platform.architecture()[0],
@@ -96,6 +95,7 @@ class ErrorDialog(wx.Dialog):
         self.Close()
 
     def OnRestart(self, event):
+        self.Destroy()
         app = wx.GetApp()
         app.GetTopWindow().Destroy()
         app.OnInit()
