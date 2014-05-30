@@ -108,8 +108,10 @@ class FileConfig(wx.FileConfig):
 
 
 class Berean(wx.App):
-    def OnInit(self):
+    def __init__(self):
         super(Berean, self).__init__()
+
+    def OnInit(self):
         self.SetAppName("Berean")
         options = dict(getopt.getopt(sys.argv[1:], "",
             ["datadir=", "nosplash", "systemtray"])[0])
@@ -132,12 +134,8 @@ class Berean(wx.App):
                 self.userdatadir = os.path.join(self.cwd, self.userdatadir)
         elif os.path.isfile(os.path.join(self.cwd, "portable.ini")):
             self.userdatadir = self.cwd
-        elif '__WXGTK__' not in wx.PlatformInfo:
-            self.userdatadir = os.path.join(
-                wx.StandardPaths.Get().GetUserDataDir(), "Berean")
         else:
-            self.userdatadir = os.path.join(
-                wx.StandardPaths.Get().GetUserDataDir(), ".berean")
+            self.userdatadir = wx.StandardPaths.Get().GetUserDataDir()
         if not os.path.isdir(self.userdatadir):
             os.makedirs(self.userdatadir)
         self.config = FileConfig(self)
