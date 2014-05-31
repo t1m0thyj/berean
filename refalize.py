@@ -108,8 +108,9 @@ def refalize(reference):
 
 
 def refalize2(references):
-    references = filter(None, [reference.lstrip() for reference in
-        re.split(r"[,;\n]", references)])
+    references = [reference.strip() for reference in
+        re.split(r"[\n,;]", references)]
+    references = [reference for reference in references if len(reference)]
     start_pattern = re.compile(
         r"((?:[1-3]\s?|i{1,3}\s)?[a-z]+)?\s*(\d+)?\W*(\d+)?",
         flags=re.IGNORECASE)
