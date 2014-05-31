@@ -1,8 +1,8 @@
 """notes.py - notes pane class"""
 
-import anydbm
 import cStringIO
 import os.path
+import sqlite3
 
 import wx
 from wx import aui, richtext
@@ -48,9 +48,11 @@ class NotesPage(wx.Panel):
         super(NotesPage, self).__init__(parent)
         self._parent = parent
         self._frame = parent.GetParent()
+        self.conn = sqlite3.connect(os.path.join(self._frame._app.userdatadir,
+            "%s.sqlite" % NotesPane.names[tab]))
+        self.conn.execute("CREATE TABLE IF NOT EXISTS Notes(Topic TEXT " \
+            "PRIMARY KEY, XML TEXT)")
         self.db_key = "%d.%d" % self._frame.reference[:2]
-        self.notes_db = anydbm.open(os.path.join(self._frame._app.userdatadir,
-            "%s.db" % NotesPane.names[tab]), 'c')
 
         self.toolbar = aui.AuiToolBar(self, wx.ID_ANY, wx.DefaultPosition,
             wx.DefaultSize, aui.AUI_TB_DEFAULT_STYLE | aui.AUI_TB_OVERFLOW)
@@ -191,8 +193,11 @@ class NotesPage(wx.Panel):
         self.update_toolbar()
 
     def load_text(self, db_key):
-        if db_key in self.notes_db:
-            stream = cStringIO.StringIO(self.notes_db[db_key])
+        cur = self.conn.cursor()
+        cur.execute("SELECT XML FROM Notes WHERE Topic=?", (db_key,))
+        row = cur.fetchone()
+        if row:
+            stream = cStringIO.StringIO(row[0])
             self.editor.GetBuffer().LoadStream(stream,
                 richtext.RICHTEXT_TYPE_XML)
             self.editor.Refresh()
@@ -225,14 +230,25 @@ class NotesPage(wx.Panel):
     def save_text(self):
         if not self.editor.IsModified():
             return
+        cur = self.conn.cursor()
+        cur.execute("SELECT 1 FROM Notes WHERE Topic=?", (self.db_key,))
+        row = cur.fetchone()
         if not self.editor.IsEmpty():
             stream = cStringIO.StringIO()
             self.editor.GetBuffer().SaveStream(stream,
                 richtext.RICHTEXT_TYPE_XML)
-            self.notes_db[self.db_key] = stream.getvalue()
+            with self.conn:
+                if not row:
+                    self.conn.execute("INSERT INTO Notes VALUES(?,?)",
+                        (self.db_key, stream.getvalue()))
+                else:
+                    self.conn.execute("UPDATE Notes SET XML=? WHERE Topic=?",
+                        (self.db_key, stream.getvalue()))
             self.editor.SetModified(False)
-        elif self.db_key in self.notes_db:
-            del self.notes_db[self.db_key]
+        elif not row:
+            with self.conn:
+                self.conn.execute("DELETE FROM Notes WHERE Topic=?",
+                    self.db_key)
 
     def OnShowTopicsPane(self, event):
         if self.splitter.IsSplit():
@@ -242,7 +258,7 @@ class NotesPage(wx.Panel):
 
     def OnSave(self, event):
         self.save_text()
-        self.notes_db.sync()
+        self.conn.commit()
 
     def OnPrint(self, event):
         if wx.VERSION_STRING >= "2.8.11" and wx.VERSION_STRING != "2.9.0.0":

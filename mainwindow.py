@@ -179,7 +179,7 @@ class MainWindow(wx.Frame):
             self.search.start.SetSelection(book - 1)
             self.search.stop.SetSelection(book - 1)
         if self.notes.GetSelection() == 1:
-            page = self.notes.GetPage(0)
+            page = self.notes.GetPage(1)
             page.save_text()
             page.load_text("%d.%d" % (book, chapter))
         self.statusbar.SetStatusText("%s %d" % (BOOK_NAMES[book - 1], chapter),
@@ -257,7 +257,7 @@ class MainWindow(wx.Frame):
         for i in range(self.notes.GetPageCount()):
             page = self.notes.GetPage(i)
             page.OnSave(None)
-            page.notes_db.close()
+            page.conn.close()
         self._app.config.save()
         with open(os.path.join(self._app.userdatadir, "layout.dat"), 'w') as \
                 fileobj:
