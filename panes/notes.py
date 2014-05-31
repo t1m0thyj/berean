@@ -157,10 +157,7 @@ class NotesPage(wx.Panel):
             self.topics_pane = VerseTopicsPane(self.splitter)
         self.editor = richtext.RichTextCtrl(self.splitter,
             style=wx.BORDER_NONE | wx.WANTS_CHARS)
-        style = self.editor.GetBasicStyle()
-        style.SetFontFaceName(self._frame.default_font["normal_face"])
-        style.SetFontSize(self._frame.default_font["size"])
-        self.editor.SetBasicStyle(style)
+        self.set_default_style(self._frame.default_font)
         self.editor.SetModified(False)
         self.editor.Bind(wx.EVT_CHAR, self.OnChar)
         self.editor.Bind(wx.EVT_KEY_UP, self.OnModified)
@@ -190,21 +187,13 @@ class NotesPage(wx.Panel):
         sizer.Add(self.toolbar, 0)
         sizer.Add(self.splitter, 1, wx.EXPAND)
         self.SetSizer(sizer)
-        self.update_toolbar()
 
-    def load_text(self, db_key):
-        cur = self.conn.cursor()
-        cur.execute("SELECT XML FROM Notes WHERE Topic=?", (db_key,))
-        row = cur.fetchone()
-        if row:
-            stream = cStringIO.StringIO(row[0])
-            self.editor.GetBuffer().LoadStream(stream,
-                richtext.RICHTEXT_TYPE_XML)
-            self.editor.Refresh()
-        else:
-            self.editor.Clear()
+    def set_default_style(self, font):
+        style = self.editor.GetBasicStyle()
+        style.SetFontFaceName(font["normal_face"])
+        style.SetFontSize(font["size"])
+        self.editor.SetBasicStyle(style)
         self.update_toolbar()
-        self.db_key = db_key
 
     def update_toolbar(self):
         self.toolbar.EnableTool(wx.ID_CUT, self.editor.CanCut())
@@ -227,6 +216,20 @@ class NotesPage(wx.Panel):
                 break
         self.toolbar.Refresh(False)
 
+    def load_text(self, db_key):
+        cur = self.conn.cursor()
+        cur.execute("SELECT XML FROM Notes WHERE Topic=?", (db_key,))
+        row = cur.fetchone()
+        if row:
+            stream = cStringIO.StringIO(row[0])
+            self.editor.GetBuffer().LoadStream(stream,
+                richtext.RICHTEXT_TYPE_XML)
+            self.editor.Refresh()
+        else:
+            self.editor.Clear()
+        self.update_toolbar()
+        self.db_key = db_key
+
     def save_text(self):
         if not self.editor.IsModified():
             return
@@ -248,7 +251,7 @@ class NotesPage(wx.Panel):
         elif not row:
             with self.conn:
                 self.conn.execute("DELETE FROM Notes WHERE Topic=?",
-                    self.db_key)
+                    (self.db_key,))
 
     def OnShowTopicsPane(self, event):
         if self.splitter.IsSplit():

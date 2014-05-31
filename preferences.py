@@ -61,8 +61,8 @@ class PreferencesDialog(wx.Dialog):
         self.Center()
 
     def OnOk(self, event):
-        version_list = list(filter(lambda version: self.version_list.IsChecked(
-            VERSION_NAMES.index(version)), VERSION_NAMES))
+        version_list = [version for i, version in enumerate(VERSION_NAMES) if
+            self.version_list.IsChecked(i)]
         if not len(version_list):
             wx.MessageBox(_("You must have at least one version selected."),
                 _("Berean"), wx.ICON_EXCLAMATION | wx.OK)
@@ -77,11 +77,7 @@ class PreferencesDialog(wx.Dialog):
                     self._parent.multiverse.htmlwindow, self._parent.printing):
                 htmlwindow.SetStandardFonts(**default_font)
             for i in range(self._parent.notes.GetPageCount()):
-                page = self._parent.notes.GetPage(i)
-                page.editor.SetFont(wx.FFont(default_font["size"], wx.DEFAULT,
-                    face=default_font["normal_face"]))
-                if page.editor.IsEmpty():
-                    page.update_toolbar()
+                self._parent.notes.GetPage(i).set_default_style(default_font)
             self._parent.default_font = default_font
         if version_list != self._parent.version_list:
             if not hasattr(self._parent, "old_versions"):
