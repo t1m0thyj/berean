@@ -108,9 +108,6 @@ class FileConfig(wx.FileConfig):
 
 
 class Berean(wx.App):
-    def __init__(self):
-        super(Berean, self).__init__()
-
     def OnInit(self):
         self.SetAppName("Berean")
         options = dict(getopt.getopt(sys.argv[1:], "",
@@ -119,13 +116,13 @@ class Berean(wx.App):
             self.cwd = os.path.dirname(__file__)
         else:
             self.cwd = os.path.dirname(sys.argv[0])
-        show_splash = not ("--nosplash" in options or
-            "--systemtray" in options)
+        show_splash = not ("--nosplash" in options or "--systemtray" in
+            options)
         if show_splash:
             splash = wx.SplashScreen(wx.Bitmap(os.path.join(self.cwd,
                 "images", "splash.png"), wx.BITMAP_TYPE_PNG),
-                wx.SPLASH_CENTRE_ON_SCREEN | wx.SPLASH_NO_TIMEOUT, 0, None, -1,
-                style=wx.BORDER_SIMPLE | wx.FRAME_NO_TASKBAR)
+                wx.SPLASH_CENTRE_ON_SCREEN | wx.SPLASH_NO_TIMEOUT, 0, None,
+                wx.ID_ANY, style=wx.BORDER_SIMPLE)
             self.Yield()
 
         if "--datadir" in options:
@@ -159,7 +156,7 @@ class Berean(wx.App):
 
 def main():
     sys.excepthook = debug.OnError
-    app = Berean()
+    app = Berean(False)
     app.MainLoop()
 
 
