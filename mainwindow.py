@@ -149,7 +149,6 @@ class MainWindow(wx.Frame):
     def load_chapter(self, book, chapter, verse=-1, edit_history=True):
         htmlwindow = self.get_htmlwindow()
         htmlwindow.load_chapter(book, chapter, verse)
-        wx.CallAfter(htmlwindow.SetFocus)
         tab = self.notebook.GetSelection()
         self.SetTitle("Berean - %s %d (%s)" % (BOOK_NAMES[book - 1], chapter,
             self.notebook.GetPageText(tab)))
@@ -192,6 +191,7 @@ class MainWindow(wx.Frame):
         for i in range(self.notebook.GetPageCount()):
             if i != tab:
                 self.get_htmlwindow(i).current_verse = verse
+        htmlwindow.SetFocus()
 
     def set_zoom(self, zoom):
         self.zoom_level = zoom

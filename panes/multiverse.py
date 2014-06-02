@@ -96,10 +96,10 @@ class MultiVersePane(wx.Panel):
         self.html = "<html><body><font size=\"%d\">%s</font></body>" \
             "</html>" % (self._parent.zoom_level, "".join(results))
         self.htmlwindow.SetPage(self.html)
-        wx.CallAfter(self.htmlwindow.SetFocus)
         self.toolbar.EnableTool(wx.ID_PRINT, True)
         self.toolbar.EnableTool(wx.ID_COPY, True)
         self.toolbar.Refresh(False)
+        self.htmlwindow.SetFocus()
 
     def OnPrint(self, event):
         if wx.VERSION_STRING >= "2.8.11" and wx.VERSION_STRING != "2.9.0.0":

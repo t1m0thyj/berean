@@ -209,10 +209,10 @@ class NotesPage(wx.Panel):
         self.toolbar.ToggleTool(wx.ID_UNDERLINE,
             self.editor.IsSelectionUnderlined())
         for alignment in ("LEFT", "CENTER", "RIGHT"):
-            if self.editor.IsSelectionAligned(
-                    getattr(wx, "TEXT_ALIGNMENT_%s" % alignment)):
-                self.toolbar.ToggleTool(
-                    getattr(wx, "ID_JUSTIFY_%s" % alignment), True)
+            if self.editor.IsSelectionAligned(getattr(wx,
+                    "TEXT_ALIGNMENT_%s" % alignment)):
+                self.toolbar.ToggleTool(getattr(wx,
+                    "ID_JUSTIFY_%s" % alignment), True)
                 break
         self.toolbar.Refresh(False)
 

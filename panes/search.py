@@ -173,12 +173,12 @@ class SearchPane(wx.Panel):
             return
         with wx.BusyCursor():
             sec = time.time()
-            results, number = self.find_text(text)
+            results, count = self.get_results(text)
             results.insert(0, _("<font color=\"gray\">%d verses in the %s " \
-                "(%d&nbsp;msec)</font>") % (number,
+                "(%d&nbsp;msec)</font>") % (count,
                 self.version.GetStringSelection(),
                 max(1, (time.time() - sec) * 1000)))
-            if number == 0:
+            if count == 0:
                 results.append(_("<p>No results were found.</p>"))
             self.html = "<html><body><font size=\"%d\">%s</font></body>" \
                 "</html>" % (self._parent.zoom_level, "".join(results))
@@ -187,47 +187,38 @@ class SearchPane(wx.Panel):
             self.text.Insert(text, 0)
             if self.text.GetCount() > 10:
                 self.text.Delete(10)
-        self.toolbar.EnableTool(wx.ID_PRINT, number > 0)
+        self.toolbar.EnableTool(wx.ID_PRINT, count > 0)
         self.toolbar.Refresh(False)
         self.last_version = self.version.GetSelection()
         self.htmlwindow.SetFocus()
 
-    def find_text(self, text):
+    def get_results(self, text):
         options = {}
         for option in self.options:
             options[option] = getattr(self, option).GetValue()
         text = text.replace(u"\u2019", "'")
+        Bible = self._parent.get_htmlwindow(self.version.GetSelection()).Bible
         flags = re.UNICODE
         if not options["CaseSensitive"]:
             flags |= re.IGNORECASE
-        Bible = self._parent.get_htmlwindow(self.version.GetSelection()).Bible
-        start = self.start.GetSelection() + 1
-        stop = self.stop.GetSelection() + 1
         if not options["RegularExpression"]:
-            matches, pattern = self.get_matches(re.escape(text), Bible,
-                options, flags)
-            matches = [item for item in matches if start <= item[0] <= stop]
-            if len(matches):
-                matches.sort()
-                last = matches[-1]
-                for i in range(len(matches) - 2, -1, -1):  # Remove duplicates
-                    if matches[i] == last:
-                        del matches[i]
-                    else:
-                        last = matches[i]
+            return self.get_indexed_results(re.escape(text), Bible, options,
+                flags)
         else:
             matches = []
             pattern = re.compile(text, flags)
-            for b in range(start, stop + 1):
+            for b in range(self.start.GetSelection() + 1,
+                    self.stop.GetSelection() + 2):
                 for c in range(1, len(Bible[b])):
                     for v in range(1, len(Bible[b][c])):
                         verse = Bible[b][c][v].replace("[", ""). \
                             replace("]", "")
                         if pattern.search(verse):
                             matches.append((b, c, v))
-        return (self.format_matches(matches, pattern, options), len(matches))
+            return (self.format_matches(matches, pattern, options),
+                len(matches))
 
-    def get_matches(self, text, Bible, options, flags):
+    def get_indexed_results(self, text, Bible, options, re_flags):
         words = [re.sub(r"[^\w'\-]", r"", word, flags=re.UNICODE) for
             word in text.split()]
         if options["AllWords"] or options["Phrase"]:
@@ -237,10 +228,10 @@ class SearchPane(wx.Panel):
                     longest = word
             matches = self.get_word_matches(longest, options)
             if not len(matches):
-                return ([], None)
+                return ([], 0)
             if options["Phrase"]:
                 pattern = re.compile(r"\[?\b%s\b\]?" % r"\W+".join(words),
-                    flags)
+                    re_flags)
                 matches = [item for item in matches if
                     pattern.search(Bible[item[0]][item[1]][item[2]])]
             elif options["AllWords"]:
@@ -249,25 +240,37 @@ class SearchPane(wx.Panel):
                     words = [r"\b%s\b" % word for word in words]
                     longest = r"\b%s\b" % longest
                 for word in words:
-                    pattern = re.compile(word, flags)
+                    pattern = re.compile(word, re_flags)
                     matches = [item for item in matches if
                         pattern.search(Bible[item[0]][item[1]][item[2]])]
-                words.insert(0, longest)
-                pattern = re.compile("(%s)" % "|".join(words), flags)
+                pattern = re.compile("(%s)" % "|".join([longest] + words),
+                    re_flags)
         else:
             matches = []
             for word in words:
                 matches.extend(self.get_word_matches(word, options))
             if not len(matches):
-                return ([], None)
+                return ([], 0)
             if options["ExactMatch"]:
-                pattern = re.compile("(%s)" %
-                    "|".join([r"\b%s\b" % word for word in words]), flags)
+                pattern = re.compile("(%s)" % "|".join([r"\b%s\b" % word for
+                    word in words]), re_flags)
                 matches = [item for item in matches if
                     pattern.search(Bible[item[0]][item[1]][item[2]])]
             else:
-                pattern = re.compile("(%s)" % "|".join(words), flags)
-        return (matches, pattern)
+                pattern = re.compile("(%s)" % "|".join(words), re_flags)
+        start = self.start.GetSelection() + 1
+        stop = self.stop.GetSelection() + 1
+        matches = [item for item in matches if start <= item[0] <= stop]
+        if not len(matches):
+            return ([], 0)
+        matches.sort()
+        last = matches[-1]
+        for i in range(len(matches) - 2, -1, -1):  # Remove duplicates
+            if matches[i] == last:
+                del matches[i]
+            else:
+                last = matches[i]
+        return (self.format_matches(matches, pattern, options), len(matches))
 
     def get_word_matches(self, word, options, recursive=False):
         index = self.indexes[self.version.GetStringSelection()]
@@ -278,22 +281,22 @@ class SearchPane(wx.Panel):
                 cases.append(word.title())
             for case in cases:
                 if case in index:
-                    matches.extend([tuple(bytearray(index[case][i:i + 3])) for
-                        i in range(0, len(index[case]), 3)])
+                    matches.extend([bytearray(index[case][i:i + 3]) for i in
+                        range(0, len(index[case]), 3)])
         elif word in index:
-            matches.extend([tuple(bytearray(index[word][i:i + 3])) for i in
+            matches.extend([bytearray(index[word][i:i + 3]) for i in
                 range(0, len(index[word]), 3)])
         if not (recursive or options["ExactMatch"] or options["Phrase"]):
             if not options["CaseSensitive"]:
                 lower = word.lower()
                 for word2 in index:
                     lower2 = word2.lower()
-                    if lower in lower2 and lower != lower2:
+                    if lower in lower2 and lower2 != lower:
                         matches.extend(self.get_word_matches(word2,
                             {"CaseSensitive": options["CaseSensitive"]}, True))
             else:
                 for word2 in index:
-                    if word in word2 and word != word2:
+                    if word in word2 and word2 != word:
                         matches.extend(self.get_word_matches(word2,
                             {"CaseSensitive": options["CaseSensitive"]}, True))
         return matches
@@ -302,7 +305,7 @@ class SearchPane(wx.Panel):
         Bible = self._parent.get_htmlwindow(self.version.GetSelection()).Bible
         results = []
         if len(matches) <= 1000:
-            for b, c, v, in matches:
+            for b, c, v in matches:
                 verse = Bible[b][c][v]
                 offset = 0
                 if not options["RegularExpression"]:

@@ -110,8 +110,8 @@ class ChapterWindowBase(HtmlWindowBase):
     def load_chapter(self, book, chapter, verse=-1):
         self.SetPage(self.get_html(book, chapter, verse))
         if verse > 1 and self.HasAnchor(str(verse)):
-            self.current_verse = -1
             wx.CallAfter(self.ScrollToAnchor, str(verse))
+            self.current_verse = -1
         self.reference = (book, chapter, verse)
 
     def OnContextMenu(self, event):
