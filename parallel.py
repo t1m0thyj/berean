@@ -76,8 +76,8 @@ class ParallelWindow(ChapterWindowBase):
             self._frame.notebook.SetPageToolTip(len(self._frame.version_list),
                 self.description)
         if verse > 1:
-            self.current_verse = -1
             wx.CallAfter(self.ScrollToAnchor, str(verse))
+            self.current_verse = -1
         self.reference = (book, chapter, verse)
         self.SetFocus()  # Keep the first choice from scrolling accidentally
 

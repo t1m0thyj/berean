@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 """berean.py - main script for Berean
 Copyright (C) 2014 Timothy Johnson <timothysw@objectmail.com>
 
