@@ -50,8 +50,8 @@ class NotesPage(wx.Panel):
         self._frame = parent.GetParent()
         self.conn = sqlite3.connect(os.path.join(self._frame._app.userdatadir,
             "%s.sqlite" % NotesPane.names[tab]))
-        self.conn.execute("CREATE TABLE IF NOT EXISTS Notes(Topic TEXT " \
-            "PRIMARY KEY, XML TEXT)")
+        self.conn.execute("CREATE TABLE IF NOT EXISTS notes(topic TEXT " \
+            "PRIMARY KEY, xml TEXT)")
         self.db_key = "%d.%d" % self._frame.reference[:2]
 
         self.toolbar = aui.AuiToolBar(self, wx.ID_ANY, wx.DefaultPosition,
@@ -218,7 +218,7 @@ class NotesPage(wx.Panel):
 
     def load_text(self, db_key):
         cur = self.conn.cursor()
-        cur.execute("SELECT XML FROM Notes WHERE Topic=?", (db_key,))
+        cur.execute("SELECT xml FROM notes WHERE topic=?", (db_key,))
         row = cur.fetchone()
         if row:
             stream = cStringIO.StringIO(row[0])
@@ -233,24 +233,17 @@ class NotesPage(wx.Panel):
     def save_text(self):
         if not self.editor.IsModified():
             return
-        cur = self.conn.cursor()
-        cur.execute("SELECT 1 FROM Notes WHERE Topic=?", (self.db_key,))
-        row = cur.fetchone()
         if not self.editor.IsEmpty():
             stream = cStringIO.StringIO()
             self.editor.GetBuffer().SaveStream(stream,
                 richtext.RICHTEXT_TYPE_XML)
             with self.conn:
-                if not row:
-                    self.conn.execute("INSERT INTO Notes VALUES(?,?)",
-                        (self.db_key, stream.getvalue()))
-                else:
-                    self.conn.execute("UPDATE Notes SET XML=? WHERE Topic=?",
-                        (stream.getvalue(), self.db_key))
+                self.conn.execute("INSERT OR REPLACE INTO notes VALUES(?,?)",
+                    (self.db_key, stream.getvalue()))
             self.editor.SetModified(False)
-        elif row:
+        else:
             with self.conn:
-                self.conn.execute("DELETE FROM Notes WHERE Topic=?",
+                self.conn.execute("DELETE FROM notes WHERE topic=?",
                     (self.db_key,))
 
     def OnShowTopicsPane(self, event):
