@@ -246,9 +246,9 @@ class NotesPage(wx.Panel):
                         (self.db_key, stream.getvalue()))
                 else:
                     self.conn.execute("UPDATE Notes SET XML=? WHERE Topic=?",
-                        (self.db_key, stream.getvalue()))
+                        (stream.getvalue(), self.db_key))
             self.editor.SetModified(False)
-        elif not row:
+        elif row:
             with self.conn:
                 self.conn.execute("DELETE FROM Notes WHERE Topic=?",
                     (self.db_key,))
