@@ -50,7 +50,7 @@ class PrintingSystem(html.HtmlEasyPrinting):
         data = self.GetPageSetupData()
         data.SetMarginTopLeft(wx.Point(15, 15))
         data.SetMarginBottomRight(wx.Point(15, 15))
-        self.SetFooter(_("<div align=\"center\"><font size=\"-1\">Page " \
+        self.SetFooter(_("<div align=\"center\"><font size=\"-1\">Page "
             "@PAGENUM@</font></div>"))
         self.SetStandardFonts(**frame.default_font)
 
@@ -177,7 +177,7 @@ class ChapterWindow(ChapterWindowBase):
                     replace("[", "</i>")
         else:
             header = ""
-            verses = [_("<font color=\"gray\">%s %d is not in this version." \
+            verses = [_("<font color=\"gray\">%s %d is not in this version."
                 "</font>") % (BOOK_NAMES[book - 1], chapter)]
         return "<html><body><font size=\"%d\"><div align=center>%s</div>%s" \
             "</font></body></html>" % (self._frame.zoom_level, header,

@@ -174,7 +174,7 @@ class SearchPane(wx.Panel):
         with wx.BusyCursor():
             sec = time.time()
             results, count = self.get_results(text)
-            results.insert(0, _("<font color=\"gray\">%d verses in the %s " \
+            results.insert(0, _("<font color=\"gray\">%d verses in the %s "
                 "(%d&nbsp;msec)</font>") % (count,
                 self.version.GetStringSelection(),
                 max(1, (time.time() - sec) * 1000)))
@@ -328,9 +328,9 @@ class SearchPane(wx.Panel):
                             verse[start + offset:end + offset2] + "</b>" + \
                             verse[end + offset2:]
                         offset += 7
-                results.append("<p><a href=\"%d.%d.%d\">%s %d:%d</a><br />" \
-                        "%s</p>" % (b, c, v, BOOK_NAMES[b - 1], c, v,
-                        verse.replace("[", "<i>").replace("]", "</i>")))
+                results.append("<p><a href=\"%d.%d.%d\">%s %d:%d</a><br />%s"
+                    "</p>" % (b, c, v, BOOK_NAMES[b - 1], c, v,
+                    verse.replace("[", "<i>").replace("]", "</i>")))
         else:
             results.append("<br />")
             i = last_book = 0
@@ -355,11 +355,10 @@ class SearchPane(wx.Panel):
 
     def OnPrint(self, event):
         index = self.html.index("color=\"gray\">") + 13
-        header = _("<div align=\"center\"><font color=\"gray\">\"%s\"<br />" \
+        header = _("<div align=\"center\"><font color=\"gray\">\"%s\"<br />"
             "occurs in %s verses in the %s.</font></div>") % \
-            (self.text.GetValue(),
-            self.html[index:self.html.index(" ", index)],
-            self.version.GetString(self.last_version))
+            (self.text.GetValue(), self.html[index:self.html.index(" ",
+            index)], self.version.GetString(self.last_version))
         text = self.html[:12] + header + \
             self.html[self.html.index("</font>") + 7:]
         if wx.VERSION_STRING >= "2.8.11" and wx.VERSION_STRING != "2.9.0.0":
