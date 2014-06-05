@@ -50,8 +50,9 @@ class NotesPage(wx.Panel):
         self._frame = parent.GetParent()
         self.conn = sqlite3.connect(os.path.join(self._frame._app.userdatadir,
             "%s.sqlite" % NotesPane.names[tab]))
-        self.conn.execute("CREATE TABLE IF NOT EXISTS notes(topic TEXT " \
-            "PRIMARY KEY, xml TEXT)")
+        self.conn.execute("CREATE TABLE IF NOT EXISTS notes(" \
+            "topic TEXT PRIMARY KEY, xml TEXT NOT NULL)")
+        self.conn.commit()
         self.db_key = "%d.%d" % self._frame.reference[:2]
 
         self.toolbar = aui.AuiToolBar(self, wx.ID_ANY, wx.DefaultPosition,
@@ -217,9 +218,8 @@ class NotesPage(wx.Panel):
         self.toolbar.Refresh(False)
 
     def load_text(self, db_key):
-        cur = self.conn.cursor()
-        cur.execute("SELECT xml FROM notes WHERE topic=?", (db_key,))
-        row = cur.fetchone()
+        row = self.conn.execute("SELECT xml FROM notes WHERE topic=?",
+            (db_key,)).fetchone()
         if row:
             stream = cStringIO.StringIO(row[0])
             self.editor.GetBuffer().LoadStream(stream,
@@ -237,14 +237,12 @@ class NotesPage(wx.Panel):
             stream = cStringIO.StringIO()
             self.editor.GetBuffer().SaveStream(stream,
                 richtext.RICHTEXT_TYPE_XML)
-            with self.conn:
-                self.conn.execute("INSERT OR REPLACE INTO notes VALUES(?,?)",
-                    (self.db_key, stream.getvalue()))
+            self.conn.execute("INSERT OR REPLACE INTO notes VALUES(?,?)",
+                (self.db_key, stream.getvalue()))
             self.editor.SetModified(False)
         else:
-            with self.conn:
-                self.conn.execute("DELETE FROM notes WHERE topic=?",
-                    (self.db_key,))
+            self.conn.execute("DELETE FROM notes WHERE topic=?",
+                (self.db_key,))
 
     def OnShowTopicsPane(self, event):
         if self.splitter.IsSplit():
