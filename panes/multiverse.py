@@ -68,7 +68,7 @@ class MultiVersePane(wx.Panel):
                         results.append("<p>[%s %d:%d] %s</p>" %
                             (BOOK_NAMES[b - 1], c, v, Bible[b][c][v]))
                     else:
-                        results.append(_("<p><font color=\"gray\">%s %d:%d " \
+                        results.append(_("<p><font color=\"gray\">%s %d:%d "
                             "is not in the %s.</font></p>") %
                             (BOOK_NAMES[b - 1], c, v, version))
                 else:
@@ -90,11 +90,11 @@ class MultiVersePane(wx.Panel):
             except IndexError:
                 failed.append(reference)
         if len(failed):
-            results.insert(0, "<font color=\"red\">There were problems with " \
+            results.insert(0, "<font color=\"red\">There were problems with "
                 "some of your references.<br />%s</font>" %
                 "<br />".join(failed))
-        self.html = "<html><body><font size=\"%d\">%s</font></body>" \
-            "</html>" % (self._parent.zoom_level, "".join(results))
+        self.html = "<html><body><font size=\"%d\">%s</font></body></html>" % \
+            (self._parent.zoom_level, "".join(results))
         self.htmlwindow.SetPage(self.html)
         self.toolbar.EnableTool(wx.ID_PRINT, True)
         self.toolbar.EnableTool(wx.ID_COPY, True)

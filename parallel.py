@@ -59,8 +59,8 @@ class ParallelWindow(ChapterWindowBase):
                 if (i == CHAPTER_LENGTHS[book - 1][chapter - 1] and
                         chapter == BOOK_LENGTHS[book - 1] and
                         Bibles[j][book] and Bibles[j][book][0]):
-                    text.append("<hr /><div align=\"center\"><i>%s</i>" \
-                        "</div>" % Bibles[j][book][0].replace("]", "<i>"). \
+                    text.append("<hr /><div align=\"center\"><i>%s</i></div>" %
+                        Bibles[j][book][0].replace("]", "<i>").
                         replace("[", "</i>"))
                 text.append("</td>")
             text.append("</tr>")
