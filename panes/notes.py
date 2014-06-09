@@ -49,10 +49,9 @@ class NotesPage(wx.Panel):
         self._parent = parent
         self._frame = parent.GetParent()
         self.conn = sqlite3.connect(os.path.join(self._frame._app.userdatadir,
-            "%s.sqlite" % NotesPane.names[tab]))
+            "%s.sqlite" % NotesPane.names[tab]), isolation_level=None)
         self.conn.execute("CREATE TABLE IF NOT EXISTS notes("
             "topic TEXT PRIMARY KEY, xml TEXT NOT NULL)")
-        self.conn.commit()
         self.db_key = "%d.%d" % self._frame.reference[:2]
 
         self.toolbar = aui.AuiToolBar(self, wx.ID_ANY, wx.DefaultPosition,
@@ -220,7 +219,6 @@ class NotesPage(wx.Panel):
     def load_text(self, db_key):
         row = self.conn.execute("SELECT xml FROM notes WHERE topic=?",
             (db_key,)).fetchone()
-        self.conn.commit()
         if row:
             stream = cStringIO.StringIO(row[0])
             self.editor.GetBuffer().LoadStream(stream,
@@ -244,7 +242,6 @@ class NotesPage(wx.Panel):
         else:
             self.conn.execute("DELETE FROM notes WHERE topic=?",
                 (self.db_key,))
-        self.conn.commit()
 
     def OnShowTopicsPane(self, event):
         if self.splitter.IsSplit():
