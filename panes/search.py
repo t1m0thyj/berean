@@ -372,8 +372,8 @@ class SearchPane(wx.Panel):
         if self._parent.notebook.GetSelection() != self.last_version and \
                 not wx.GetKeyState(wx.WXK_CONTROL):
             self._parent.notebook.SetSelection(self.last_version)
-        self._parent.load_chapter(*map(int,
-            event.GetLinkInfo().GetHref().split(".")))
+        self._parent.load_chapter(*[int(i) for i in
+            event.GetLinkInfo().GetHref().split(".")])
 
     def OnContextMenu(self, event):
         if not len(self.html):
