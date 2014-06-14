@@ -17,15 +17,15 @@ _ = wx.GetTranslation
 
 class MainWindow(wx.Frame):
     def __init__(self, app):
+        pos = [int(i) for i in app.config.Read("Main/WindowPosition",
+            "-1,-1").split(",")]
         display_size = wx.GetDisplaySize()
-        best_size = (int(display_size[0] * 0.8), int(display_size[1] * 0.8))
-        pos = map(int, app.config.Read("Main/WindowPosition", "-1,-1").
-            split(","))
-        size = map(int, app.config.Read("Main/WindowSize", "%d,%d" %
-            best_size).split(","))
-        if not (0 - size[0] < pos[0] < display_size[0] and
-                0 - size[1] < pos[1] < display_size[1]):
-            pos, size = wx.DefaultPosition, best_size
+        default_size = (int(display_size[0] * 0.8), int(display_size[1] * 0.8))
+        size = [int(i) for i in app.config.Read("Main/WindowSize", "%d,%d" %
+            default_size).split(",")]
+        if not (-size[0] < pos[0] < display_size[0] and
+                -size[1] < pos[1] < display_size[1]):
+            pos, size = wx.DefaultPosition, default_size
         self.rect = wx.RectPS(pos, size)
         super(MainWindow, self).__init__(None, title="Berean", pos=pos,
             size=size)
