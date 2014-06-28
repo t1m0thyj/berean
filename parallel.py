@@ -24,7 +24,6 @@ class ParallelWindow(ChapterWindowBase):
     def get_html(self, book, chapter, verse=-1):
         version_list = []
         Bibles = []
-        text = ["<tr>"]
         for i in range(len(self._parent.choices)):
             selection = self._parent.choices[i].GetSelection()
             if i > 0 and selection == 0:
@@ -33,13 +32,17 @@ class ParallelWindow(ChapterWindowBase):
             if i > 0:
                 selection -= 1
             Bibles.append(self._frame.notebook.GetPage(selection).Bible)
+        text = ["<tr>"]
+        for i in range(len(version_list)):
             title = "<font size=\"+2\"><b>%s %d (%s)</b></font>" % \
-                (BOOK_NAMES[book - 1], chapter, version_list[-1])
-            if ((not Bibles[-1][book]) or (not Bibles[-1][book][chapter][0])):
-                text.append("<td align=\"center\">%s</td>" % title)
+                (BOOK_NAMES[book - 1], chapter, version_list[i])
+            if (not Bibles[i][book]) or (not Bibles[i][book][chapter][0]):
+                text.append("<td align=\"center\" width=\"%d%%\">%s</td>" %
+                    (100.0 / len(version_list), title))
             else:
-                text.append("<td align=\"center\">%s<br/><i>%s</i></td>" %
-                    (title, Bibles[-1][book][chapter][0].replace("]", "<i>").
+                text.append("<td align=\"center\" width=\"%d%%\">%s<br/><i>" \
+                    "%s</i></td>" % (100.0 / len(version_list), title,
+                    Bibles[i][book][chapter][0].replace("]", "<i>").
                     replace("[", "</i>")))
         text.append("</tr>")
         for i in range(1, CHAPTER_LENGTHS[book - 1][chapter - 1] + 1):
@@ -52,7 +55,7 @@ class ParallelWindow(ChapterWindowBase):
                         (i, Bibles[j][book][chapter][i].replace("[", "<i>").
                         replace("]", "</i>")))
                     if i == verse:
-                        text[-1] = "<b>%s</b>" % text[-1]
+                        text[i] = "<b>%s</b>" % text[i]
                 if j == 0:
                     text.insert(len(text) - 1, "<a name=\"%d\">" % i)
                     text.append("</a>")
@@ -65,9 +68,9 @@ class ParallelWindow(ChapterWindowBase):
                 text.append("</td>")
             text.append("</tr>")
         self.set_description(version_list)
-        return "<html><body><font size=\"%d\"><table valign=top cellspacing=" \
-            "2 cellpadding=0><tbody>%s</tbody></table></font></body>" \
-            "</html>" % (self._frame.zoom_level, "".join(text))
+        return "<html><body><font size=\"%d\"><table valign=\"top\" " \
+            "cellspacing=\"2\" cellpadding=\"0\"><tbody>%s</tbody></table>" \
+            "</font></body></html>" % (self._frame.zoom_level, "".join(text))
 
     def load_chapter(self, book, chapter, verse=-1):
         self.SetPage(self.get_html(book, chapter, verse))
