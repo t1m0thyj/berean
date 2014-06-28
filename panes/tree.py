@@ -18,7 +18,7 @@ class TreePane(wx.TreeCtrl):
         for i in range(66):
             self.top_level_items.append(self.AppendItem(root, BOOK_NAMES[i]))
             if BOOK_LENGTHS[i] > 1:
-                self.SetItemHasChildren(self.top_level_items[-1], True)
+                self.SetItemHasChildren(self.top_level_items[i], True)
         self.add_children(parent.reference[0], True)
         self.Bind(wx.EVT_TREE_ITEM_COLLAPSED, self.OnItemCollapsed)
         self.Bind(wx.EVT_TREE_ITEM_EXPANDING, self.OnItemExpanding)
