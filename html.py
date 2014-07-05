@@ -102,6 +102,7 @@ class ChapterWindowBase(HtmlWindowBase):
         self._frame = frame
         self.current_verse = -1
         self.reference = None
+        self.zoom_level = frame.zoom_level
         if wx.VERSION_STRING >= "2.9":
             self.Bind(wx.EVT_CONTEXT_MENU, self.OnContextMenu)
         else:  # wxHtmlWindow doesn't generate EVT_CONTEXT_MENU in 2.8
@@ -113,6 +114,7 @@ class ChapterWindowBase(HtmlWindowBase):
             wx.CallAfter(self.ScrollToAnchor, str(verse))
             self.current_verse = -1
         self.reference = (book, chapter, verse)
+        self.zoom_level = self._frame.zoom_level
 
     def OnContextMenu(self, event):
         menu = wx.Menu()
