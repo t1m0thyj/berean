@@ -24,6 +24,7 @@ class ParallelWindow(ChapterWindowBase):
     def get_html(self, book, chapter, verse=-1):
         version_list = []
         Bibles = []
+        text = ["<tr>"]
         for i in range(len(self._parent.choices)):
             selection = self._parent.choices[i].GetSelection()
             if i > 0 and selection == 0:
@@ -32,17 +33,13 @@ class ParallelWindow(ChapterWindowBase):
             if i > 0:
                 selection -= 1
             Bibles.append(self._frame.notebook.GetPage(selection).Bible)
-        text = ["<tr>"]
-        for i in range(len(version_list)):
             title = "<font size=\"+2\"><b>%s %d (%s)</b></font>" % \
-                (BOOK_NAMES[book - 1], chapter, version_list[i])
-            if (not Bibles[i][book]) or (not Bibles[i][book][chapter][0]):
-                text.append("<td align=\"center\" width=\"%d%%\">%s</td>" %
-                    (100.0 / len(version_list), title))
+                (BOOK_NAMES[book - 1], chapter, version_list[-1])
+            if (not Bibles[-1][book]) or (not Bibles[-1][book][chapter][0]):
+                text.append("<td align=\"center\">%s</td>" % title)
             else:
-                text.append("<td align=\"center\" width=\"%d%%\">%s<br/><i>" \
-                    "%s</i></td>" % (100.0 / len(version_list), title,
-                    Bibles[i][book][chapter][0].replace("]", "<i>").
+                text.append("<td align=\"center\">%s<br/><i>%s</i></td>" %
+                    (title, Bibles[-1][book][chapter][0].replace("]", "<i>").
                     replace("[", "</i>")))
         text.append("</tr>")
         for i in range(1, CHAPTER_LENGTHS[book - 1][chapter - 1] + 1):
@@ -82,6 +79,7 @@ class ParallelWindow(ChapterWindowBase):
             wx.CallAfter(self.ScrollToAnchor, str(verse))
             self.current_verse = -1
         self.reference = (book, chapter, verse)
+        self.zoom_level = self._frame.zoom_level
         self.SetFocus()  # Keep the first choice from scrolling accidentally
 
 
