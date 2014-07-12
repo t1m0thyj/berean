@@ -52,10 +52,9 @@ class ParallelWindow(ChapterWindowBase):
                         (i, Bibles[j][book][chapter][i].replace("[", "<i>").
                         replace("]", "</i>")))
                     if i == verse:
-                        text[i] = "<b>%s</b>" % text[i]
+                        text[-1] = "<b>%s</b>" % text[-1]
                 if j == 0:
-                    text.insert(len(text) - 1, "<a name=\"%d\">" % i)
-                    text.append("</a>")
+                    text[-1] = "<a name=\"%d\">%s</a>" % (i, text[-1])
                 if (i == CHAPTER_LENGTHS[book - 1][chapter - 1] and
                         chapter == BOOK_LENGTHS[book - 1] and
                         Bibles[j][book] and Bibles[j][book][0]):
