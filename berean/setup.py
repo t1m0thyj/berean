@@ -9,7 +9,6 @@ import py2exe
 
 from config import VERSION
 
-os.chdir(os.path.dirname(__file__))
 manifest = """<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <assembly manifestVersion="1.0" xmlns="urn:schemas-microsoft-com:asm.v1">
   <assemblyIdentity name="berean" processorArchitecture="x86" type="win32" version="1.0.0.0"/>
@@ -30,8 +29,8 @@ if os.path.isdir("dist"):
     shutil.rmtree("dist")
 excludes = ["_gtkagg", "_tkagg", "bsddb", "curses", "email", "pywin.debugger",
     "pywin.debugger.dbgcon", "pywin.dialogs", "tcl", "Tkconstants", "Tkinter"]
-dll_excludes = ["libgdk-win32-2.0-0.dll", "libgobject-2.0-0.dll", "tcl85.dll",
-    "tk85.dll", "msvcr80.dll", "UxTheme.dll", "msvcp90.dll", "w9xpopen.exe"]
+dll_excludes = ["libgdk-win32-2.0-0.dll", "libgobject-2.0-0.dll", "tcl84.dll",
+    "tk84.dll", "msvcp90.dll"]
 setup(options={"py2exe": {"compressed": 1,
 		"optimize": 2,
         "bundle_files": 3,
@@ -51,5 +50,3 @@ setup(options={"py2exe": {"compressed": 1,
         ("versions", ["versions\\KJV.bbl"]),
         ("", ["license.txt"])],
 	zipfile=None)
-if os.path.isdir("build"):
-    shutil.rmtree("build")

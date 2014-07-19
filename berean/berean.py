@@ -145,6 +145,7 @@ class Berean(wx.App):
                 "berean.mo")):
             self.locale.AddCatalog(language)
         self.frame = mainwindow.MainWindow(self)
+        self.Bind(wx.EVT_END_SESSION, self.frame.OnClose)
         self.SetTopWindow(self.frame)
         if "--systemtray" not in options:
             self.frame.Show()
