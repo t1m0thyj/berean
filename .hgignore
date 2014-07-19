@@ -1,5 +1,9 @@
 syntax: glob
+build
 dist
+versions
 *.pyc
 .project
 .pydevproject
+build.bat
+vcredist_x86.exe
