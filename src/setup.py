@@ -30,7 +30,7 @@ if os.path.isdir("dist"):
 excludes = ["_gtkagg", "_tkagg", "bsddb", "curses", "email", "pywin.debugger",
     "pywin.debugger.dbgcon", "pywin.dialogs", "tcl", "Tkconstants", "Tkinter"]
 dll_excludes = ["libgdk-win32-2.0-0.dll", "libgobject-2.0-0.dll", "tcl84.dll",
-    "tk84.dll", "msvcp90.dll"]
+    "tk84.dll", "msvcp90.dll", "w9xpopen.exe"]
 setup(options={"py2exe": {"compressed": 1,
 		"optimize": 2,
         "bundle_files": 3,
