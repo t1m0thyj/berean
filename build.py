@@ -2,8 +2,8 @@
 
 To build Berean you need the following dependencies:
     Python 2.6 or 2.7
-    wxPython 2.8 (preferably at least 2.9) or higher
-    py2exe
+    wxPython 2.8 or higher (2.9 or higher recommended)
+    py2exe (0.6.9 recommended)
 
 To build a tar.gz archive containing Berean source code, pass the command-line
 argument --build-source-tar to this script. You must have 7-Zip installed for
@@ -33,45 +33,55 @@ import shutil
 import subprocess
 import sys
 
-sys.path.insert(0, "berean")
+sys.path.insert(0, "src")
 from config import VERSION
 
 _7ZIP_PATH = "C:\\Program Files\\7-Zip\\7z.exe"
 INNO_SETUP_PATH = "C:\\Program Files (x86)\\Inno Setup 5\\ISCC.exe"
 
-os.chdir(os.path.join(os.path.dirname(__file__), "berean"))
+os.chdir(os.path.join(os.path.dirname(__file__), "src"))
 subprocess.call("setup.py py2exe", shell=True)
 os.chdir(os.path.dirname(__file__))
 print
 
 if "--build-source-tar" in sys.argv:
-    filename = "berean\\build\\Berean_%s_source.tar" % VERSION
-    if os.path.isfile(filename):
-        os.remove(filename)
-    subprocess.call([_7ZIP_PATH, "a", "-ttar", filename, "berean\\*.py"])
+    filename = "src\\build\\Berean_%s_source.tar" % VERSION
+    if os.path.isfile(filename + ".gz"):
+        os.remove(filename + ".gz")
+    subprocess.call([_7ZIP_PATH, "a", "-ttar", filename, "src\\*.py"])
     for item in ("berean-48.bmp", "build.py", "installer.iss",
-            "berean\\berean.pyw", "berean\\images", "berean\\license.txt",
-            "berean\\locale", "berean\\versions\\KJV.bbl"):
+            "src\\berean.pyw", "src\\images", "src\\license.txt",
+            "src\\locale", "src\\versions\\KJV.bbl"):
         subprocess.call([_7ZIP_PATH, "a", filename, item])
     subprocess.call([_7ZIP_PATH, "a", "-tgzip", filename + ".gz", filename])
     os.remove(filename)
     print
 
-if "--build-zip" in sys.argv:
-    filename = "berean\\build\\Berean_%s.zip" % VERSION
+
+def build_zip(portable=False):
+    if not portable:
+        filename = "src\\build\\Berean_%s.zip" % VERSION
+    else:
+        filename = "src\\build\\Berean_%s_Portable.zip" % VERSION
     if os.path.isfile(filename):
         os.remove(filename)
-    subprocess.call([_7ZIP_PATH, "a", filename, ".\\berean\\dist\\*"])
+    subprocess.call([_7ZIP_PATH, "a", filename, ".\\src\\dist\\*"])
+
+
+if "--build-zip" in sys.argv:
+    build_zip()
     print
 
 if "--build-portable-zip" in sys.argv:
-    filename2 = "berean\\build\\Berean_%s_Portable.zip" % VERSION
-    shutil.copy(filename, filename2)
-    with open("berean\\build\\portable.ini", 'w'):
+    filename = "src\\build\\Berean_%s_Portable.zip" % VERSION
+    if "--build-zip" in sys.argv:
+        shutil.copy("src\\build\\Berean_%s.zip" % VERSION, filename)
+    else:
+        build_zip(True)
+    with open("src\\build\\portable.ini", 'w'):
         pass
-    subprocess.call([_7ZIP_PATH, "a", filename2,
-        ".\\berean\\build\\portable.ini"])
-    os.remove("berean\\build\\portable.ini")
+    subprocess.call([_7ZIP_PATH, "a", filename, ".\\src\\build\\portable.ini"])
+    os.remove("src\\build\\portable.ini")
     print
 
 if "--build-installer" in sys.argv:
@@ -86,7 +96,7 @@ if "--build-installer" in sys.argv:
 if "--delete-old" in sys.argv:
     for pathname in ("Berean*.tar.gz", "Berean*[0-9].zip",
             "Berean*Portable.zip", "Berean*.exe"):
-        pathnames = glob.glob("berean/build/%s" % pathname)
+        pathnames = glob.glob("src/build/%s" % pathname)
         if len(pathnames) > 2:
             delete = raw_input("Delete '%s' (Y/N)? " % pathnames[0])
             if delete.lower() == "y":
