@@ -11,6 +11,7 @@ import panes
 import parallel
 import toolbar
 from config import *
+from refalize import reference_str
 
 _ = wx.GetTranslation
 
@@ -51,7 +52,7 @@ class MainWindow(wx.Frame):
         self.minimize_to_tray = app.config.ReadBool("Main/MinimizeToTray")
         self.version_list = app.config.ReadList("VersionList", ["KJV"])
         self.verse_history = app.config.ReadList("History")
-        self.history_item = len(self.verse_history) - 1
+        self.history_item = -1
         self.help = html.HelpSystem(self)
         self.printing = html.PrintingSystem(self)
 
@@ -152,9 +153,7 @@ class MainWindow(wx.Frame):
         tab = self.notebook.GetSelection()
         self.SetTitle("Berean - %s %d (%s)" % (BOOK_NAMES[book - 1], chapter,
             self.notebook.GetPageText(tab)))
-        reference = "%s %d" % (BOOK_NAMES[book - 1], chapter)
-        if verse != -1:
-            reference += ":%d" % verse
+        reference = reference_str(book, chapter, verse)
         if reference not in self.verse_history:
             self.verse_history = self.verse_history[:self.history_item + 1]
             self.verse_history.append(reference)

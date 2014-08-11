@@ -26,8 +26,8 @@ class TopicsPaneBase(wx.Panel):
     def OnSearchCtrlText(self, event):
         text = self.searchctrl.GetValue()
         if len(text):
-            for i, string in enumerate(self.listbox.GetStrings()):
-                if string.startswith(text):
+            for i, topic in enumerate(self.listbox.GetStrings()):
+                if topic.startswith(text):
                     self.listbox.SetSelection(i)
                     break
         self.searchctrl.ShowCancelButton(len(text) > 0)

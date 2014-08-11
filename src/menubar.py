@@ -5,9 +5,16 @@ from wx import gizmos
 
 import html
 from config import *
-from refalize import refalize
+from refalize import refalize, reference_str
 
 _ = wx.GetTranslation
+
+
+def find_favorite(reference, favorites_list):
+    for i in range(len(favorites_list)):
+        if refalize(favorites_list[i]) == reference:
+            return i
+    return -1
 
 
 class MenuBar(wx.MenuBar):
@@ -196,16 +203,13 @@ class MenuBar(wx.MenuBar):
     def OnMultiVersePane(self, event):
         self._frame.show_multiverse_pane(event.IsChecked())
 
-    def OnAddToFavorites(self, event):
-        name = "%s %d" % (BOOK_NAMES[self._frame.reference[0] - 1],
-            self._frame.reference[1])
-        if self._frame.reference[2] != -1:
-            name += ":%d" % self._frame.reference[2]
-        if find_favorite(refalize(name), self.favorites_list) == -1:
-            self.favorites_list.append(name)
+    def OnAddToFavorites(self, event): 
+        favorite = reference_str(*self._frame.reference)
+        if find_favorite(self._frame.reference, self.favorites_list) == -1:
+            self.favorites_list.append(favorite)
             self.update_favorites()
         else:
-            wx.MessageBox(_("%s is already in the favorites list.") % name,
+            wx.MessageBox(_("%s is already in the favorites list.") % favorite,
                 "Berean", wx.ICON_EXCLAMATION | wx.OK)
 
     def OnManageFavorites(self, event):
@@ -244,13 +248,6 @@ class MenuBar(wx.MenuBar):
         wx.AboutBox(info)
 
 
-def find_favorite(reference, favorites_list):
-    for i in range(len(favorites_list)):
-        if refalize(favorites_list[i]) == reference:
-            return i
-    return -1
-
-
 class FavoritesDialog(wx.Dialog):
     def __init__(self, parent):
         super(FavoritesDialog, self).__init__(parent,
@@ -280,17 +277,15 @@ class FavoritesDialog(wx.Dialog):
             wx.MessageBox(_("'%s' is not a valid reference.") % label,
                 _("Manage Favorites"), wx.ICON_EXCLAMATION | wx.OK)
             event.Veto()
+            return
+        index = find_favorite(reference, self.listbox.GetStrings())
+        if index != -1 and index != event.GetIndex():
+            wx.MessageBox(_("%s is already in the favorites list.") %
+                reference_str(*reference), _("Manage Favorites"),
+                wx.ICON_EXCLAMATION | wx.OK)
+            event.Veto()
         else:
-            index = find_favorite(reference, self.listbox.GetStrings())
-            if index != -1 and index != event.GetIndex():
-                name = "%s %d" % (BOOK_NAMES[reference[0] - 1], reference[1])
-                if reference[2] != -1:
-                    name += ":%d" % reference[2]
-                wx.MessageBox(_("%s is already in the favorites list.") % name,
-                    _("Manage Favorites"), wx.ICON_EXCLAMATION | wx.OK)
-                event.Veto()
-            else:
-                event.Skip()
+            event.Skip()
 
     def OnOk(self, event):
         self._parent.menubar.favorites_list = self.listbox.GetStrings()

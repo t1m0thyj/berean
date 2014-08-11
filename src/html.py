@@ -108,7 +108,7 @@ class ChapterWindowBase(HtmlWindowBase):
         else:  # wxHtmlWindow doesn't generate EVT_CONTEXT_MENU in 2.8
             self.Bind(wx.EVT_RIGHT_UP, self.OnContextMenu)
 
-    def load_chapter(self, book, chapter, verse=-1):
+    def load_chapter(self, book, chapter, verse):
         self.SetPage(self.get_html(book, chapter, verse))
         if verse > 1 and self.HasAnchor(str(verse)):
             wx.CallAfter(self.ScrollToAnchor, str(verse))
@@ -150,11 +150,10 @@ class ChapterWindow(ChapterWindowBase):
         try:
             with open(filename, 'rb') as Bible:
                 self.Bible = cPickle.load(Bible)
-        except Exception as exc:
+            self.description = VERSION_DESCRIPTIONS[version]
+        except IOError as exc:
             wx.MessageBox(_("Could not load %s.\n\nError: %s") % (version,
                 exc), _("Error"), wx.ICON_WARNING | wx.OK)
-        else:
-            self.description = VERSION_DESCRIPTIONS[version]
 
     def get_html(self, book, chapter, verse=-1):
         if self.Bible[book]:
