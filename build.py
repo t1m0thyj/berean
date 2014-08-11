@@ -5,7 +5,7 @@ To build Berean you need the following dependencies:
     wxPython 2.8 or higher (2.9 or higher recommended)
     py2exe (0.6.9 recommended)
 
-To build a tar.gz archive containing Berean source code, pass the command-line
+To build a tar.gz archive containing Berean source code, pass the command line
 argument --build-source-tar to this script. You must have 7-Zip installed for
 this to work.
 
@@ -17,7 +17,7 @@ To build an Inno Setup installer containing Berean built with py2exe, pass the
 argument --build-installer. You must have Inno Setup installed for this to
 work. You will also need to download Microsoft Visual C++ 2008 Redistributable
 version 9.0.21022.8 (available at
-http://www.microsoft.com/en-us/download/details.aspx?id=29) and save it to the
+http://www.microsoft.com/en-us/download/details.aspx?id=29) and put it in the
 same directory where this script is.
 
 If you pass the argument --delete-old, you will be prompted to delete old
@@ -33,7 +33,7 @@ import shutil
 import subprocess
 import sys
 
-sys.path.insert(0, "src")
+sys.path.append("src")
 from config import VERSION
 
 _7ZIP_PATH = "C:\\Program Files\\7-Zip\\7z.exe"
@@ -86,10 +86,11 @@ if "--build-portable-zip" in sys.argv:
 
 if "--build-installer" in sys.argv:
     with open("installer.iss", 'r') as fileobj:
-        lines = fileobj.readlines()
+        text = fileobj.read()
     with open("installer.iss", 'w') as fileobj2:
-        lines[4] = "#define MyAppVersion \"%s\"\n" % VERSION
-        fileobj2.writelines(lines)
+        index = text.index("#define MyAppVersion")
+        fileobj2.write(text[:index] + "#define MyAppVersion \"%s\"" % VERSION +
+            text[text.index("\n", index):])
     subprocess.call([INNO_SETUP_PATH, "installer.iss"])
     print
 
@@ -98,6 +99,7 @@ if "--delete-old" in sys.argv:
             "Berean*Portable.zip", "Berean*.exe"):
         pathnames = glob.glob("src/build/%s" % pathname)
         if len(pathnames) > 2:
+            pathnames.sort(key=os.path.getmtime)
             delete = raw_input("Delete '%s' (Y/N)? " % pathnames[0])
             if delete.lower() == "y":
                 os.remove(pathnames[0])

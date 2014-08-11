@@ -81,6 +81,13 @@ ABBREVS = (("1 c", 46), ("1 chronicles", 13), ("1 corinthians", 46), ("1 jn",
     36))
 
 
+def reference_str(book, chapter, verse):
+    reference = "%s %d" % (BOOK_NAMES[book - 1], chapter)
+    if verse != -1:
+        reference += ":%d" % verse
+    return reference
+
+
 def get_book_index(abbrev, no_error=False):
     abbrev = abbrev.lower()
     for abbrev2, book_num in ABBREVS:
@@ -175,8 +182,8 @@ def validate(reference, check_book=True):
     if reference[-1].isdigit():
         return True
     if check_book:
-        for i, char in enumerate(reference):
-            if i > 0 and char.isdigit():
-                break
+        i = 1
+        while i < len(reference) and not reference[i].isdigit():
+            i += 1
         return get_book_index(reference[:i].rstrip(), True) != -1
     return False

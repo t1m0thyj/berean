@@ -12,29 +12,31 @@ class ParallelWindow(ChapterWindowBase):
     def __init__(self, parent, version_list):
         super(ParallelWindow, self).__init__(parent, parent.GetGrandParent())
         self._parent = parent
-        self.set_description(version_list)
+        self.version_list = version_list
 
-    def set_description(self, version_list):
-        if len(version_list) <= 2:
-            self.description = _(" and ").join(version_list)
+    @property
+    def description(self):
+        if len(self.version_list) <= 2:
+            return _(" and ").join(self.version_list)
         else:
-            self.description = _("%s, and %s") % (", ".join(version_list[:-1]),
-                version_list[-1])
+            return _("%s, and %s") % (", ".join(self.version_list[:-1]),
+                self.version_list[-1])
 
     def get_html(self, book, chapter, verse=-1):
-        version_list = []
+        self.version_list = []
         Bibles = []
         text = ["<tr>"]
         for i in range(len(self._parent.choices)):
             selection = self._parent.choices[i].GetSelection()
             if i > 0 and selection == 0:
                 continue
-            version_list.append(self._parent.choices[i].GetString(selection))
+            self.version_list.append(self._parent.choices[i].GetString(
+                selection))
             if i > 0:
                 selection -= 1
             Bibles.append(self._frame.notebook.GetPage(selection).Bible)
             title = "<font size=\"+2\"><b>%s %d (%s)</b></font>" % \
-                (BOOK_NAMES[book - 1], chapter, version_list[-1])
+                (BOOK_NAMES[book - 1], chapter, self.version_list[-1])
             if (not Bibles[-1][book]) or (not Bibles[-1][book][chapter][0]):
                 text.append("<td align=\"center\">%s</td>" % title)
             else:
@@ -63,12 +65,11 @@ class ParallelWindow(ChapterWindowBase):
                         replace("[", "</i>"))
                 text.append("</td>")
             text.append("</tr>")
-        self.set_description(version_list)
         return "<html><body><font size=\"%d\"><table valign=\"top\" " \
             "cellspacing=\"2\" cellpadding=\"0\"><tbody>%s</tbody></table>" \
             "</font></body></html>" % (self._frame.zoom_level, "".join(text))
 
-    def load_chapter(self, book, chapter, verse=-1):
+    def load_chapter(self, book, chapter, verse):
         self.SetPage(self.get_html(book, chapter, verse))
         self._frame.statusbar.SetStatusText(self.description, 1)
         if wx.VERSION_STRING >= "2.9.4":
