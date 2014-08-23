@@ -25,7 +25,7 @@ class TopicsPaneBase(wx.Panel):
 
     def OnSearchCtrlText(self, event):
         text = self.searchctrl.GetValue()
-        if len(text):
+        if text:
             for i, topic in enumerate(self.listbox.GetStrings()):
                 if topic.startswith(text):
                     self.listbox.SetSelection(i)

@@ -60,7 +60,7 @@ class ToolBar(aui.AuiToolBar):
 
     def OnGoToVerse(self, event):
         reference = self.verse_entry.GetValue()
-        if not len(reference):
+        if not reference:
             return
         elif not validate(reference):
             if not self._parent.aui.GetPane("search_pane").IsShown():

@@ -63,7 +63,7 @@ class PreferencesDialog(wx.Dialog):
     def OnOk(self, event):
         version_list = [version for i, version in enumerate(VERSION_NAMES) if
             self.version_list.IsChecked(i)]
-        if not len(version_list):
+        if not version_list:
             wx.MessageBox(_("You must have at least one version selected."),
                 _("Berean"), wx.ICON_EXCLAMATION | wx.OK)
             return

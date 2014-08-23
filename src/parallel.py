@@ -49,7 +49,7 @@ class ParallelWindow(ChapterWindowBase):
             for j in range(len(Bibles)):
                 text.append("<td>")
                 if (Bibles[j][book] and i < len(Bibles[j][book][chapter]) and
-                        len(Bibles[j][book][chapter][i])):
+                        Bibles[j][book][chapter][i]):
                     text.append("<font size=\"-1\">%d&nbsp;</font>%s" %
                         (i, Bibles[j][book][chapter][i].replace("[", "<i>").
                         replace("]", "</i>")))
