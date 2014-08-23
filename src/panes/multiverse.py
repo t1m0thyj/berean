@@ -64,7 +64,7 @@ class MultiVersePane(wx.Panel):
         for b, c, v, c2, v2, reference in references:
             try:
                 if c2 == -1 and v2 == -1:
-                    if len(Bible[b][c][v]):
+                    if Bible[b][c][v]:
                         results.append("<p>[%s %d:%d] %s</p>" %
                             (BOOK_NAMES[b - 1], c, v, Bible[b][c][v]))
                     else:
@@ -80,16 +80,16 @@ class MultiVersePane(wx.Panel):
                             v4 = v2
                         verses = []
                         for v5 in range(v3, v4 + 1):
-                            if len(Bible[b][c3][v5]):
+                            if Bible[b][c3][v5]:
                                 verses.append("%d&nbsp;%s" % (v5,
                                     Bible[b][c3][v5]))
-                        if not len(verses):
+                        if not verses:
                             raise IndexError
                         results.append("<p>[%s %d:%d-%d] %s</p>" %
                             (BOOK_NAMES[b - 1], c3, v3, v4, " ".join(verses)))
             except IndexError:
                 failed.append(reference)
-        if len(failed):
+        if failed:
             results.insert(0, "<font color=\"red\">There were problems with "
                 "some of your references.<br />%s</font>" %
                 "<br />".join(failed))
@@ -120,10 +120,10 @@ class MultiVersePane(wx.Panel):
             wx.TheClipboard.Close()
 
     def OnContextMenu(self, event):
-        if not len(self.html):
+        if not self.html:
             return
         menu = wx.Menu()
-        if len(self.htmlwindow.SelectionToText()):
+        if self.htmlwindow.SelectionToText():
             menu.Append(wx.ID_COPY, _("&Copy"))
         menu.Append(wx.ID_SELECTALL, _("Select &All"))
         menu.AppendSeparator()

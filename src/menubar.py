@@ -126,7 +126,7 @@ class MenuBar(wx.MenuBar):
     def update_favorites(self):
         for i in range(2, self.menu_favorites.GetMenuItemCount() - 3):
             self.menu_favorites.Remove(wx.ID_HIGHEST + i - 1)
-        if len(self.favorites_list):
+        if self.favorites_list:
             for i in range(len(self.favorites_list)):
                 self.menu_favorites.Insert(i + 3, wx.ID_HIGHEST + i + 1,
                     self.favorites_list[i])

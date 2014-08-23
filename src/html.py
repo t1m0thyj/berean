@@ -164,7 +164,7 @@ class ChapterWindow(ChapterWindowBase):
                     replace("]", "<i>").replace("[", "</i>")
             verses = []
             for i in range(1, len(self.Bible[book][chapter])):
-                if not len(self.Bible[book][chapter][i]):
+                if not self.Bible[book][chapter][i]:
                     continue
                 text = "<font size=\"-1\">%d&nbsp;</font>%s" % (i,
                     self.Bible[book][chapter][i].replace("[", "<i>").

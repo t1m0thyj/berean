@@ -164,7 +164,7 @@ class SearchPane(wx.Panel):
 
     def OnSearch(self, event):
         text = self.text.GetValue()
-        if not len(text):
+        if not text:
             return
         elif validate(text, False):
             self._parent.toolbar.verse_entry.SetValue(text)
@@ -227,7 +227,7 @@ class SearchPane(wx.Panel):
                 if len(word) >= len(longest):
                     longest = word
             matches = self.get_word_matches(longest, options)
-            if not len(matches):
+            if not matches:
                 return ([], 0)
             if options["Phrase"]:
                 pattern = re.compile(r"\[?\b%s\b\]?" % r"\W+".join(words),
@@ -249,7 +249,7 @@ class SearchPane(wx.Panel):
             matches = []
             for word in words:
                 matches.extend(self.get_word_matches(word, options))
-            if not len(matches):
+            if not matches:
                 return ([], 0)
             if options["ExactMatch"]:
                 pattern = re.compile("(%s)" % "|".join([r"\b%s\b" % word for
@@ -261,7 +261,7 @@ class SearchPane(wx.Panel):
         start = self.start.GetSelection() + 1
         stop = self.stop.GetSelection() + 1
         matches = [item for item in matches if start <= item[0] <= stop]
-        if not len(matches):
+        if not matches:
             return ([], 0)
         matches.sort()
         last = matches[-1]
@@ -376,10 +376,10 @@ class SearchPane(wx.Panel):
             event.GetLinkInfo().GetHref().split(".")])
 
     def OnContextMenu(self, event):
-        if not len(self.html):
+        if not self.html:
             return
         menu = wx.Menu()
-        if len(self.htmlwindow.SelectionToText()):
+        if self.htmlwindow.SelectionToText():
             menu.Append(wx.ID_COPY, _("&Copy"))
         menu.Append(wx.ID_SELECTALL, _("Select &All"))
         menu.AppendSeparator()
