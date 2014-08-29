@@ -17,8 +17,8 @@
 			<param name="Local" value="menu-view.html">
 			</object>
 		<li><object type="text/sitemap">
-			<param name="Name" value="Favorites menu">
-			<param name="Local" value="menu-favorites.html">
+			<param name="Name" value="Bookmarks menu">
+			<param name="Local" value="menu-bookmarks.html">
 			</object>
 		<li><object type="text/sitemap">
 			<param name="Name" value="Help menu">

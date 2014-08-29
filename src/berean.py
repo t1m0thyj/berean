@@ -61,8 +61,7 @@ class FileConfig(wx.FileConfig):
             self._app.frame.notebook.GetSelection())
         self.WriteBool("MinimizeToTray", self._app.frame.minimize_to_tray)
         self.WriteList("../VersionList", self._app.frame.version_list)
-        self.WriteList("../FavoritesList",
-            self._app.frame.menubar.favorites_list)
+        self.WriteList("../Bookmarks", self._app.frame.menubar.bookmarks)
         self.WriteList("../VerseHistory",
             self._app.frame.toolbar.verse_entry.GetStrings())
         self.WriteList("../History", self._app.frame.verse_history)
