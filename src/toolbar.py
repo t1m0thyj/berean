@@ -51,11 +51,11 @@ class ToolBar(aui.AuiToolBar):
         self.AddTool(wx.ID_COPY, "", parent.get_bitmap("copy"),
             _("Copy (Ctrl+C)"))
         self.AddSeparator()
-        self.AddTool(parent.menubar.add_to_favorites_item.GetId(), "",
-            parent.get_bitmap("add-to-favorites"),
-            _("Add to Favorites (Ctrl+D)"))
-        self.AddTool(parent.menubar.manage_favorites_item.GetId(), "",
-            parent.get_bitmap("manage-favorites"), _("Manage Favorites"))
+        self.AddTool(parent.menubar.add_to_bookmarks_item.GetId(), "",
+            parent.get_bitmap("add-to-bookmarks"),
+            _("Add to Bookmarks (Ctrl+D)"))
+        self.AddTool(parent.menubar.manage_bookmarks_item.GetId(), "",
+            parent.get_bitmap("manage-bookmarks"), _("Manage Bookmarks"))
         self.Realize()
 
     def OnGoToVerse(self, event):

@@ -76,24 +76,24 @@
 			<param name="Local" value="menu-view.html#MultiVerseRetrieval">
 		</object>
 	<li><object type="text/sitemap">
-			<param name="Name" value="Favorites menu">
-			<param name="Local" value="menu-favorites.html">
+			<param name="Name" value="Bookmarks menu">
+			<param name="Local" value="menu-bookmarks.html">
 		</object>
 	<li><object type="text/sitemap">
-			<param name="Name" value="Add to favorites">
-			<param name="Local" value="menu-favorites.html#AddToFavorites">
+			<param name="Name" value="Add to bookmarks">
+			<param name="Local" value="menu-bookmarks.html#AddToBookmarks">
 		</object>
 	<li><object type="text/sitemap">
-			<param name="Name" value="Manage favorites">
-			<param name="Local" value="menu-favorites.html#ManageFavorites">
+			<param name="Name" value="Manage bookmarks">
+			<param name="Local" value="menu-bookmarks.html#ManageBookmarks">
 		</object>
 	<li><object type="text/sitemap">
-			<param name="Name" value="Favorites">
-			<param name="Local" value="menu-favorites.html#Favorites">
+			<param name="Name" value="Bookmarks">
+			<param name="Local" value="menu-bookmarks.html#Bookmarks">
 		</object>
 	<li><object type="text/sitemap">
-			<param name="Name" value="View all favorites">
-			<param name="Local" value="menu-favorites.html#ViewAll">
+			<param name="Name" value="View all bookmarks">
+			<param name="Local" value="menu-bookmarks.html#ViewAll">
 		</object>
 	<li><object type="text/sitemap">
 			<param name="Name" value="Help menu">
