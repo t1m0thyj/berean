@@ -122,7 +122,7 @@ class Berean(wx.App):
             splash = wx.SplashScreen(wx.Bitmap(os.path.join(self.cwd,
                 "images", "splash.png"), wx.BITMAP_TYPE_PNG),
                 wx.SPLASH_CENTRE_ON_SCREEN | wx.SPLASH_NO_TIMEOUT, 0, None,
-                wx.ID_ANY, style=wx.BORDER_SIMPLE)
+                style=wx.BORDER_SIMPLE)
             self.Yield()
 
         if "--datadir" in options:
