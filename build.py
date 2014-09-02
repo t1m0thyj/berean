@@ -97,7 +97,7 @@ if "--build-installer" in sys.argv:
 if "--delete-old" in sys.argv:
     for pathname in ("Berean*.tar.gz", "Berean*[0-9].zip",
             "Berean*Portable.zip", "Berean*.exe"):
-        pathnames = glob.glob("src/build/%s" % pathname)
+        pathnames = glob.glob("src\\build\\%s" % pathname)
         if len(pathnames) > 2:
             pathnames.sort(key=os.path.getmtime)
             delete = raw_input("Delete '%s' (Y/N)? " % pathnames[0])
