@@ -91,8 +91,8 @@ if "--build-installer" in sys.argv:
     subprocess.call([INNO_SETUP_PATH, "installer.iss"])
 
 if "--no-archive-old" not in sys.argv:
-    if not os.path.isdir("Archive"):
-        os.mkdir("Archive")
+    if not os.path.isdir("src\\build\\Archive"):
+        os.mkdir("src\\build\\Archive")
     for pathname in ("Berean*.tar.gz", "Berean*[0-9].zip",
             "Berean*Portable.zip", "Berean*.exe"):
         filenames = sorted(glob.glob("src\\build\\%s" % pathname),
