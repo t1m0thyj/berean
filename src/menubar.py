@@ -1,5 +1,7 @@
 """menubar.py - menubar and bookmarks dialog classes"""
 
+import webbrowser
+
 import wx
 from wx import gizmos
 
@@ -233,7 +235,7 @@ class MenuBar(wx.MenuBar):
         self._frame.help.show_frame()
 
     def OnReportBug(self, event):
-        wx.LaunchDefaultBrowser("mailto:berean_bugs@objectmail.com")
+        webbrowser.open("mailto:berean_bugs@objectmail.com")
 
     def OnAbout(self, event):
         info = wx.AboutDialogInfo()

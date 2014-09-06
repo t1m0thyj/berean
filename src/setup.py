@@ -50,3 +50,7 @@ setup(options={"py2exe": {"compressed": 1,
         ("versions", ["versions\\KJV.bbl"]),
         ("", ["license.txt"])],
 	zipfile=None)
+for imagedir in ("dist\\images", "dist\\images\\flags"):
+    thumbs_db = os.path.join(imagedir, "Thumbs.db")
+    if os.path.isfile(thumbs_db):  # Remove WinXP thumbnail caches
+        os.remove(thumbs_db)
