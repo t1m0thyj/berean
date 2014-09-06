@@ -20,8 +20,9 @@ version 9.0.21022.8 (available at
 http://www.microsoft.com/en-us/download/details.aspx?id=29) and put it in the
 same directory where this script is.
 
-If you pass the argument --delete-old, you will be prompted to delete old
-builds after the specified builds have been completed.
+By default, old builds are moved to an Archive subdirectory after the specified
+builds have been completed. To disable this, pass the argument
+--no-archive-old.
 
 You will need to modify the path constants at the beginning of this script so
 that they work on your computer.
@@ -39,23 +40,21 @@ from config import VERSION
 _7ZIP_PATH = "C:\\Program Files\\7-Zip\\7z.exe"
 INNO_SETUP_PATH = "C:\\Program Files (x86)\\Inno Setup 5\\ISCC.exe"
 
-os.chdir(os.path.join(os.path.dirname(__file__), "src"))
+os.chdir("src")
 subprocess.call("setup.py py2exe", shell=True)
-os.chdir(os.path.dirname(__file__))
-print
+os.chdir("..")
 
 if "--build-source-tar" in sys.argv:
     filename = "src\\build\\Berean_%s_source.tar" % VERSION
     if os.path.isfile(filename + ".gz"):
         os.remove(filename + ".gz")
     subprocess.call([_7ZIP_PATH, "a", "-ttar", filename, "src\\*.py"])
-    for item in ("berean-48.bmp", "build.py", "installer.iss",
+    for pathname in ("berean-48.bmp", "build.py", "installer.iss",
             "src\\berean.pyw", "src\\images", "src\\license.txt",
             "src\\locale", "src\\versions\\KJV.bbl"):
-        subprocess.call([_7ZIP_PATH, "a", filename, item])
+        subprocess.call([_7ZIP_PATH, "a", filename, pathname])
     subprocess.call([_7ZIP_PATH, "a", "-tgzip", filename + ".gz", filename])
     os.remove(filename)
-    print
 
 
 def build_zip(portable=False):
@@ -70,7 +69,6 @@ def build_zip(portable=False):
 
 if "--build-zip" in sys.argv:
     build_zip()
-    print
 
 if "--build-portable-zip" in sys.argv:
     filename = "src\\build\\Berean_%s_Portable.zip" % VERSION
@@ -82,7 +80,6 @@ if "--build-portable-zip" in sys.argv:
         pass
     subprocess.call([_7ZIP_PATH, "a", filename, ".\\src\\build\\portable.ini"])
     os.remove("src\\build\\portable.ini")
-    print
 
 if "--build-installer" in sys.argv:
     with open("installer.iss", 'r') as fileobj:
@@ -92,14 +89,13 @@ if "--build-installer" in sys.argv:
         fileobj2.write(text[:index] + "#define MyAppVersion \"%s\"" % VERSION +
             text[text.index("\n", index):])
     subprocess.call([INNO_SETUP_PATH, "installer.iss"])
-    print
 
-if "--delete-old" in sys.argv:
+if "--no-archive-old" not in sys.argv:
+    if not os.path.isdir("Archive"):
+        os.mkdir("Archive")
     for pathname in ("Berean*.tar.gz", "Berean*[0-9].zip",
             "Berean*Portable.zip", "Berean*.exe"):
-        pathnames = glob.glob("src\\build\\%s" % pathname)
-        if len(pathnames) > 2:
-            pathnames.sort(key=os.path.getmtime)
-            delete = raw_input("Delete '%s' (Y/N)? " % pathnames[0])
-            if delete.lower() == "y":
-                os.remove(pathnames[0])
+        filenames = sorted(glob.glob("src\\build\\%s" % pathname),
+            key=os.path.getmtime)
+        while len(filenames) > 2: 
+            shutil.move(filenames.pop(0), "src\\build\\Archive")

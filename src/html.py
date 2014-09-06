@@ -1,7 +1,8 @@
-"""html.py - HTML classes"""
+"""html.py - HTML related classes"""
 
 import cPickle
 import os.path
+import webbrowser
 
 import wx
 import wx.lib.dragscroller
@@ -36,9 +37,10 @@ class HelpSystem(html.HtmlHelpController):
             frame.Raise()
 
     def OnHtmlLinkClicked(self, event):
-        link = event.GetLinkInfo().GetHref()
-        if link.startswith("http:") or link.startswith("mailto:"):
-            wx.LaunchDefaultBrowser(link)
+        url = event.GetLinkInfo().GetHref()
+        if url.startswith("http://") or url.startswith("https://") or \
+                url.startswith("mailto:"):
+            webbrowser.open(url)
         else:
             event.Skip()
 

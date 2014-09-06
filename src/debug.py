@@ -4,6 +4,7 @@ import platform
 import sys
 import traceback
 import urllib
+import webbrowser
 
 import wx
 
@@ -83,8 +84,8 @@ class ErrorDialog(wx.Dialog):
         body = self.textctrl.GetValue()
         if '__WXMAC__' not in wx.PlatformInfo:
             body = urllib.quote(body)
-        wx.LaunchDefaultBrowser("mailto:berean_bugs@objectmail.com?subject="
-            "Berean Bug Report&body=%s" % body)
+        webbrowser.open("mailto:berean_bugs@objectmail.com?subject=Berean " \
+            "Bug Report&body=%s" % body)
 
     def OnShow(self, event):
         self.textctrl.Show()
