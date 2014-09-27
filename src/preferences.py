@@ -65,7 +65,7 @@ class PreferencesDialog(wx.Dialog):
             self.version_list.IsChecked(i)]
         if not version_list:
             wx.MessageBox(_("You must have at least one version selected."),
-                _("Berean"), wx.ICON_EXCLAMATION | wx.OK)
+                "Berean", wx.ICON_EXCLAMATION | wx.OK)
             return
         self._parent.minimize_to_tray = self.minimize_to_tray.GetValue()
         default_font = {"size": int(self.default_font_size.GetValue()),
@@ -91,7 +91,7 @@ class PreferencesDialog(wx.Dialog):
                     self._parent.old_versions.remove(version)
             self._parent.version_list = version_list
             wx.MessageBox(_("Changes to version settings will not take effect "
-                "until Berean is restarted."), _("Berean"),
+                "until Berean is restarted."), "Berean",
                 wx.ICON_INFORMATION | wx.OK)
         self.Destroy()
 

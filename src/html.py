@@ -152,10 +152,11 @@ class ChapterWindow(ChapterWindowBase):
         try:
             with open(filename, 'rb') as Bible:
                 self.Bible = cPickle.load(Bible)
-            self.description = VERSION_DESCRIPTIONS[version]
         except IOError as exc:
             wx.MessageBox(_("Could not load %s.\n\nError: %s") % (version,
                 exc), _("Error"), wx.ICON_WARNING | wx.OK)
+        else:
+            self.description = VERSION_DESCRIPTIONS[version]
 
     def get_html(self, book, chapter, verse=-1):
         if self.Bible[book]:

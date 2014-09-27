@@ -1,9 +1,9 @@
 """config.py - global variables used throughout Berean"""
 
-VERSION = "0.4.7.2"
+VERSION = "0.4.7.3"
 
 VERSION_NAMES = ("ASV", "BBE", "Darby", "DutSVV", "FreSegond", "GerLut1545",
-    "JPS", "KJV", "RV", "SpaRV", "SpaSEV", "Tyndale", "WEB", "WEBBE", "WEBME",
+    "JPS", "KJV", "RV", "SpaRV", "SpaSEV", "Tyndale", "WEB", "WEBBE", "WMB",
     "Webster", "Weymouth", "Wycliffe", "YLT")
 
 VERSION_DESCRIPTIONS = dict(zip(VERSION_NAMES,

@@ -245,7 +245,7 @@ class MenuBar(wx.MenuBar):
         info.SetDescription(
             _("An open source, cross-platform Bible study tool"))
         ##info.SetWebSite("http://berean.sf.net")
-        info.SetLicense(license)
+        info.SetLicense(LICENSE)
         wx.AboutBox(info)
 
 
@@ -276,13 +276,13 @@ class BookmarksDialog(wx.Dialog):
             reference = refalize(label)
         except Exception:
             wx.MessageBox(_("'%s' is not a valid reference.") % label,
-                _("Manage Bookmarks"), wx.ICON_EXCLAMATION | wx.OK)
+                "Berean", wx.ICON_EXCLAMATION | wx.OK)
             event.Veto()
             return
         index = find_bookmark(reference, self.listbox.GetStrings())
         if index != -1 and index != event.GetIndex():
             wx.MessageBox(_("A bookmark for %s already exists.") %
-                reference_str(*reference), _("Manage Bookmarks"),
+                reference_str(*reference), "Berean",
                 wx.ICON_EXCLAMATION | wx.OK)
             event.Veto()
         else:
@@ -294,7 +294,7 @@ class BookmarksDialog(wx.Dialog):
         self.Destroy()
 
 
-license = """This program is free software: you can redistribute it and/or modify
+LICENSE = """This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
