@@ -97,5 +97,6 @@ if "--no-archive-old" not in sys.argv:
             "Berean*Portable.zip", "Berean*.exe"):
         filenames = sorted(glob.glob("src\\build\\%s" % pathname),
             key=os.path.getmtime)
-        while len(filenames) > 2: 
-            shutil.move(filenames.pop(0), "src\\build\\Archive")
+        while len(filenames) > 2:
+            filename = filenames.pop(0) 
+            os.rename(filename, "src\\build\\%s" % filename)
