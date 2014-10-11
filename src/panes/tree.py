@@ -20,7 +20,6 @@ class TreePane(wx.TreeCtrl):
             if BOOK_LENGTHS[i] > 1:
                 self.SetItemHasChildren(self.top_level_items[i], True)
         self.add_children(parent.reference[0], True)
-        self.Bind(wx.EVT_TREE_ITEM_COLLAPSED, self.OnItemCollapsed)
         self.Bind(wx.EVT_TREE_ITEM_EXPANDING, self.OnItemExpanding)
         self.Bind(wx.EVT_TREE_SEL_CHANGED, self.OnSelChanged)
         self.Bind(wx.EVT_WINDOW_DESTROY, self.OnWindowDestroy)
@@ -32,9 +31,6 @@ class TreePane(wx.TreeCtrl):
                 self.AppendItem(item, str(i + 1))
             if expand:
                 self.Expand(item)
-
-    def OnItemCollapsed(self, event):
-        self.DeleteChildren(event.GetItem())
 
     def OnItemExpanding(self, event):
         self.add_children(self.top_level_items.index(event.GetItem()) + 1)
