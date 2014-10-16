@@ -1,4 +1,4 @@
-"""menubar.py - menubar and bookmarks dialog classes"""
+"""menu.py - menubar and bookmarks dialog classes"""
 
 import webbrowser
 
@@ -243,7 +243,7 @@ class MenuBar(wx.MenuBar):
         info.SetVersion(VERSION)
         info.SetCopyright("Copyright (C) 2011-2014 Timothy Johnson")
         info.SetDescription(
-            _("An open source, cross-platform Bible study tool"))
+            _("An open source, cross-platform Bible study program"))
         ##info.SetWebSite("http://berean.sf.net")
         info.SetLicense(LICENSE)
         wx.AboutBox(info)
