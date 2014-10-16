@@ -6,7 +6,7 @@ import wx
 from wx import aui
 
 import html
-import menubar
+import menu
 import panes
 import parallel
 import toolbar
@@ -58,7 +58,7 @@ class MainWindow(wx.Frame):
 
         self.aui = aui.AuiManager(self, aui.AUI_MGR_DEFAULT |
             aui.AUI_MGR_ALLOW_ACTIVE_PANE)
-        self.menubar = menubar.MenuBar(self)
+        self.menubar = menu.MenuBar(self)
         self.SetMenuBar(self.menubar)
         self.toolbar = toolbar.ToolBar(self)
         self.aui.AddPane(self.toolbar, aui.AuiPaneInfo().Name("toolbar").
