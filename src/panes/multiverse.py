@@ -45,10 +45,7 @@ class MultiVersePane(wx.Panel):
             (wx.ACCEL_CTRL, wx.WXK_RETURN, search_item.GetId()),
             (wx.ACCEL_CTRL, ord("A"), wx.ID_SELECTALL)]))
         self.htmlwindow = HtmlWindowBase(self.splitter, parent)
-        if wx.VERSION_STRING >= "2.9":
-            self.htmlwindow.Bind(wx.EVT_CONTEXT_MENU, self.OnContextMenu)
-        else:  # wxHtmlWindow doesn't generate EVT_CONTEXT_MENU in 2.8
-            self.htmlwindow.Bind(wx.EVT_RIGHT_UP, self.OnContextMenu)
+        self.htmlwindow.BindContextMenuEvent(self.OnContextMenu)
         self.splitter.SplitHorizontally(self.verse_list, self.htmlwindow,
             parent._app.config.ReadInt("MultiVerse/SplitterPosition", 60))
         sizer = wx.BoxSizer(wx.VERTICAL)
@@ -111,9 +108,7 @@ class MultiVersePane(wx.Panel):
 
     def OnCopy(self, event):
         self.htmlwindow.SelectAll()
-        text = self.htmlwindow.SelectionToText()
-        data = wx.TextDataObject()
-        data.SetText(text)
+        data = wx.TextDataObject(self.htmlwindow.SelectionToText())
         if wx.TheClipboard.Open():
             wx.TheClipboard.SetData(data)
             wx.TheClipboard.Flush()

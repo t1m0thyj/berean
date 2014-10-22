@@ -110,23 +110,23 @@ class FileConfig(wx.FileConfig):
 class Berean(wx.App):
     def OnInit(self):
         self.SetAppName("Berean")
-        options = dict(getopt.getopt(sys.argv[1:], "",
+        optlist = dict(getopt.getopt(sys.argv[1:], "",
             ["datadir=", "nosplash", "systemtray"])[0])
         if not hasattr(sys, "frozen"):
             self.cwd = os.path.dirname(__file__)
         else:
             self.cwd = os.path.dirname(sys.argv[0])
-        show_splash = not ("--nosplash" in options or "--systemtray" in
-            options)
+        show_splash = not ("--nosplash" in optlist or
+            "--systemtray" in optlist)
         if show_splash:
-            splash = wx.SplashScreen(wx.Bitmap(os.path.join(self.cwd,
-                "images", "splash.png"), wx.BITMAP_TYPE_PNG),
+            splash = wx.SplashScreen(wx.Bitmap(os.path.join(self.cwd, "images",
+                "splash.png"), wx.BITMAP_TYPE_PNG),
                 wx.SPLASH_CENTRE_ON_SCREEN | wx.SPLASH_NO_TIMEOUT, 0, None,
                 style=wx.BORDER_SIMPLE)
             self.Yield()
 
-        if "--datadir" in options:
-            self.userdatadir = options["--datadir"]
+        if "--datadir" in optlist:
+            self.userdatadir = optlist["--datadir"]
             if not os.path.isabs(self.userdatadir):
                 self.userdatadir = os.path.join(self.cwd, self.userdatadir)
         elif os.path.isfile(os.path.join(self.cwd, "portable.ini")):
@@ -134,7 +134,7 @@ class Berean(wx.App):
         else:
             self.userdatadir = wx.StandardPaths.Get().GetUserDataDir()
         if not os.path.isdir(self.userdatadir):
-            os.makedirs(self.userdatadir)
+            os.mkdir(self.userdatadir)
         self.config = FileConfig(self)
         self.locale = wx.Locale(wx.LANGUAGE_DEFAULT)
         localedir = os.path.join(self.cwd, "locale")
@@ -143,10 +143,11 @@ class Berean(wx.App):
         if os.path.isfile(os.path.join(localedir, language, "LC_MESSAGES",
                 "berean.mo")):
             self.locale.AddCatalog(language)
+
         self.frame = mainwindow.MainWindow(self)
-        self.Bind(wx.EVT_END_SESSION, self.frame.OnClose)
         self.SetTopWindow(self.frame)
-        if "--systemtray" not in options:
+        self.Bind(wx.EVT_END_SESSION, self.frame.OnClose)
+        if "--systemtray" not in optlist:
             self.frame.Show()
         else:
             self.frame.taskbaricon = mainwindow.TaskBarIcon(self.frame)
