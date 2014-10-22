@@ -87,6 +87,12 @@ class HtmlWindowBase(html.HtmlWindow):
         self.Bind(wx.EVT_MIDDLE_DOWN, self.OnMiddleDown)
         self.Bind(wx.EVT_MIDDLE_UP, self.OnMiddleUp)
 
+    def BindContextMenuEvent(self, func):
+        if wx.VERSION_STRING >= "2.9":
+            self.Bind(wx.EVT_CONTEXT_MENU, func)
+        else:  # wxHtmlWindow doesn't generate EVT_CONTEXT_MENU in wx-2.8
+            self.Bind(wx.EVT_RIGHT_UP, func)
+
     def OnSelectAll(self, event):
         self.SelectAll()
 
@@ -105,10 +111,7 @@ class ChapterWindowBase(HtmlWindowBase):
         self.current_verse = -1
         self.reference = None
         self.zoom_level = frame.zoom_level
-        if wx.VERSION_STRING >= "2.9":
-            self.Bind(wx.EVT_CONTEXT_MENU, self.OnContextMenu)
-        else:  # wxHtmlWindow doesn't generate EVT_CONTEXT_MENU in 2.8
-            self.Bind(wx.EVT_RIGHT_UP, self.OnContextMenu)
+        self.BindContextMenuEvent(self.OnContextMenu)
 
     def load_chapter(self, book, chapter, verse):
         self.SetPage(self.get_html(book, chapter, verse))

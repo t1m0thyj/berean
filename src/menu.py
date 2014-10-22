@@ -153,8 +153,7 @@ class MenuBar(wx.MenuBar):
         window = self._frame.FindFocus()
         if not isinstance(window, html.HtmlWindowBase):
             return
-        data = wx.TextDataObject()
-        data.SetText(window.SelectionToText())
+        data = wx.TextDataObject(window.SelectionToText())
         if wx.TheClipboard.Open():
             wx.TheClipboard.SetData(data)
             wx.TheClipboard.Flush()

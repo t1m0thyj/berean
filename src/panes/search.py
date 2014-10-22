@@ -83,10 +83,7 @@ class SearchPane(wx.Panel):
         self.htmlwindow = HtmlWindowBase(self, parent)
         self.htmlwindow.Bind(html.EVT_HTML_LINK_CLICKED,
             self.OnHtmlLinkClicked)
-        if wx.VERSION_STRING >= "2.9":
-            self.htmlwindow.Bind(wx.EVT_CONTEXT_MENU, self.OnContextMenu)
-        else:  # wxHtmlWindow doesn't generate EVT_CONTEXT_MENU in 2.8
-            self.htmlwindow.Bind(wx.EVT_RIGHT_UP, self.OnContextMenu)
+        self.htmlwindow.BindContextMenuEvent(self.OnContextMenu)
         self.optionspane = wx.CollapsiblePane(self, label=_("Options"),
             style=wx.CP_DEFAULT_STYLE | wx.CP_NO_TLW_RESIZE)
         optionspane = self.optionspane.GetPane()
