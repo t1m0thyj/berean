@@ -262,7 +262,7 @@ class SearchPane(wx.Panel):
             return ([], 0)
         matches.sort()
         last = matches[-1]
-        for i in range(len(matches) - 2, -1, -1):  # Remove duplicates
+        for i in xrange(len(matches) - 2, -1, -1):  # Remove duplicates
             if matches[i] == last:
                 del matches[i]
             else:
@@ -279,10 +279,10 @@ class SearchPane(wx.Panel):
             for case in cases:
                 if case in index:
                     matches.extend([bytearray(index[case][i:i + 3]) for i in
-                        range(0, len(index[case]), 3)])
+                        xrange(0, len(index[case]), 3)])
         elif word in index:
             matches.extend([bytearray(index[word][i:i + 3]) for i in
-                range(0, len(index[word]), 3)])
+                xrange(0, len(index[word]), 3)])
         if not (recursive or options["ExactMatch"] or options["Phrase"]):
             if not options["CaseSensitive"]:
                 lower = word.lower()
