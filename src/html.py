@@ -66,12 +66,12 @@ class PrintingSystem(html.HtmlEasyPrinting):
         return text
 
     def print_(self):
-        if wx.VERSION_STRING >= "2.8.11" and wx.VERSION_STRING != "2.9.0.0":
+        if wx.VERSION_STRING >= "2.9.1":
             self.SetName(self._frame.GetTitle()[9:])
         self.PrintText(self.get_chapter_text())
 
     def preview(self):
-        if wx.VERSION_STRING >= "2.8.11" and wx.VERSION_STRING != "2.9.0.0":
+        if wx.VERSION_STRING >= "2.9.1":
             self.SetName(self._frame.GetTitle()[9:])
         self.PreviewText(self.get_chapter_text())
 

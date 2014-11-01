@@ -98,5 +98,6 @@ if "--no-archive-old" not in sys.argv:
         filenames = sorted(glob.glob("src\\build\\%s" % pathname),
             key=os.path.getmtime)
         while len(filenames) > 2:
-            filename = filenames.pop(0) 
-            os.rename(filename, "src\\build\\%s" % filename)
+            filename = filenames.pop(0)
+            os.rename(filename,
+                "src\\build\\Archive\\%s" % os.path.basename(filename))

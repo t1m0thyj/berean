@@ -66,7 +66,8 @@ class MainWindow(wx.Frame):
         self.statusbar = self.CreateStatusBar(3)
         self.zoombar = toolbar.ZoomBar(self.statusbar, self)
         if wx.VERSION_STRING >= "2.9":
-            self.statusbar.SetStatusWidths([-1, -1, self.zoombar.width - 8])
+            self.statusbar.SetStatusWidths([-1, -1, self.zoombar.width -
+                wx.SystemSettings.GetMetric(wx.SYS_VSCROLL_X)])
         else:
             self.statusbar.SetStatusWidths([-1, -1, self.zoombar.width + 1])
 
