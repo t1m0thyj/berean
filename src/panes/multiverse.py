@@ -24,9 +24,10 @@ class MultiVersePane(wx.Panel):
         self.version.SetSelection(int(tab < len(parent.version_list)) and tab)
         self.toolbar.AddControl(self.version)
         self.toolbar.AddSeparator()
-        search_item = self.toolbar.AddTool(wx.ID_ANY, _("Search"),
+        ID_SEARCH = wx.NewId()
+        self.toolbar.AddTool(ID_SEARCH, _("Search"),
             parent.get_bitmap("search"), _("Search (Ctrl+Enter)"))
-        self.Bind(wx.EVT_MENU, self.OnSearch, search_item)
+        self.Bind(wx.EVT_MENU, self.OnSearch, id=ID_SEARCH)
         self.toolbar.AddTool(wx.ID_PRINT, _("Print"),
             parent.get_bitmap("print"), _("Print Verses"))
         self.toolbar.EnableTool(wx.ID_PRINT, False)
@@ -42,7 +43,7 @@ class MultiVersePane(wx.Panel):
             value=parent._app.config.Read("MultiVerse/LastVerseList"),
             style=wx.TE_MULTILINE)
         self.verse_list.SetAcceleratorTable(wx.AcceleratorTable([
-            (wx.ACCEL_CTRL, wx.WXK_RETURN, search_item.GetId()),
+            (wx.ACCEL_CTRL, wx.WXK_RETURN, ID_SEARCH),
             (wx.ACCEL_CTRL, ord("A"), wx.ID_SELECTALL)]))
         self.htmlwindow = HtmlWindowBase(self.splitter, parent)
         self.htmlwindow.BindContextMenuEvent(self.OnContextMenu)
@@ -99,7 +100,7 @@ class MultiVersePane(wx.Panel):
         self.htmlwindow.SetFocus()
 
     def OnPrint(self, event):
-        if wx.VERSION_STRING >= "2.8.11" and wx.VERSION_STRING != "2.9.0.0":
+        if wx.VERSION_STRING >= "2.9.1":
             self._parent.printing.SetName(_("Multi-Verse Retrieval"))
         if event.GetId() == wx.ID_PRINT:
             self._parent.printing.PrintText(self.html)

@@ -42,7 +42,7 @@ class PreferencesDialog(wx.Dialog):
         self.version_list = wx.CheckListBox(self.versions)
         for i in range(len(VERSION_NAMES)):
             self.version_list.Append("%s - %s" % (VERSION_NAMES[i],
-                VERSION_DESCRIPTIONS[VERSION_NAMES[i]]))
+                VERSION_DESCRIPTIONS[VERSION_NAMES[i]].decode("latin_1")))
             if VERSION_NAMES[i] in parent.version_list:
                 self.version_list.Check(i)
         sizer = wx.BoxSizer()

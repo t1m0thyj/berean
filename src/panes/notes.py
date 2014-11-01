@@ -163,8 +163,8 @@ class NotesPage(wx.Panel):
         self.editor.Bind(wx.EVT_KEY_UP, self.OnModified)
         self.editor.Bind(wx.EVT_LEFT_UP, self.OnModified)
         if sash_pos > 0:
-            self.splitter.SplitVertically(self.topics_pane, self.editor,
-                sash_pos)
+            wx.CallAfter(self.splitter.SplitVertically, self.topics_pane,
+                self.editor, sash_pos)
         else:
             self.splitter.Initialize(self.editor)
         self.splitter.Bind(wx.EVT_SPLITTER_UNSPLIT, self.OnSplitterUnsplit)
@@ -520,8 +520,9 @@ class NotesPane(aui.AuiNotebook):
             self.OnAuiNotebookPageChanged)
 
     def OnAuiNotebookPageChanged(self, event):
-        page = self.GetCurrentPage()
+        tab = event.GetSelection()
+        page = self.GetPage(tab)
         db_key = "%d.%d" % self._parent.reference[:2]
-        if event.GetSelection() == 1 and page.db_key != db_key:
+        if tab == 1 and page.db_key != db_key:
             page.save_text()
             page.load_text(db_key)

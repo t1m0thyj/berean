@@ -72,9 +72,10 @@ class SearchPane(wx.Panel):
             style |= aui.AUI_TB_PLAIN_BACKGROUND
         self.toolbar = aui.AuiToolBar(self, wx.ID_ANY, wx.DefaultPosition,
             wx.DefaultSize, style)
-        search_item = self.toolbar.AddTool(wx.ID_ANY, "",
-            parent.get_bitmap("search"), _("Search"))
-        self.toolbar.Bind(wx.EVT_MENU, self.OnSearch, search_item)
+        ID_SEARCH = wx.NewId()
+        self.toolbar.AddTool(ID_SEARCH, "", parent.get_bitmap("search"),
+            _("Search"))
+        self.toolbar.Bind(wx.EVT_MENU, self.OnSearch, id=ID_SEARCH)
         self.toolbar.AddTool(wx.ID_PRINT, "", parent.get_bitmap("print"),
             _("Print Results"))
         self.toolbar.EnableTool(wx.ID_PRINT, False)
@@ -120,7 +121,7 @@ class SearchPane(wx.Panel):
         self.stop.Bind(wx.EVT_CHOICE, self.OnStop)
         for item in (self.start, self.rangetext, self.stop):
             item.Disable()
-        self.optionspane.Collapse(
+        wx.CallAfter(self.optionspane.Collapse,
             not parent._app.config.ReadBool("Search/ShowOptions", True))
         self.Bind(wx.EVT_COLLAPSIBLEPANE_CHANGED,
             self.OnCollapsiblePaneChanged)
@@ -358,7 +359,7 @@ class SearchPane(wx.Panel):
             index)], self.version.GetString(self.last_version))
         text = self.html[:12] + header + \
             self.html[self.html.index("</font>") + 7:]
-        if wx.VERSION_STRING >= "2.8.11" and wx.VERSION_STRING != "2.9.0.0":
+        if wx.VERSION_STRING >= "2.9.1":
             self._parent.printing.SetName(_("Search Results"))
         if event.GetId() == wx.ID_PRINT:
             self._parent.printing.PrintText(text)
