@@ -367,8 +367,8 @@ class SearchPane(wx.Panel):
             self._parent.printing.PreviewText(text)
 
     def OnHtmlLinkClicked(self, event):
-        if self._parent.notebook.GetSelection() != self.last_version and \
-                not wx.GetKeyState(wx.WXK_CONTROL):
+        if (self._parent.notebook.GetSelection() != self.last_version and
+                not wx.GetKeyState(wx.WXK_CONTROL)):
             self._parent.notebook.SetSelection(self.last_version)
         self._parent.load_chapter(*[int(i) for i in
             event.GetLinkInfo().GetHref().split(".")])
@@ -390,8 +390,8 @@ class SearchPane(wx.Panel):
     def OnCheckbox(self, event):
         checkbox = event.GetEventObject()
         checked = event.IsChecked()
-        if (checkbox == self.AllWords or checkbox == self.ExactMatch) and \
-                checked and self.Phrase.IsChecked():
+        if ((checkbox == self.AllWords or checkbox == self.ExactMatch) and
+                checked and self.Phrase.IsChecked()):
             self.Phrase.SetValue(False)
         elif checkbox == self.RegularExpression:
             for option in ("AllWords", "ExactMatch", "Phrase"):
