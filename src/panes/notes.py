@@ -341,8 +341,8 @@ class NotesPage(wx.Panel):
             pos = self.editor.XYToPosition(0,
                 self.editor.PositionToXY(self.editor.GetInsertionPoint())[1])
             if self.editor.GetStyle(pos, style):
-                if not style.GetBulletStyle() & \
-                        wx.TEXT_ATTR_BULLET_STYLE_ARABIC:
+                if not (style.GetBulletStyle() &
+                        wx.TEXT_ATTR_BULLET_STYLE_ARABIC):
                     style.SetLeftIndent(50, 50)
                     style.SetBulletStyle(wx.TEXT_ATTR_BULLET_STYLE_ARABIC |
                         wx.TEXT_ATTR_BULLET_STYLE_PERIOD)
@@ -354,8 +354,8 @@ class NotesPage(wx.Panel):
         else:
             selection = self.editor.GetSelectionRange()
             if self.editor.GetStyle(selection[0], style):
-                if not style.GetBulletStyle() & \
-                        wx.TEXT_ATTR_BULLET_STYLE_ARABIC:
+                if not (style.GetBulletStyle() &
+                        wx.TEXT_ATTR_BULLET_STYLE_ARABIC):
                     style.SetBulletStyle(wx.TEXT_ATTR_BULLET_STYLE_ARABIC |
                         wx.TEXT_ATTR_BULLET_STYLE_PERIOD)
                     numbering = True
@@ -464,9 +464,9 @@ class NotesPage(wx.Panel):
         else:
             pos = self.editor.GetInsertionPoint()
             column, line = self.editor.PositionToXY(pos)
-            if (key == wx.WXK_BACK and column == 0) or \
-                    key == wx.WXK_RETURN or (key == wx.WXK_DELETE and \
-                    column == self.editor.GetLineLength(line)):
+            if ((key == wx.WXK_BACK and column == 0) or key == wx.WXK_RETURN or
+                    (key == wx.WXK_DELETE and
+                    column == self.editor.GetLineLength(line))):
                 style = richtext.RichTextAttr()
                 style.SetFlags(wx.TEXT_ATTR_BULLET_NUMBER)
                 if self.editor.GetStyle(self.editor.XYToPosition(0, line),
