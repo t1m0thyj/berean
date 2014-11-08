@@ -44,7 +44,7 @@ class SearchPane(wx.Panel):
         self._parent = parent
         self.html = ""
         self.indexes = {}
-        self.last_version = -1
+        self.last_search = (None, -1, -1)  # Text, Number of Verses, Version
         self.options = ("AllWords", "CaseSensitive", "ExactMatch", "Phrase",
             "RegularExpression")
 
@@ -187,15 +187,15 @@ class SearchPane(wx.Panel):
                 self.text.Delete(10)
         self.toolbar.EnableTool(wx.ID_PRINT, count > 0)
         self.toolbar.Refresh(False)
-        self.last_version = self.version.GetSelection()
+        self.last_search = (text, count, self.version.GetSelection())
         self.htmlwindow.SetFocus()
 
     def get_results(self, text):
+        text = text.replace(u"\u2019", "'")
+        Bible = self._parent.get_htmlwindow(self.version.GetSelection()).Bible
         options = {}
         for option in self.options:
             options[option] = getattr(self, option).GetValue()
-        text = text.replace(u"\u2019", "'")
-        Bible = self._parent.get_htmlwindow(self.version.GetSelection()).Bible
         flags = re.UNICODE
         if not options["CaseSensitive"]:
             flags |= re.IGNORECASE
@@ -228,8 +228,7 @@ class SearchPane(wx.Panel):
             if not matches:
                 return ([], 0)
             if options["Phrase"]:
-                pattern = re.compile(r"\[?\b%s\b\]?" % r"\W+".join(words),
-                    re_flags)
+                pattern = re.compile(r"\b%s\b" % r"\W+".join(words), re_flags)
                 matches = [item for item in matches if
                     pattern.search(Bible[item[0]][item[1]][item[2]])]
             elif options["AllWords"]:
@@ -241,7 +240,7 @@ class SearchPane(wx.Panel):
                     pattern = re.compile(word, re_flags)
                     matches = [item for item in matches if
                         pattern.search(Bible[item[0]][item[1]][item[2]])]
-                pattern = re.compile("(%s)" % "|".join([longest] + words),
+                pattern = re.compile(r"(%s)" % "|".join([longest] + words),
                     re_flags)
         else:
             matches = []
@@ -250,12 +249,12 @@ class SearchPane(wx.Panel):
             if not matches:
                 return ([], 0)
             if options["ExactMatch"]:
-                pattern = re.compile("(%s)" % "|".join([r"\b%s\b" % word for
+                pattern = re.compile(r"(%s)" % "|".join([r"\b%s\b" % word for
                     word in words]), re_flags)
                 matches = [item for item in matches if
                     pattern.search(Bible[item[0]][item[1]][item[2]])]
             else:
-                pattern = re.compile("(%s)" % "|".join(words), re_flags)
+                pattern = re.compile(r"(%s)" % "|".join(words), re_flags)
         start = self.start.GetSelection() + 1
         stop = self.stop.GetSelection() + 1
         matches = [item for item in matches if start <= item[0] <= stop]
@@ -352,13 +351,11 @@ class SearchPane(wx.Panel):
         return results
 
     def OnPrint(self, event):
-        index = self.html.index("color=\"gray\">") + 13
-        header = _("<div align=\"center\"><font color=\"gray\">\"%s\"<br />"
-            "occurs in %s verses in the %s.</font></div>") % \
-            (self.text.GetValue(), self.html[index:self.html.index(" ",
-            index)], self.version.GetString(self.last_version))
-        text = self.html[:12] + header + \
-            self.html[self.html.index("</font>") + 7:]
+        header = _("<div align=\"center\"><b>\"%s\"</b><br />occurs in %d "
+            "verses in the %s.</div>") % (self.last_search[0],
+            self.last_search[1], self.version.GetString(self.last_search[2]))
+        text = self.html[:self.html.index("<font color=\"gray\">")] + \
+            header + self.html[self.html.index("</font>") + 7:]
         if wx.VERSION_STRING >= "2.9.1":
             self._parent.printing.SetName(_("Search Results"))
         if event.GetId() == wx.ID_PRINT:
@@ -367,9 +364,9 @@ class SearchPane(wx.Panel):
             self._parent.printing.PreviewText(text)
 
     def OnHtmlLinkClicked(self, event):
-        if (self._parent.notebook.GetSelection() != self.last_version and
+        if (self._parent.notebook.GetSelection() != self.last_search[2] and
                 not wx.GetKeyState(wx.WXK_CONTROL)):
-            self._parent.notebook.SetSelection(self.last_version)
+            self._parent.notebook.SetSelection(self.last_search[2])
         self._parent.load_chapter(*[int(i) for i in
             event.GetLinkInfo().GetHref().split(".")])
 

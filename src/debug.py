@@ -28,6 +28,7 @@ class ErrorDialog(wx.Dialog):
     def __init__(self, exc_info):
         ErrorDialog.active = True
         super(ErrorDialog, self).__init__(None, title=_("Error"))
+
         bitmap = wx.StaticBitmap(self,
             bitmap=wx.ArtProvider.GetBitmap(wx.ART_ERROR))
         label = wx.StaticText(self,

@@ -204,7 +204,7 @@ class MenuBar(wx.MenuBar):
     def OnMultiVersePane(self, event):
         self._frame.show_multiverse_pane(event.IsChecked())
 
-    def OnAddToBookmarks(self, event): 
+    def OnAddToBookmarks(self, event):
         bookmark = reference_str(*self._frame.reference)
         if find_bookmark(self._frame.reference, self.bookmarks) == -1:
             self.bookmarks.append(bookmark)
