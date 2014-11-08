@@ -13,6 +13,7 @@ class TreePane(wx.TreeCtrl):
             wx.BORDER_NONE | wx.TR_TWIST_BUTTONS | wx.TR_NO_LINES |
             wx.TR_FULL_ROW_HIGHLIGHT | wx.TR_HIDE_ROOT)
         self._parent = parent
+
         root = self.AddRoot("")
         self.top_level_items = []
         for i in range(66):

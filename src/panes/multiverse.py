@@ -1,7 +1,7 @@
 """multiverse.py - multi-verse retrieval pane class"""
 
 import wx
-from wx import aui
+from wx import aui, html
 
 from config import *
 from html import HtmlWindowBase
@@ -15,6 +15,8 @@ class MultiVersePane(wx.Panel):
         super(MultiVersePane, self).__init__(parent)
         self._parent = parent
         self.html = ""
+        self.last_version = -1
+
         self.toolbar = aui.AuiToolBar(self, wx.ID_ANY, wx.DefaultPosition,
             wx.DefaultSize, aui.AUI_TB_DEFAULT_STYLE | aui.AUI_TB_OVERFLOW |
             aui.AUI_TB_HORZ_TEXT)
@@ -37,6 +39,7 @@ class MultiVersePane(wx.Panel):
         self.toolbar.EnableTool(wx.ID_COPY, False)
         self.Bind(wx.EVT_MENU, self.OnCopy, id=wx.ID_COPY)
         self.toolbar.Realize()
+
         self.splitter = wx.SplitterWindow(self)
         self.splitter.SetMinimumPaneSize(60)
         self.verse_list = wx.TextCtrl(self.splitter,
@@ -46,9 +49,12 @@ class MultiVersePane(wx.Panel):
             (wx.ACCEL_CTRL, wx.WXK_RETURN, ID_SEARCH),
             (wx.ACCEL_CTRL, ord("A"), wx.ID_SELECTALL)]))
         self.htmlwindow = HtmlWindowBase(self.splitter, parent)
+        self.htmlwindow.Bind(html.EVT_HTML_LINK_CLICKED,
+            self.OnHtmlLinkClicked)
         self.htmlwindow.BindContextMenuEvent(self.OnContextMenu)
         self.splitter.SplitHorizontally(self.verse_list, self.htmlwindow,
             parent._app.config.ReadInt("MultiVerse/SplitterPosition", 60))
+
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add(self.toolbar, 0)
         sizer.Add(self.splitter, 1, wx.ALL | wx.EXPAND, 0)
@@ -56,35 +62,36 @@ class MultiVersePane(wx.Panel):
 
     def OnSearch(self, event):
         references, failed = refalize2(self.verse_list.GetValue())
-        Bible = self._parent.get_htmlwindow(self.version.GetSelection()).Bible
-        version = self.version.GetStringSelection()
+        version = self.version.GetSelection()
+        Bible = self._parent.get_htmlwindow(version).Bible
         results = []
+        version_name = self.version.GetStringSelection()
         for b, c, v, c2, v2, reference in references:
             try:
                 if c2 == -1 and v2 == -1:
                     if Bible[b][c][v]:
-                        results.append("<p>[%s %d:%d] %s</p>" %
-                            (BOOK_NAMES[b - 1], c, v, Bible[b][c][v]))
+                        results.append("<p><a href=\"%d.%d.%d\">%s %d:%d (%s)"
+                            "</a><br />%s</p>" % (b, c, v, BOOK_NAMES[b - 1],
+                            c, v, version_name, Bible[b][c][v]))
                     else:
                         results.append(_("<p><font color=\"gray\">%s %d:%d "
                             "is not in the %s.</font></p>") %
-                            (BOOK_NAMES[b - 1], c, v, version))
+                            (BOOK_NAMES[b - 1], c, v, version_name))
                 else:
                     for c3 in range(c, c2 + 1):
-                        v3, v4 = 1, len(Bible[b][c3]) - 1
-                        if c3 == c:
-                            v3 = v
-                        if c3 == c2:
-                            v4 = v2
+                        v3 = 1 if c3 != c else v
+                        v4 = len(Bible[b][c3]) - 1 if c3 != c2 else v2
                         verses = []
                         for v5 in range(v3, v4 + 1):
                             if Bible[b][c3][v5]:
-                                verses.append("%d&nbsp;%s" % (v5,
-                                    Bible[b][c3][v5]))
+                                verses.append("<font size=\"-1\">%d&nbsp;" \
+                                    "</font>%s" % (v5, Bible[b][c3][v5]))
                         if not verses:
                             raise IndexError
-                        results.append("<p>[%s %d:%d-%d] %s</p>" %
-                            (BOOK_NAMES[b - 1], c3, v3, v4, " ".join(verses)))
+                        results.append("<p><a href=\"%d.%d.%d\">%s %d:%d-%d "
+                            "(%s)</a><br />%s</p>" % (b, c3, v3,
+                            BOOK_NAMES[b - 1], c3, v3, v4, version_name,
+                            " ".join(verses)))
             except IndexError:
                 failed.append(reference)
         if failed:
@@ -97,6 +104,7 @@ class MultiVersePane(wx.Panel):
         self.toolbar.EnableTool(wx.ID_PRINT, True)
         self.toolbar.EnableTool(wx.ID_COPY, True)
         self.toolbar.Refresh(False)
+        self.last_version = version
         self.htmlwindow.SetFocus()
 
     def OnPrint(self, event):
@@ -114,6 +122,13 @@ class MultiVersePane(wx.Panel):
             wx.TheClipboard.SetData(data)
             wx.TheClipboard.Flush()
             wx.TheClipboard.Close()
+
+    def OnHtmlLinkClicked(self, event):
+        if (self._parent.notebook.GetSelection() != self.last_version and
+                not wx.GetKeyState(wx.WXK_CONTROL)):
+            self._parent.notebook.SetSelection(self.last_version)
+        self._parent.load_chapter(*[int(i) for i in
+            event.GetLinkInfo().GetHref().split(".")])
 
     def OnContextMenu(self, event):
         if not self.html:
