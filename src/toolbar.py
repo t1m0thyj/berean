@@ -15,6 +15,7 @@ class ToolBar(aui.AuiToolBar):
             wx.DefaultPosition, wx.DefaultSize, aui.AUI_TB_DEFAULT_STYLE |
             aui.AUI_TB_OVERFLOW | aui.AUI_TB_HORZ_TEXT)
         self._parent = parent
+
         self.verse_entry = wx.ComboBox(self,
             choices=parent._app.config.ReadList("VerseHistory"),
             size=(150, -1), style=wx.TE_PROCESS_ENTER)
