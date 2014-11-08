@@ -45,59 +45,56 @@ class FileConfig(wx.FileConfig):
 
     def save(self):
         self.SetPath("/Main")
+        frame = self._app.frame
         self.Write("WindowPosition", ",".join(str(i) for i in
-            self._app.frame.rect.GetPosition()))
+            frame.rect.GetPosition()))
         self.Write("WindowSize", ",".join(str(i) for i in
-            self._app.frame.rect.GetSize()))
-        self.WriteBool("IsMaximized", self._app.frame.IsMaximized())
-        self.WriteInt("CurrentBook", self._app.frame.reference[0])
-        self.WriteInt("CurrentChapter", self._app.frame.reference[1])
-        self.WriteInt("CurrentVerse", self._app.frame.reference[2])
-        self.Write("HtmlFontFace", self._app.frame.default_font["normal_face"])
-        self.WriteInt("HtmlFontSize", self._app.frame.default_font["size"])
-        self.WriteInt("ZoomLevel", self._app.frame.zoom_level)
-        self.Write("LastVerse", self._app.frame.toolbar.verse_entry.GetValue())
-        self.WriteInt("ActiveVersionTab",
-            self._app.frame.notebook.GetSelection())
-        self.WriteBool("MinimizeToTray", self._app.frame.minimize_to_tray)
-        self.WriteList("../VersionList", self._app.frame.version_list)
-        self.WriteList("../Bookmarks", self._app.frame.menubar.bookmarks)
+            frame.rect.GetSize()))
+        self.WriteBool("IsMaximized", frame.IsMaximized())
+        self.WriteInt("CurrentBook", frame.reference[0])
+        self.WriteInt("CurrentChapter", frame.reference[1])
+        self.WriteInt("CurrentVerse", frame.reference[2])
+        self.Write("HtmlFontFace", frame.default_font["normal_face"])
+        self.WriteInt("HtmlFontSize", frame.default_font["size"])
+        self.WriteInt("ZoomLevel", frame.zoom_level)
+        self.Write("LastVerse", frame.toolbar.verse_entry.GetValue())
+        self.WriteInt("ActiveVersionTab", frame.notebook.GetSelection())
+        self.WriteBool("MinimizeToTray", frame.minimize_to_tray)
+        self.WriteList("../VersionList", frame.version_list)
+        self.WriteList("../Bookmarks", frame.menubar.bookmarks)
         self.WriteList("../VerseHistory",
-            self._app.frame.toolbar.verse_entry.GetStrings())
-        self.WriteList("../History", self._app.frame.verse_history)
+            frame.toolbar.verse_entry.GetStrings())
+        self.WriteList("../History", frame.verse_history)
         parallel_versions = []
-        if hasattr(self._app.frame, "parallel"):
-            for i, choice in enumerate(self._app.frame.parallel.choices):
+        if hasattr(frame, "parallel"):
+            for i, choice in enumerate(frame.parallel.choices):
                 if i > 0 and choice.GetSelection() == 0:
                     continue
                 version = choice.GetStringSelection()
-                if version in self._app.frame.version_list:
+                if version in frame.version_list:
                     parallel_versions.append(version)
         self.WriteList("../ParallelVersions", parallel_versions)
         self.SetPath("/Search")
-        self.Write("LastSearch", self._app.frame.search.text.GetValue())
-        self.WriteList("SearchHistory",
-            self._app.frame.search.text.GetStrings())
-        self.WriteBool("ShowOptions",
-            self._app.frame.search.optionspane.IsExpanded())
-        for option in self._app.frame.search.options:
+        self.Write("LastSearch", frame.search.text.GetValue())
+        self.WriteList("SearchHistory", frame.search.text.GetStrings())
+        self.WriteBool("ShowOptions", frame.search.optionspane.IsExpanded())
+        for option in frame.search.options:
             self.WriteBool(option,
-                getattr(self._app.frame.search, option).GetValue())
+                getattr(frame.search, option).GetValue())
         self.SetPath("/Notes")
-        self.WriteInt("ActiveTab", self._app.frame.notes.GetSelection())
-        subject_notes = self._app.frame.notes.GetPage(0)
+        self.WriteInt("ActiveTab", frame.notes.GetSelection())
+        subject_notes = frame.notes.GetPage(0)
         ##self.Write("CurrentSubjectTopic", subject_notes.db_key)
         self.WriteInt("SplitterPosition1",
             subject_notes.splitter.GetSashPosition())
-        verse_notes = self._app.frame.notes.GetPage(1)
+        verse_notes = frame.notes.GetPage(1)
         ##self.Write("CurrentVerseTopic", verse_notes.db_key)
         self.WriteInt("SplitterPosition2",
             verse_notes.splitter.GetSashPosition())
         self.SetPath("/MultiVerse")
-        self.Write("LastVerseList",
-            self._app.frame.multiverse.verse_list.GetValue())
+        self.Write("LastVerseList", frame.multiverse.verse_list.GetValue())
         self.WriteInt("SplitterPosition",
-            self._app.frame.multiverse.splitter.GetSashPosition())
+            frame.multiverse.splitter.GetSashPosition())
         self.Flush()
 
     def WriteList(self, key, value):
