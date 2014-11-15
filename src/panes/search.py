@@ -9,7 +9,7 @@ import time
 import wx
 from wx import aui, html
 
-from config import *
+from config import BOOK_NAMES, BOOK_RANGES
 from html import HtmlWindowBase
 from refalize import validate
 
@@ -24,7 +24,8 @@ def index_version(version, Bible, indexdir):
         for c in range(1, len(Bible[b])):
             for v in range(1, len(Bible[b][c])):
                 verse = re.sub(r"[^\w\s'\-]", r"",
-                    Bible[b][c][v].replace("--", " "), flags=re.UNICODE)
+                               Bible[b][c][v].replace("--", " "),
+                               flags=re.UNICODE)
                 for word in set(verse.split()):  # Remove duplicates
                     index.setdefault(word, []).extend(
                         [chr(i) for i in (b, c, v)])
@@ -46,14 +47,14 @@ class SearchPane(wx.Panel):
         self.indexes = {}
         self.last_search = (None, -1, -1)  # Text, Number of Verses, Version
         self.options = ("AllWords", "CaseSensitive", "ExactMatch", "Phrase",
-            "RegularExpression")
+                        "RegularExpression")
 
         indexdir = os.path.join(parent._app.userdatadir, "indexes")
         if not os.path.isdir(indexdir):
             os.mkdir(indexdir)
         for i in range(len(parent.version_list)):
-            if not os.path.isfile(os.path.join(indexdir,
-                    "%s.idx" % parent.version_list[i])):
+            if not os.path.isfile(os.path.join(indexdir, "%s.idx" %
+                                               parent.version_list[i])):
                 self.indexes[parent.version_list[i]] = index_version(
                     parent.version_list[i], parent.get_htmlwindow(i).Bible,
                     indexdir)
@@ -63,39 +64,42 @@ class SearchPane(wx.Panel):
             wx.CallAfter(thread.join)
 
         self.text = wx.ComboBox(self,
-            choices=parent._app.config.ReadList("Search/SearchHistory"),
-            style=wx.TE_PROCESS_ENTER)
+                                choices=parent._app.config.
+                                ReadList("Search/SearchHistory"),
+                                style=wx.TE_PROCESS_ENTER)
         self.text.SetValue(parent._app.config.Read("Search/LastSearch"))
         self.text.Bind(wx.EVT_TEXT_ENTER, self.OnSearch)
         style = aui.AUI_TB_DEFAULT_STYLE
         if wx.VERSION_STRING >= "2.9.5":
             style |= aui.AUI_TB_PLAIN_BACKGROUND
         self.toolbar = aui.AuiToolBar(self, wx.ID_ANY, wx.DefaultPosition,
-            wx.DefaultSize, style)
+                                      wx.DefaultSize, style)
         ID_SEARCH = wx.NewId()
         self.toolbar.AddTool(ID_SEARCH, "", parent.get_bitmap("search"),
-            _("Search"))
+                             _("Search"))
         self.toolbar.Bind(wx.EVT_MENU, self.OnSearch, id=ID_SEARCH)
         self.toolbar.AddTool(wx.ID_PRINT, "", parent.get_bitmap("print"),
-            _("Print Results"))
+                             _("Print Results"))
         self.toolbar.EnableTool(wx.ID_PRINT, False)
         self.toolbar.Bind(wx.EVT_MENU, self.OnPrint, id=wx.ID_PRINT)
         self.toolbar.Realize()
         self.htmlwindow = HtmlWindowBase(self, parent)
         self.htmlwindow.Bind(html.EVT_HTML_LINK_CLICKED,
-            self.OnHtmlLinkClicked)
+                             self.OnHtmlLinkClicked)
         self.htmlwindow.BindContextMenuEvent(self.OnContextMenu)
         self.optionspane = wx.CollapsiblePane(self, label=_("Options"),
-            style=wx.CP_DEFAULT_STYLE | wx.CP_NO_TLW_RESIZE)
+                                              style=wx.CP_DEFAULT_STYLE |
+                                              wx.CP_NO_TLW_RESIZE)
         optionspane = self.optionspane.GetPane()
-        for i, label in enumerate((_("All Words in Verse"),
-                _("Case Sensitive"), _("Exact Match Needed"),
-                _("Phrase in Order"), _("Regular Expression"))):
+        options = (_("All Words in Verse"), _("Case Sensitive"),
+                   _("Exact Match Needed"), _("Phrase in Order"),
+                   _("Regular Expression"))
+        for i, label in enumerate(options):
             setattr(self, self.options[i],
-                wx.CheckBox(optionspane, label=label))
+                    wx.CheckBox(optionspane, label=label))
             getattr(self, self.options[i]).SetValue(
                 parent._app.config.ReadBool("Search/" + self.options[i],
-                i == 0))
+                                            i == 0))
         if self.RegularExpression.GetValue():
             for option in ("AllWords", "ExactMatch", "Phrase"):
                 getattr(self, option).Disable()
@@ -103,13 +107,15 @@ class SearchPane(wx.Panel):
         self.version = wx.Choice(optionspane, choices=parent.version_list)
         tab = parent.notebook.GetSelection()
         self.version.SetSelection(int(tab < len(parent.version_list)) and tab)
-        self.range_choice = wx.Choice(optionspane, choices=(_("Entire Bible"),
-            _("Old Testament"), _("Pentateuch (Gen - Deut)"),
-            _("History (Josh - Esth)"), _("Wisdom (Job - Song)"),
-            _("Major Prophets (Isa - Dan)"), _("Minor Prophets (Hos - Mal)"),
-            _("New Testament"), _("Gospels & Acts (Matt - Acts)"),
-            _("Paul's Letters (Rom - Heb)"), _("General Letters (Jas - Jude)"),
-            _("Apocalypse (Rev)"), _("Just Current Book"), _("Custom...")))
+        ranges = (_("Entire Bible"), _("Old Testament"),
+                  _("Pentateuch (Gen - Deut)"), _("History (Josh - Esth)"),
+                  _("Wisdom (Job - Song)"), _("Major Prophets (Isa - Dan)"),
+                  _("Minor Prophets (Hos - Mal)"), _("New Testament"),
+                  _("Gospels & Acts (Matt - Acts)"),
+                  _("Paul's Letters (Rom - Heb)"),
+                  _("General Letters (Jas - Jude)"), _("Apocalypse (Rev)"),
+                  _("Just Current Book"), _("Custom..."))
+        self.range_choice = wx.Choice(optionspane, choices=ranges)
         self.range_choice.SetSelection(0)
         self.range_choice.Bind(wx.EVT_CHOICE, self.OnRange)
         self.start = wx.Choice(optionspane, choices=BOOK_NAMES)
@@ -122,9 +128,10 @@ class SearchPane(wx.Panel):
         for item in (self.start, self.rangetext, self.stop):
             item.Disable()
         wx.CallAfter(self.optionspane.Collapse,
-            not parent._app.config.ReadBool("Search/ShowOptions", True))
+                     not parent._app.config.ReadBool("Search/ShowOptions",
+                                                     True))
         self.Bind(wx.EVT_COLLAPSIBLEPANE_CHANGED,
-            self.OnCollapsiblePaneChanged)
+                  self.OnCollapsiblePaneChanged)
 
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer2 = wx.BoxSizer(wx.HORIZONTAL)
@@ -144,7 +151,7 @@ class SearchPane(wx.Panel):
         sizer6 = wx.BoxSizer(wx.HORIZONTAL)
         sizer6.Add(self.start, 1, wx.ALL, 2)
         sizer6.Add(self.rangetext, 0,
-            wx.LEFT | wx.RIGHT | wx.ALIGN_CENTER_VERTICAL, 5)
+                   wx.LEFT | wx.RIGHT | wx.ALIGN_CENTER_VERTICAL, 5)
         sizer6.Add(self.stop, 1, wx.ALL, 2)
         sizer4.Add(sizer6, 1, wx.EXPAND)
         sizer3.Add(sizer4, 0, wx.ALL, 2)
@@ -157,7 +164,7 @@ class SearchPane(wx.Panel):
         for version in self._parent.version_list:
             if version not in self.indexes:
                 with open(os.path.join(indexdir, "%s.idx" % version),
-                        'rb') as fileobj:
+                          'rb') as fileobj:
                     self.indexes[version] = cPickle.load(fileobj)
 
     def OnSearch(self, event):
@@ -173,9 +180,9 @@ class SearchPane(wx.Panel):
             sec = time.time()
             results, count = self.get_results(text)
             results.insert(0, _("<font color=\"gray\">%d verses in the %s "
-                "(%d&nbsp;msec)</font>") % (count,
-                self.version.GetStringSelection(),
-                max(1, (time.time() - sec) * 1000)))
+                                "(%d&nbsp;msec)</font>") %
+                           (count, self.version.GetStringSelection(),
+                            max(1, (time.time() - sec) * 1000)))
             if count == 0:
                 results.append(_("<p>No results were found.</p>"))
             self.html = "<html><body><font size=\"%d\">%s</font></body>" \
@@ -201,12 +208,12 @@ class SearchPane(wx.Panel):
             flags |= re.IGNORECASE
         if not options["RegularExpression"]:
             return self.get_indexed_results(re.escape(text), Bible, options,
-                flags)
+                                            flags)
         else:
             matches = []
             pattern = re.compile(text, flags)
             for b in range(self.start.GetSelection() + 1,
-                    self.stop.GetSelection() + 2):
+                           self.stop.GetSelection() + 2):
                 for c in range(1, len(Bible[b])):
                     for v in range(1, len(Bible[b][c])):
                         verse = Bible[b][c][v].replace("[", ""). \
@@ -214,11 +221,11 @@ class SearchPane(wx.Panel):
                         if pattern.search(verse):
                             matches.append((b, c, v))
             return (self.format_matches(matches, pattern, options),
-                len(matches))
+                    len(matches))
 
     def get_indexed_results(self, text, Bible, options, re_flags):
         words = [re.sub(r"[^\w'\-]", r"", word, flags=re.UNICODE) for
-            word in text.split()]
+                 word in text.split()]
         if options["AllWords"] or options["Phrase"]:
             longest = ""
             for word in words:
@@ -230,7 +237,7 @@ class SearchPane(wx.Panel):
             if options["Phrase"]:
                 pattern = re.compile(r"\b%s\b" % r"\W+".join(words), re_flags)
                 matches = [item for item in matches if
-                    pattern.search(Bible[item[0]][item[1]][item[2]])]
+                           pattern.search(Bible[item[0]][item[1]][item[2]])]
             elif options["AllWords"]:
                 words.remove(longest)
                 if options["ExactMatch"]:
@@ -239,9 +246,10 @@ class SearchPane(wx.Panel):
                 for word in words:
                     pattern = re.compile(word, re_flags)
                     matches = [item for item in matches if
-                        pattern.search(Bible[item[0]][item[1]][item[2]])]
+                               pattern.search(Bible[item[0]][item[1]]
+                                              [item[2]])]
                 pattern = re.compile(r"(%s)" % "|".join([longest] + words),
-                    re_flags)
+                                     re_flags)
         else:
             matches = []
             for word in words:
@@ -250,9 +258,10 @@ class SearchPane(wx.Panel):
                 return ([], 0)
             if options["ExactMatch"]:
                 pattern = re.compile(r"(%s)" % "|".join([r"\b%s\b" % word for
-                    word in words]), re_flags)
+                                                         word in words]),
+                                     re_flags)
                 matches = [item for item in matches if
-                    pattern.search(Bible[item[0]][item[1]][item[2]])]
+                           pattern.search(Bible[item[0]][item[1]][item[2]])]
             else:
                 pattern = re.compile(r"(%s)" % "|".join(words), re_flags)
         start = self.start.GetSelection() + 1
@@ -279,23 +288,31 @@ class SearchPane(wx.Panel):
             for case in cases:
                 if case in index:
                     matches.extend([bytearray(index[case][i:i + 3]) for i in
-                        xrange(0, len(index[case]), 3)])
+                                    xrange(0, len(index[case]), 3)])
         elif word in index:
             matches.extend([bytearray(index[word][i:i + 3]) for i in
-                xrange(0, len(index[word]), 3)])
+                            xrange(0, len(index[word]), 3)])
         if not (recursive or options["ExactMatch"] or options["Phrase"]):
             if not options["CaseSensitive"]:
                 lower = word.lower()
                 for word2 in index:
                     lower2 = word2.lower()
                     if lower in lower2 and lower2 != lower:
-                        matches.extend(self.get_word_matches(word2,
-                            {"CaseSensitive": options["CaseSensitive"]}, True))
+                        matches. \
+                            extend(self.
+                                   get_word_matches(word2,
+                                                    {"CaseSensitive":
+                                                     options["CaseSensitive"]},
+                                                    True))
             else:
                 for word2 in index:
                     if word in word2 and word2 != word:
-                        matches.extend(self.get_word_matches(word2,
-                            {"CaseSensitive": options["CaseSensitive"]}, True))
+                        matches. \
+                            extend(self.
+                                   get_word_matches(word2,
+                                                    {"CaseSensitive":
+                                                     options["CaseSensitive"]},
+                                                    True))
         return matches
 
     def format_matches(self, matches, pattern, options):
@@ -314,20 +331,21 @@ class SearchPane(wx.Panel):
                         offset += 7
                 else:
                     for match in pattern.finditer(verse.replace("[", "").
-                            replace("]", "")):
+                                                  replace("]", "")):
                         start, end = match.span(0)
                         offset += verse.count("[", offset, start + offset) + \
                             verse.count("]", offset, start + offset)
                         offset2 = offset + verse.count("[", start + offset,
-                            end + offset) + verse.count("]", start + offset,
-                            end + offset)
+                                                       end + offset) + \
+                            verse.count("]", start + offset, end + offset)
                         verse = verse[:start + offset] + "<b>" + \
                             verse[start + offset:end + offset2] + "</b>" + \
                             verse[end + offset2:]
                         offset += 7
                 results.append("<p><a href=\"%d.%d.%d\">%s %d:%d</a><br />%s"
-                    "</p>" % (b, c, v, BOOK_NAMES[b - 1], c, v,
-                    verse.replace("[", "<i>").replace("]", "</i>")))
+                               "</p>" % (b, c, v, BOOK_NAMES[b - 1], c, v,
+                                         verse.replace("[", "<i>").
+                                         replace("]", "</i>")))
         else:
             results.append("<br />")
             i = last_book = 0
@@ -339,10 +357,10 @@ class SearchPane(wx.Panel):
                     verses += 1
                 if verses == 1:
                     results.append(", <a href=\"%d.%d.%d\">%d:%d</a>" %
-                        (b, c, v, c, v))
+                                   (b, c, v, c, v))
                 else:
                     results.append(", <a href=\"%d.%d.%d\">%d:%d-%d</a>" %
-                        (b, c, v, c, v, v + verses - 1))
+                                   (b, c, v, c, v, v + verses - 1))
                 if b > last_book:
                     results[-1] = "<br /><b>%s</b>" % \
                         BOOK_NAMES[b - 1].upper() + results[-1][1:]
@@ -352,8 +370,9 @@ class SearchPane(wx.Panel):
 
     def OnPrint(self, event):
         header = _("<div align=\"center\"><b>\"%s\"</b><br />occurs in %d "
-            "verses in the %s.</div>") % (self.last_search[0],
-            self.last_search[1], self.version.GetString(self.last_search[2]))
+                   "verses in the %s.</div>") % \
+            (self.last_search[0], self.last_search[1],
+             self.version.GetString(self.last_search[2]))
         text = self.html[:self.html.index("<font color=\"gray\">")] + \
             header + self.html[self.html.index("</font>") + 7:]
         if wx.VERSION_STRING >= "2.9.1":
@@ -368,7 +387,7 @@ class SearchPane(wx.Panel):
                 not wx.GetKeyState(wx.WXK_CONTROL)):
             self._parent.notebook.SetSelection(self.last_search[2])
         self._parent.load_chapter(*[int(i) for i in
-            event.GetLinkInfo().GetHref().split(".")])
+                                    event.GetLinkInfo().GetHref().split(".")])
 
     def OnContextMenu(self, event):
         if not self.html:

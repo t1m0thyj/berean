@@ -2,7 +2,7 @@
 
 import wx
 
-from config import *
+from config import VERSION_NAMES, VERSION_DESCRIPTIONS, FONT_SIZES
 
 _ = wx.GetTranslation
 
@@ -10,16 +10,17 @@ _ = wx.GetTranslation
 class PreferencesDialog(wx.Dialog):
     def __init__(self, parent):
         super(PreferencesDialog, self).__init__(parent, title=_("Preferences"),
-            style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER)
+                                                style=wx.DEFAULT_DIALOG_STYLE |
+                                                wx.RESIZE_BORDER)
         self._parent = parent
         self.notebook = wx.Notebook(self, style=wx.NB_MULTILINE)
 
         self.general = wx.Panel(self.notebook)
         self.minimize_to_tray = wx.CheckBox(self.general,
-            label=_("Minimize to system tray"))
+                                            label=_("Minimize to system tray"))
         self.minimize_to_tray.SetValue(parent.minimize_to_tray)
         self.default_font_face = wx.Choice(self.general,
-            choices=parent.facenames)
+                                           choices=parent.facenames)
         self.default_font_face.SetStringSelection(
             parent.default_font["normal_face"])
         self.default_font_size = wx.ComboBox(self.general, choices=FONT_SIZES)
@@ -29,10 +30,10 @@ class PreferencesDialog(wx.Dialog):
         sizer.Add(self.minimize_to_tray, 0, wx.ALL, 5)
         sizer2 = wx.BoxSizer(wx.HORIZONTAL)
         sizer2.Add(wx.StaticText(self.general, label=_("Default font:")), 0,
-            wx.ALIGN_CENTER_VERTICAL)
+                   wx.ALIGN_CENTER_VERTICAL)
         sizer2.Add(self.default_font_face, 0, wx.ALL, 5)
         sizer2.Add(wx.StaticText(self.general, label=_("Size:")), 0,
-            wx.LEFT | wx.ALIGN_CENTER_VERTICAL, 5)
+                   wx.LEFT | wx.ALIGN_CENTER_VERTICAL, 5)
         sizer2.Add(self.default_font_size, 0, wx.ALL, 5)
         sizer.Add(sizer2, 0, wx.ALL ^ wx.TOP, 5)
         self.general.SetSizer(sizer)
@@ -41,8 +42,10 @@ class PreferencesDialog(wx.Dialog):
         self.versions = wx.Panel(self.notebook)
         self.version_list = wx.CheckListBox(self.versions)
         for i in range(len(VERSION_NAMES)):
-            self.version_list.Append("%s - %s" % (VERSION_NAMES[i],
-                VERSION_DESCRIPTIONS[VERSION_NAMES[i]].decode("latin_1")))
+            self.version_list.Append("%s - %s" %
+                                     (VERSION_NAMES[i],
+                                      VERSION_DESCRIPTIONS[VERSION_NAMES[i]].
+                                      decode("latin_1")))
             if VERSION_NAMES[i] in parent.version_list:
                 self.version_list.Check(i)
         sizer = wx.BoxSizer()
@@ -62,19 +65,21 @@ class PreferencesDialog(wx.Dialog):
 
     def OnOk(self, event):
         version_list = [version for i, version in enumerate(VERSION_NAMES) if
-            self.version_list.IsChecked(i)]
+                        self.version_list.IsChecked(i)]
         if not version_list:
             wx.MessageBox(_("You must have at least one version selected."),
-                "Berean", wx.ICON_EXCLAMATION | wx.OK)
+                          "Berean", wx.ICON_EXCLAMATION | wx.OK)
             return
         self._parent.minimize_to_tray = self.minimize_to_tray.GetValue()
         default_font = {"size": int(self.default_font_size.GetValue()),
-            "normal_face": self.default_font_face.GetStringSelection()}
+                        "normal_face":
+                            self.default_font_face.GetStringSelection()}
         if default_font != self._parent.default_font:
             for i in range(self._parent.notebook.GetPageCount()):
                 self._parent.get_htmlwindow(i).SetStandardFonts(**default_font)
             for htmlwindow in (self._parent.search.htmlwindow,
-                    self._parent.multiverse.htmlwindow, self._parent.printing):
+                               self._parent.multiverse.htmlwindow,
+                               self._parent.printing):
                 htmlwindow.SetStandardFonts(**default_font)
             for i in range(self._parent.notes.GetPageCount()):
                 self._parent.notes.GetPage(i).set_default_style(default_font)
@@ -91,8 +96,8 @@ class PreferencesDialog(wx.Dialog):
                     self._parent.old_versions.remove(version)
             self._parent.version_list = version_list
             wx.MessageBox(_("Changes to version settings will not take effect "
-                "until Berean is restarted."), "Berean",
-                wx.ICON_INFORMATION | wx.OK)
+                            "until Berean is restarted."), "Berean",
+                          wx.ICON_INFORMATION | wx.OK)
         self.Destroy()
 
     def OnCancel(self, event):

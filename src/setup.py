@@ -28,28 +28,30 @@ manifest = """<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 if os.path.isdir("dist"):
     shutil.rmtree("dist")
 excludes = ["_gtkagg", "_tkagg", "bsddb", "curses", "email", "pywin.debugger",
-    "pywin.debugger.dbgcon", "pywin.dialogs", "tcl", "Tkconstants", "Tkinter"]
+            "pywin.debugger.dbgcon", "pywin.dialogs", "tcl", "Tkconstants",
+            "Tkinter"]
 dll_excludes = ["libgdk-win32-2.0-0.dll", "libgobject-2.0-0.dll", "tcl84.dll",
-    "tk84.dll", "msvcp90.dll", "w9xpopen.exe"]
+                "tk84.dll", "msvcp90.dll", "w9xpopen.exe"]
 setup(options={"py2exe": {"compressed": 1,
-		"optimize": 2,
-        "bundle_files": 3,
-        "excludes": excludes,
-        "dll_excludes": dll_excludes}},
-    windows=[{"script": "berean.py",
-		"name": "Berean",
-		"version": VERSION,
-		"company_name": "Timothy Johnson",
-		"copyright": "Copyright \xa9 2011-2014 Timothy Johnson",
-		"description": "Berean",
-		"icon_resources": [(1, "images\\berean.ico")],
-		"other_resources": [(24, 1, manifest)]}],
-    data_files=[("images", glob.glob("images\\*.*")),
-        ("images\\flags", glob.glob("images\\flags\\*.*")),
-        ("locale\\en_US\\help", glob.glob("locale\\en_US\\help\\*.*")),
-        ("versions", ["versions\\KJV.bbl"]),
-        ("", ["license.txt"])],
-	zipfile=None)
+                          "optimize": 2,
+                          "bundle_files": 3,
+                          "excludes": excludes,
+                          "dll_excludes": dll_excludes}},
+      windows=[{"script": "berean.py",
+                "name": "Berean",
+                "version": VERSION,
+                "company_name": "Timothy Johnson",
+                "copyright": "Copyright \xa9 2011-2014 Timothy Johnson",
+                "description": "Berean",
+                "icon_resources": [(1, "images\\berean.ico")],
+                "other_resources": [(24, 1, manifest)]}],
+      data_files=[("images", glob.glob("images\\*.*")),
+                  ("images\\flags", glob.glob("images\\flags\\*.*")),
+                  ("locale\\en_US\\help",
+                   glob.glob("locale\\en_US\\help\\*.*")),
+                  ("versions", ["versions\\KJV.bbl"]),
+                  ("", ["license.txt"])],
+      zipfile=None)
 for imagedir in ("dist\\images", "dist\\images\\flags"):
     thumbs_db = os.path.join(imagedir, "Thumbs.db")
     if os.path.isfile(thumbs_db):  # Remove WinXP thumbnail caches

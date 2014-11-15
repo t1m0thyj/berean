@@ -6,7 +6,7 @@ import wx
 from wx import gizmos
 
 import html
-from config import *
+from config import VERSION
 from refalize import refalize, reference_str
 
 _ = wx.GetTranslation
@@ -27,101 +27,110 @@ class MenuBar(wx.MenuBar):
 
         self.menu_file = wx.Menu()
         self.menu_file.Append(wx.ID_PRINT, _("&Print...\tCtrl+P"),
-            _("Prints the current chapter"))
+                              _("Prints the current chapter"))
         frame.Bind(wx.EVT_MENU, self.OnPrint, id=wx.ID_PRINT)
         self.menu_file.Append(wx.ID_PRINT_SETUP, _("Page &Setup..."),
-            _("Changes page layout settings"))
+                              _("Changes page layout settings"))
         frame.Bind(wx.EVT_MENU, self.OnPageSetup, id=wx.ID_PRINT_SETUP)
         self.menu_file.Append(wx.ID_PREVIEW, _("P&rint Preview..."),
-            _("Previews the current chapter"))
+                              _("Previews the current chapter"))
         frame.Bind(wx.EVT_MENU, self.OnPrintPreview, id=wx.ID_PREVIEW)
         if '__WXMAC__' not in wx.PlatformInfo:
             self.menu_file.AppendSeparator()
         self.menu_file.Append(wx.ID_EXIT, _("E&xit\tAlt+F4"),
-            _("Exits the application"))
+                              _("Exits the application"))
         frame.Bind(wx.EVT_MENU, frame.OnClose, id=wx.ID_EXIT)
         self.Append(self.menu_file, _("&File"))
 
         self.menu_edit = wx.Menu()
         self.menu_edit.Append(wx.ID_COPY, _("&Copy\tCtrl+C"),
-            _("Copies the selected text to the clipboard"))
+                              _("Copies the selected text to the clipboard"))
         frame.Bind(wx.EVT_MENU, self.OnCopy, id=wx.ID_COPY)
         if '__WXMAC__' not in wx.PlatformInfo:
             self.menu_edit.AppendSeparator()
         self.menu_edit.Append(wx.ID_PREFERENCES, _("&Preferences..."),
-            _("Configures program settings"))
+                              _("Configures program settings"))
         frame.Bind(wx.EVT_MENU, self.OnPreferences, id=wx.ID_PREFERENCES)
         self.Append(self.menu_edit, _("&Edit"))
 
         self.menu_view = wx.Menu()
-        self.go_to_verse_item = self.menu_view.Append(wx.ID_ANY,
-            _("&Go to Verse"), _("Goes to the specified verse"))
+        self.go_to_verse_item = \
+            self.menu_view.Append(wx.ID_ANY, _("&Go to Verse"),
+                                  _("Goes to the specified verse"))
         frame.Bind(wx.EVT_MENU, self.OnGoToVerse, self.go_to_verse_item)
         self.menu_view.Append(wx.ID_BACKWARD, _("Go &Back\tAlt+Left"),
-            _("Goes to the previous chapter"))
+                              _("Goes to the previous chapter"))
         frame.Bind(wx.EVT_MENU, self.OnBack, id=wx.ID_BACKWARD)
         self.menu_view.Append(wx.ID_FORWARD, _("Go &Forward\tAlt+Right"),
-            _("Goes to the next chapter"))
+                              _("Goes to the next chapter"))
         frame.Bind(wx.EVT_MENU, self.OnForward, id=wx.ID_FORWARD)
         self.menu_view.AppendSeparator()
         self.menu_view.Append(wx.ID_ZOOM_IN, _("Zoom &In\tCtrl++"),
-            _("Increases the text size"))
+                              _("Increases the text size"))
         self.menu_view.Enable(wx.ID_ZOOM_IN, frame.zoom_level < 7)
         frame.Bind(wx.EVT_MENU, self.OnZoomIn, id=wx.ID_ZOOM_IN)
         self.menu_view.Append(wx.ID_ZOOM_OUT, _("Zoom &Out\tCtrl+-"),
-            _("Decreases the text size"))
+                              _("Decreases the text size"))
         self.menu_view.Enable(wx.ID_ZOOM_OUT, frame.zoom_level > 1)
         frame.Bind(wx.EVT_MENU, self.OnZoomOut, id=wx.ID_ZOOM_OUT)
         self.menu_view.Append(wx.ID_ZOOM_100, _("Reset Zoom\tCtrl+0"),
-            _("Resets the text size to the default"))
+                              _("Resets the text size to the default"))
         frame.Bind(wx.EVT_MENU, self.OnZoomDefault, id=wx.ID_ZOOM_100)
         self.menu_view.AppendSeparator()
         self.toolbar_item = self.menu_view.AppendCheckItem(wx.ID_ANY,
-            _("&Toolbar"))
+                                                           _("&Toolbar"))
         frame.Bind(wx.EVT_MENU, self.OnToolbar, self.toolbar_item)
         self.menu_view.AppendSeparator()
-        self.tree_pane_item = self.menu_view.AppendCheckItem(wx.ID_ANY,
-            _("T&ree Pane\tCtrl+Shift+T"))
+        self.tree_pane_item = \
+            self.menu_view.AppendCheckItem(wx.ID_ANY,
+                                           _("T&ree Pane\tCtrl+Shift+T"))
         frame.Bind(wx.EVT_MENU, self.OnTreePane, self.tree_pane_item)
-        self.search_pane_item = self.menu_view.AppendCheckItem(wx.ID_ANY,
-            _("&Search Pane\tCtrl+Shift+S"))
+        self.search_pane_item = \
+            self.menu_view.AppendCheckItem(wx.ID_ANY,
+                                           _("&Search Pane\tCtrl+Shift+S"))
         frame.Bind(wx.EVT_MENU, self.OnSearchPane, self.search_pane_item)
-        self.notes_pane_item = self.menu_view.AppendCheckItem(wx.ID_ANY,
-            _("&Notes Pane\tCtrl+Shift+N"))
+        self.notes_pane_item = \
+            self.menu_view.AppendCheckItem(wx.ID_ANY,
+                                           _("&Notes Pane\tCtrl+Shift+N"))
         frame.Bind(wx.EVT_MENU, self.OnNotesPane, self.notes_pane_item)
-        self.multiverse_pane_item = self.menu_view.AppendCheckItem(wx.ID_ANY,
-            _("&Multi-Verse Retrieval\tCtrl+M"))
+        self.multiverse_pane_item = \
+            self.menu_view.AppendCheckItem(wx.ID_ANY,
+                                           _("&Multi-Verse Retrieval\tCtrl+M"))
         frame.Bind(wx.EVT_MENU, self.OnMultiVersePane,
-            self.multiverse_pane_item)
+                   self.multiverse_pane_item)
         self.Append(self.menu_view, _("&View"))
 
         self.menu_bookmarks = wx.Menu()
-        self.add_to_bookmarks_item = self.menu_bookmarks.Append(wx.ID_ANY,
-            _("&Add to Bookmarks\tCtrl+D"),
-            _("Adds the current chapter to your bookmarks"))
+        self.add_to_bookmarks_item = \
+            self.menu_bookmarks.Append(wx.ID_ANY,
+                                       _("&Add to Bookmarks\tCtrl+D"),
+                                       _("Adds the current chapter to your "
+                                         "bookmarks"))
         frame.Bind(wx.EVT_MENU, self.OnAddToBookmarks,
-            self.add_to_bookmarks_item)
-        self.manage_bookmarks_item = self.menu_bookmarks.Append(wx.ID_ANY,
-            _("&Manage Bookmarks...\tCtrl+Shift+B"))
+                   self.add_to_bookmarks_item)
+        self.manage_bookmarks_item = \
+            self.menu_bookmarks.Append(wx.ID_ANY,
+                                       _("&Manage Bookmarks...\tCtrl+Shift+B"))
         frame.Bind(wx.EVT_MENU, self.OnManageBookmarks,
-            self.manage_bookmarks_item)
+                   self.manage_bookmarks_item)
         self.menu_bookmarks.AppendSeparator()
         self.menu_bookmarks.AppendSeparator()
         self.view_all_item = self.menu_bookmarks.Append(wx.ID_ANY,
-            _("View All"))
+                                                        _("View All"))
         frame.Bind(wx.EVT_MENU, self.OnViewAll, self.view_all_item)
         self.update_bookmarks()
         self.Append(self.menu_bookmarks, _("&Bookmarks"))
 
         self.menu_help = wx.Menu()
         self.menu_help.Append(wx.ID_HELP, _("&Help...\tF1"),
-            _("Shows the contents of the help file"))
+                              _("Shows the contents of the help file"))
         frame.Bind(wx.EVT_MENU, self.OnHelp, id=wx.ID_HELP)
         report_bug_item = self.menu_help.Append(-1, _("&Report Bug..."))
         frame.Bind(wx.EVT_MENU, self.OnReportBug, report_bug_item)
         self.menu_help.AppendSeparator()
         self.menu_help.Append(wx.ID_ABOUT, _("&About Berean..."),
-            _("Displays program information, version number, and copyright"))
+                              _("Displays program information, version "
+                                "number, and copyright"))
         frame.Bind(wx.EVT_MENU, self.OnAbout, id=wx.ID_ABOUT)
         self.Append(self.menu_help, _("&Help"))
 
@@ -131,14 +140,14 @@ class MenuBar(wx.MenuBar):
         if self.bookmarks:
             for i in range(len(self.bookmarks)):
                 self.menu_bookmarks.Insert(i + 3, wx.ID_HIGHEST + i + 1,
-                    self.bookmarks[i])
+                                           self.bookmarks[i])
                 self._frame.Bind(wx.EVT_MENU, self.OnBookmark,
-                    id=wx.ID_HIGHEST + i + 1)
+                                 id=wx.ID_HIGHEST + i + 1)
         else:
             self.menu_bookmarks.Insert(3, wx.ID_HIGHEST + 1, _("(Empty)"))
             self.menu_bookmarks.Enable(wx.ID_HIGHEST + 1, False)
         self.menu_bookmarks.Enable(self.view_all_item.GetId(),
-            len(self.bookmarks))
+                                   len(self.bookmarks))
 
     def OnPrint(self, event):
         self._frame.printing.print_()
@@ -211,7 +220,7 @@ class MenuBar(wx.MenuBar):
             self.update_bookmarks()
         else:
             wx.MessageBox(_("A bookmark for %s already exists.") % bookmark,
-                "Berean", wx.ICON_EXCLAMATION | wx.OK)
+                          "Berean", wx.ICON_EXCLAMATION | wx.OK)
 
     def OnManageBookmarks(self, event):
         dialog = BookmarksDialog(self._frame)
@@ -223,7 +232,7 @@ class MenuBar(wx.MenuBar):
             self._frame.load_chapter(*refalize(reference))
         except Exception:
             wx.MessageBox(_("'%s' is not a valid reference.") % reference,
-                "Berean", wx.ICON_EXCLAMATION | wx.OK)
+                          "Berean", wx.ICON_EXCLAMATION | wx.OK)
 
     def OnViewAll(self, event):
         self._frame.show_multiverse_pane()
@@ -251,8 +260,9 @@ class MenuBar(wx.MenuBar):
 class BookmarksDialog(wx.Dialog):
     def __init__(self, parent):
         super(BookmarksDialog, self).__init__(parent,
-            title=_("Manage Bookmarks"),
-            style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER)
+                                              title=_("Manage Bookmarks"),
+                                              style=wx.DEFAULT_DIALOG_STYLE |
+                                              wx.RESIZE_BORDER)
         self._parent = parent
         self.listbox = gizmos.EditableListBox(self, label=_("Bookmarks"))
         self.listbox.SetStrings(parent.menubar.bookmarks)
@@ -275,14 +285,14 @@ class BookmarksDialog(wx.Dialog):
             reference = refalize(label)
         except Exception:
             wx.MessageBox(_("'%s' is not a valid reference.") % label,
-                "Berean", wx.ICON_EXCLAMATION | wx.OK)
+                          "Berean", wx.ICON_EXCLAMATION | wx.OK)
             event.Veto()
             return
         index = find_bookmark(reference, self.listbox.GetStrings())
         if index != -1 and index != event.GetIndex():
             wx.MessageBox(_("A bookmark for %s already exists.") %
-                reference_str(*reference), "Berean",
-                wx.ICON_EXCLAMATION | wx.OK)
+                          reference_str(*reference), "Berean",
+                          wx.ICON_EXCLAMATION | wx.OK)
             event.Veto()
         else:
             event.Skip()
