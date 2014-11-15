@@ -2,7 +2,7 @@
 
 import wx
 
-from config import *
+from config import BOOK_NAMES, BOOK_LENGTHS, CHAPTER_LENGTHS
 from html import ChapterWindowBase
 
 _ = wx.GetTranslation
@@ -20,7 +20,7 @@ class ParallelWindow(ChapterWindowBase):
             return _(" and ").join(self.version_list)
         else:
             return _("%s, and %s") % (", ".join(self.version_list[:-1]),
-                self.version_list[-1])
+                                      self.version_list[-1])
 
     def get_html(self, book, chapter, verse=-1):
         self.version_list = []
@@ -41,8 +41,8 @@ class ParallelWindow(ChapterWindowBase):
                 text.append("<td align=\"center\">%s</td>" % title)
             else:
                 text.append("<td align=\"center\">%s<br/><i>%s</i></td>" %
-                    (title, Bibles[-1][book][chapter][0].replace("]", "<i>").
-                    replace("[", "</i>")))
+                            (title, Bibles[-1][book][chapter][0].
+                             replace("]", "<i>").replace("[", "</i>")))
         text.append("</tr>")
         for i in range(1, CHAPTER_LENGTHS[book - 1][chapter - 1] + 1):
             text.append("<tr>")
@@ -51,8 +51,8 @@ class ParallelWindow(ChapterWindowBase):
                 if (Bibles[j][book] and i < len(Bibles[j][book][chapter]) and
                         Bibles[j][book][chapter][i]):
                     text.append("<font size=\"-1\">%d&nbsp;</font>%s" %
-                        (i, Bibles[j][book][chapter][i].replace("[", "<i>").
-                        replace("]", "</i>")))
+                                (i, Bibles[j][book][chapter][i].
+                                 replace("[", "<i>").replace("]", "</i>")))
                     if i == verse:
                         text[-1] = "<b>%s</b>" % text[-1]
                 if j == 0:
@@ -61,8 +61,8 @@ class ParallelWindow(ChapterWindowBase):
                         chapter == BOOK_LENGTHS[book - 1] and
                         Bibles[j][book] and Bibles[j][book][0]):
                     text.append("<hr /><div align=\"center\"><i>%s</i></div>" %
-                        Bibles[j][book][0].replace("]", "<i>").
-                        replace("[", "</i>"))
+                                Bibles[j][book][0].replace("]", "<i>").
+                                replace("[", "</i>"))
                 text.append("</td>")
             text.append("</tr>")
         return "<html><body><font size=\"%d\"><table valign=\"top\" " \
@@ -74,7 +74,7 @@ class ParallelWindow(ChapterWindowBase):
         self._frame.statusbar.SetStatusText(self.description, 1)
         if wx.VERSION_STRING >= "2.9.4":
             self._frame.notebook.SetPageToolTip(len(self._frame.version_list),
-                self.description)
+                                                self.description)
         if verse > 1:
             wx.CallAfter(self.ScrollToAnchor, str(verse))
             self.current_verse = -1
@@ -116,11 +116,12 @@ class ParallelPanel(wx.Panel):
         self.choice_data = wx.CustomDataObject("ParallelPanel")
 
         self.choices = []
-        version_list = self._frame._app.config.ReadList("ParallelVersions",
-            self._frame.version_list[:2])
+        version_list = \
+            self._frame._app.config.ReadList("ParallelVersions",
+                                             self._frame.version_list[:2])
         for i in range(len(self._frame.version_list)):
             self.choices.append(wx.Choice(self,
-                choices=self._frame.version_list))
+                                          choices=self._frame.version_list))
             if i > 0:
                 self.choices[i].Insert(_("(none)"), 0)
             if i < len(version_list):
@@ -178,4 +179,4 @@ class ParallelPanel(wx.Panel):
 
     def OnChoice(self, event):
         self.select(self.choices.index(event.GetEventObject()),
-            event.GetSelection())
+                    event.GetSelection())

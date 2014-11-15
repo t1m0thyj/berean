@@ -3,7 +3,7 @@
 import wx
 from wx import aui
 
-from config import *
+from config import BOOK_NAMES, BOOK_LENGTHS, CHAPTER_LENGTHS
 from refalize import refalize, validate
 
 _ = wx.GetTranslation
@@ -12,51 +12,59 @@ _ = wx.GetTranslation
 class ToolBar(aui.AuiToolBar):
     def __init__(self, parent):
         super(ToolBar, self).__init__(parent, wx.ID_ANY,
-            wx.DefaultPosition, wx.DefaultSize, aui.AUI_TB_DEFAULT_STYLE |
-            aui.AUI_TB_OVERFLOW | aui.AUI_TB_HORZ_TEXT)
+                                      wx.DefaultPosition, wx.DefaultSize,
+                                      aui.AUI_TB_DEFAULT_STYLE |
+                                      aui.AUI_TB_OVERFLOW |
+                                      aui.AUI_TB_HORZ_TEXT)
         self._parent = parent
 
         self.verse_entry = wx.ComboBox(self,
-            choices=parent._app.config.ReadList("VerseHistory"),
-            size=(150, -1), style=wx.TE_PROCESS_ENTER)
+                                       choices=parent._app.config.
+                                       ReadList("VerseHistory"),
+                                       size=(150, -1),
+                                       style=wx.TE_PROCESS_ENTER)
         self.verse_entry.SetValue(
             parent._app.config.Read("Main/LastVerse", "Genesis 1"))
         self.verse_entry.Bind(wx.EVT_TEXT_ENTER, self.OnGoToVerse)
         self.AddControl(self.verse_entry)
         self.AddTool(parent.menubar.go_to_verse_item.GetId(), "",
-            parent.get_bitmap("go-to-verse"), _("Go to Verse"))
+                     parent.get_bitmap("go-to-verse"), _("Go to Verse"))
         self.AddSeparator()
         self.AddTool(wx.ID_BACKWARD, _("Back"), parent.get_bitmap("go-back"),
-            _("Go Back (Alt+Left)"))
+                     _("Go Back (Alt+Left)"))
         self.SetToolDropDown(wx.ID_BACKWARD, True)
         self.Bind(aui.EVT_AUITOOLBAR_TOOL_DROPDOWN, self.OnBack,
-            id=wx.ID_BACKWARD)
+                  id=wx.ID_BACKWARD)
         self.AddTool(wx.ID_FORWARD, _("Forward"),
-            parent.get_bitmap("go-forward"), _("Go Forward (Alt+Right)"))
+                     parent.get_bitmap("go-forward"),
+                     _("Go Forward (Alt+Right)"))
         self.SetToolDropDown(wx.ID_FORWARD, True)
         self.Bind(aui.EVT_AUITOOLBAR_TOOL_DROPDOWN, self.OnForward,
-            id=wx.ID_FORWARD)
+                  id=wx.ID_FORWARD)
         self.AddSeparator()
         self.bookctrl = wx.Choice(self, choices=BOOK_NAMES)
         self.bookctrl.SetSelection(parent.reference[0] - 1)
         self.AddControl(self.bookctrl)
         self.bookctrl.Bind(wx.EVT_CHOICE, self.OnBook)
         self.chapterctrl = wx.SpinCtrl(self, value=str(parent.reference[1]),
-            size=(60, -1), min=1, max=BOOK_LENGTHS[parent.reference[0] - 1])
+                                       size=(60, -1), min=1,
+                                       max=BOOK_LENGTHS[parent.reference[0] -
+                                                        1])
         self.AddControl(self.chapterctrl)
         self.chapterctrl.Bind(wx.EVT_SPINCTRL, self.OnChapter)
         self.chapterctrl.Bind(wx.EVT_TEXT_ENTER, self.OnChapter)
         self.AddSeparator()
         self.AddTool(wx.ID_PRINT, "", parent.get_bitmap("print"),
-            _("Print (Ctrl+P)"))
+                     _("Print (Ctrl+P)"))
         self.AddTool(wx.ID_COPY, "", parent.get_bitmap("copy"),
-            _("Copy (Ctrl+C)"))
+                     _("Copy (Ctrl+C)"))
         self.AddSeparator()
         self.AddTool(parent.menubar.add_to_bookmarks_item.GetId(), "",
-            parent.get_bitmap("add-to-bookmarks"),
-            _("Add to Bookmarks (Ctrl+D)"))
+                     parent.get_bitmap("add-to-bookmarks"),
+                     _("Add to Bookmarks (Ctrl+D)"))
         self.AddTool(parent.menubar.manage_bookmarks_item.GetId(), "",
-            parent.get_bitmap("manage-bookmarks"), _("Manage Bookmarks"))
+                     parent.get_bitmap("manage-bookmarks"),
+                     _("Manage Bookmarks"))
         self.Realize()
 
     def OnGoToVerse(self, event):
@@ -74,19 +82,19 @@ class ToolBar(aui.AuiToolBar):
             book, chapter, verse = refalize(reference)
             if chapter > BOOK_LENGTHS[book - 1]:
                 wx.MessageBox(_("The book of %s has only %d chapters.") %
-                    (BOOK_NAMES[book - 1], BOOK_LENGTHS[book - 1]), "Berean",
-                    wx.ICON_EXCLAMATION | wx.OK)
+                              (BOOK_NAMES[book - 1], BOOK_LENGTHS[book - 1]),
+                              "Berean", wx.ICON_EXCLAMATION | wx.OK)
                 return
             elif verse > CHAPTER_LENGTHS[book - 1][chapter - 1]:
                 wx.MessageBox(_("%s chapter %d has only %d verses.") %
-                    (BOOK_NAMES[book - 1], chapter,
-                    CHAPTER_LENGTHS[book - 1][chapter - 1]), "Berean",
-                    wx.ICON_EXCLAMATION | wx.OK)
+                              (BOOK_NAMES[book - 1], chapter,
+                               CHAPTER_LENGTHS[book - 1][chapter - 1]),
+                              "Berean", wx.ICON_EXCLAMATION | wx.OK)
                 return
             self._parent.load_chapter(book, chapter, verse)
         except Exception:
             wx.MessageBox(_("'%s' is not a valid reference.") % reference,
-                "Berean", wx.ICON_EXCLAMATION | wx.OK)
+                          "Berean", wx.ICON_EXCLAMATION | wx.OK)
         else:
             if self.verse_entry.FindString(reference) == -1:
                 self.verse_entry.Insert(reference, 0)
@@ -105,9 +113,9 @@ class ToolBar(aui.AuiToolBar):
             menu = wx.Menu()
             for i in range(self._parent.history_item - 1, -1, -1):
                 menu.Append(wx.ID_HIGHEST + i + 1,
-                    self._parent.verse_history[i])
-                self.Bind(wx.EVT_MENU, self.OnHistoryItem, id=wx.ID_HIGHEST +
-                    i + 1)
+                            self._parent.verse_history[i])
+                self.Bind(wx.EVT_MENU, self.OnHistoryItem,
+                          id=wx.ID_HIGHEST + i + 1)
             x, y, width, height = self.GetToolRect(wx.ID_BACKWARD)
             self.PopupMenu(menu, (x, y + height))
 
@@ -117,11 +125,11 @@ class ToolBar(aui.AuiToolBar):
         else:
             menu = wx.Menu()
             for i in range(self._parent.history_item + 1,
-                    len(self._parent.verse_history)):
+                           len(self._parent.verse_history)):
                 menu.Append(wx.ID_HIGHEST + i + 1,
-                    self._parent.verse_history[i])
-                self.Bind(wx.EVT_MENU, self.OnHistoryItem, id=wx.ID_HIGHEST +
-                    i + 1)
+                            self._parent.verse_history[i])
+                self.Bind(wx.EVT_MENU, self.OnHistoryItem,
+                          id=wx.ID_HIGHEST + i + 1)
             x, y, width, height = self.GetToolRect(wx.ID_FORWARD)
             self.PopupMenu(menu, (x, y + height))
 
@@ -135,23 +143,23 @@ class ToolBar(aui.AuiToolBar):
 
     def OnChapter(self, event):
         self._parent.load_chapter(self._parent.reference[0],
-            self.chapterctrl.GetValue())
+                                  self.chapterctrl.GetValue())
 
 
 class ZoomBar(wx.ToolBar):
     def __init__(self, parent, frame):
         super(ZoomBar, self).__init__(parent,
-            style=wx.TB_FLAT | wx.TB_NODIVIDER)
+                                      style=wx.TB_FLAT | wx.TB_NODIVIDER)
         self._frame = frame
         self.AddLabelTool(wx.ID_ZOOM_OUT, "", frame.get_bitmap("zoom-out"),
-            shortHelp=_("Zoom Out (Ctrl+-)"))
+                          shortHelp=_("Zoom Out (Ctrl+-)"))
         self.EnableTool(wx.ID_ZOOM_OUT, frame.zoom_level > 1)
         self.slider = wx.Slider(self, value=frame.zoom_level, minValue=1,
-            maxValue=7)
+                                maxValue=7)
         self.slider.Bind(wx.EVT_SLIDER, self.OnSlider)
         self.AddControl(self.slider)
         self.AddLabelTool(wx.ID_ZOOM_IN, "", frame.get_bitmap("zoom-in"),
-            shortHelp=_("Zoom In (Ctrl++)"))
+                          shortHelp=_("Zoom In (Ctrl++)"))
         self.EnableTool(wx.ID_ZOOM_IN, frame.zoom_level < 7)
         self.Realize()
         self.width = (self.GetToolSize()[0] + self.GetToolSeparation()) * 2 + \

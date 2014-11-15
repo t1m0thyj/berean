@@ -47,9 +47,9 @@ class FileConfig(wx.FileConfig):
         self.SetPath("/Main")
         frame = self._app.frame
         self.Write("WindowPosition", ",".join(str(i) for i in
-            frame.rect.GetPosition()))
+                                              frame.rect.GetPosition()))
         self.Write("WindowSize", ",".join(str(i) for i in
-            frame.rect.GetSize()))
+                                          frame.rect.GetSize()))
         self.WriteBool("IsMaximized", frame.IsMaximized())
         self.WriteInt("CurrentBook", frame.reference[0])
         self.WriteInt("CurrentChapter", frame.reference[1])
@@ -63,7 +63,7 @@ class FileConfig(wx.FileConfig):
         self.WriteList("../VersionList", frame.version_list)
         self.WriteList("../Bookmarks", frame.menubar.bookmarks)
         self.WriteList("../VerseHistory",
-            frame.toolbar.verse_entry.GetStrings())
+                       frame.toolbar.verse_entry.GetStrings())
         self.WriteList("../History", frame.verse_history)
         parallel_versions = []
         if hasattr(frame, "parallel"):
@@ -80,21 +80,21 @@ class FileConfig(wx.FileConfig):
         self.WriteBool("ShowOptions", frame.search.optionspane.IsExpanded())
         for option in frame.search.options:
             self.WriteBool(option,
-                getattr(frame.search, option).GetValue())
+                           getattr(frame.search, option).GetValue())
         self.SetPath("/Notes")
         self.WriteInt("ActiveTab", frame.notes.GetSelection())
         subject_notes = frame.notes.GetPage(0)
         ##self.Write("CurrentSubjectTopic", subject_notes.db_key)
         self.WriteInt("SplitterPosition1",
-            subject_notes.splitter.GetSashPosition())
+                      subject_notes.splitter.GetSashPosition())
         verse_notes = frame.notes.GetPage(1)
         ##self.Write("CurrentVerseTopic", verse_notes.db_key)
         self.WriteInt("SplitterPosition2",
-            verse_notes.splitter.GetSashPosition())
+                      verse_notes.splitter.GetSashPosition())
         self.SetPath("/MultiVerse")
         self.Write("LastVerseList", frame.multiverse.verse_list.GetValue())
         self.WriteInt("SplitterPosition",
-            frame.multiverse.splitter.GetSashPosition())
+                      frame.multiverse.splitter.GetSashPosition())
         self.Flush()
 
     def WriteList(self, key, value):
@@ -107,19 +107,21 @@ class FileConfig(wx.FileConfig):
 class Berean(wx.App):
     def OnInit(self):
         self.SetAppName("Berean")
-        optlist = dict(getopt.getopt(sys.argv[1:], "",
-            ["datadir=", "nosplash", "systemtray"])[0])
+        optlist = dict(getopt.getopt(sys.argv[1:], "", ["datadir=", "nosplash",
+                                                        "systemtray"])[0])
         if not hasattr(sys, "frozen"):
             self.cwd = os.path.dirname(__file__)
         else:
             self.cwd = os.path.dirname(sys.argv[0])
         show_splash = not ("--nosplash" in optlist or
-            "--systemtray" in optlist)
+                           "--systemtray" in optlist)
         if show_splash:
             splash = wx.SplashScreen(wx.Bitmap(os.path.join(self.cwd, "images",
-                "splash.png"), wx.BITMAP_TYPE_PNG),
-                wx.SPLASH_CENTRE_ON_SCREEN | wx.SPLASH_NO_TIMEOUT, 0, None,
-                style=wx.BORDER_SIMPLE)
+                                                            "splash.png"),
+                                               wx.BITMAP_TYPE_PNG),
+                                     wx.SPLASH_CENTRE_ON_SCREEN |
+                                     wx.SPLASH_NO_TIMEOUT, 0, None,
+                                     style=wx.BORDER_SIMPLE)
             self.Yield()
 
         if "--datadir" in optlist:
@@ -138,7 +140,7 @@ class Berean(wx.App):
         self.locale.AddCatalogLookupPathPrefix(localedir)
         language = self.locale.GetCanonicalName()
         if os.path.isfile(os.path.join(localedir, language, "LC_MESSAGES",
-                "berean.mo")):
+                                       "berean.mo")):
             self.locale.AddCatalog(language)
 
         self.frame = mainwindow.MainWindow(self)

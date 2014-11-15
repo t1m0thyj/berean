@@ -50,8 +50,8 @@ if "--build-source-tar" in sys.argv:
         os.remove(filename + ".gz")
     subprocess.call([_7ZIP_PATH, "a", "-ttar", filename, "src\\*.py"])
     for pathname in ("berean-48.bmp", "build.py", "installer.iss",
-            "src\\berean.pyw", "src\\images", "src\\license.txt",
-            "src\\locale", "src\\versions\\KJV.bbl"):
+                     "src\\berean.pyw", "src\\images", "src\\license.txt",
+                     "src\\locale", "src\\versions\\KJV.bbl"):
         subprocess.call([_7ZIP_PATH, "a", filename, pathname])
     subprocess.call([_7ZIP_PATH, "a", "-tgzip", filename + ".gz", filename])
     os.remove(filename)
@@ -87,17 +87,17 @@ if "--build-installer" in sys.argv:
     with open("installer.iss", 'w') as fileobj2:
         index = text.index("#define MyAppVersion")
         fileobj2.write(text[:index] + "#define MyAppVersion \"%s\"" % VERSION +
-            text[text.index("\n", index):])
+                       text[text.index("\n", index):])
     subprocess.call([INNO_SETUP_PATH, "installer.iss"])
 
 if "--no-archive-old" not in sys.argv:
     if not os.path.isdir("src\\build\\Archive"):
         os.mkdir("src\\build\\Archive")
     for pathname in ("Berean*.tar.gz", "Berean*[0-9].zip",
-            "Berean*Portable.zip", "Berean*.exe"):
+                     "Berean*Portable.zip", "Berean*.exe"):
         filenames = sorted(glob.glob("src\\build\\%s" % pathname),
-            key=os.path.getmtime)
+                           key=os.path.getmtime)
         while len(filenames) > 2:
             filename = filenames.pop(0)
             os.rename(filename,
-                "src\\build\\Archive\\%s" % os.path.basename(filename))
+                      "src\\build\\Archive\\%s" % os.path.basename(filename))
