@@ -145,6 +145,7 @@ class Berean(wx.App):
 
         self.frame = mainwindow.MainWindow(self)
         self.SetTopWindow(self.frame)
+        self.Bind(wx.EVT_QUERY_END_SESSION, self.OnQueryEndSession)
         self.Bind(wx.EVT_END_SESSION, self.frame.OnClose)
         if "--systemtray" not in optlist:
             self.frame.Show()
@@ -153,6 +154,9 @@ class Berean(wx.App):
         if show_splash:
             splash.Destroy()
         return True
+
+    def OnQueryEndSession(self, event):
+        pass
 
 
 def main():
