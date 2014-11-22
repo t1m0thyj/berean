@@ -82,13 +82,13 @@ if "--build-portable-zip" in sys.argv:
     os.remove("src\\build\\portable.ini")
 
 if "--build-installer" in sys.argv:
-    with open("installer.iss", 'r') as fileobj:
+    with open("berean.iss", 'r') as fileobj:
         text = fileobj.read()
-    with open("installer.iss", 'w') as fileobj2:
+    with open("berean.iss", 'w') as fileobj2:
         index = text.index("#define MyAppVersion")
         fileobj2.write(text[:index] + "#define MyAppVersion \"%s\"" % VERSION +
                        text[text.index("\n", index):])
-    subprocess.call([INNO_SETUP_PATH, "installer.iss"])
+    subprocess.call([INNO_SETUP_PATH, "berean.iss"])
 
 if "--no-archive-old" not in sys.argv:
     if not os.path.isdir("src\\build\\Archive"):
