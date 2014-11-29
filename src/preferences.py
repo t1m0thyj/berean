@@ -95,8 +95,8 @@ class PreferencesDialog(wx.Dialog):
                         version in self._parent.old_versions):
                     self._parent.old_versions.remove(version)
             self._parent.version_list = version_list
-            wx.MessageBox(_("Changes to version settings will not take effect "
-                            "until Berean is restarted."), "Berean",
+            wx.MessageBox(_("Changes to version settings will take effect "
+                            "after you restart Berean."), "Berean",
                           wx.ICON_INFORMATION | wx.OK)
         self.Destroy()
 
