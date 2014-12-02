@@ -43,6 +43,8 @@ class SearchPane(wx.Panel):
     def __init__(self, parent):
         super(SearchPane, self).__init__(parent)
         self._parent = parent
+        self.abbrev_results = parent._app.config. \
+            ReadInt("Search/AbbrevResults", 1000)
         self.html = ""
         self.indexes = {}
         self.last_search = (None, -1, -1)  # Text, Number of Verses, Version
@@ -318,7 +320,7 @@ class SearchPane(wx.Panel):
     def format_matches(self, matches, pattern, options):
         Bible = self._parent.get_htmlwindow(self.version.GetSelection()).Bible
         results = []
-        if len(matches) <= 1000:
+        if len(matches) <= self.abbrev_results or self.abbrev_results == -1:
             for b, c, v in matches:
                 verse = Bible[b][c][v]
                 offset = 0

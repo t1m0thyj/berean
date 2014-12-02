@@ -77,6 +77,7 @@ class FileConfig(wx.FileConfig):
         self.SetPath("/Search")
         self.Write("LastSearch", frame.search.text.GetValue())
         self.WriteList("SearchHistory", frame.search.text.GetStrings())
+        self.WriteInt("AbbrevResults", frame.search.abbrev_results)
         self.WriteBool("ShowOptions", frame.search.optionspane.IsExpanded())
         for option in frame.search.options:
             self.WriteBool(option,
