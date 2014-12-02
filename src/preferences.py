@@ -19,23 +19,37 @@ class PreferencesDialog(wx.Dialog):
         self.minimize_to_tray = wx.CheckBox(self.general,
                                             label=_("Minimize to system tray"))
         self.minimize_to_tray.SetValue(parent.minimize_to_tray)
-        self.default_font_face = wx.Choice(self.general,
-                                           choices=parent.facenames)
-        self.default_font_face.SetStringSelection(
-            parent.default_font["normal_face"])
-        self.default_font_size = wx.ComboBox(self.general, choices=FONT_SIZES)
-        self.default_font_size.SetStringSelection(str(
-            parent.default_font["size"]))
+        self.font_face = wx.Choice(self.general, choices=parent.facenames)
+        self.font_face.SetStringSelection(parent.default_font["normal_face"])
+        self.font_size = wx.ComboBox(self.general, choices=FONT_SIZES)
+        self.font_size.SetStringSelection(str(parent.default_font["size"]))
+        self.abbrev_results = wx.CheckBox(self.general,
+                                          label=_("Abbreviate search results "
+                                                  "when there are more than"))
+        self.abbrev_results.SetValue(parent.search.abbrev_results != -1)
+        self.abbrev_results.Bind(wx.EVT_CHECKBOX, self.OnAbbrevResults)
+        if parent.search.abbrev_results != -1:
+            abbrev_results = parent.search.abbrev_results
+        else:
+            abbrev_results = 1000
+        self.abbrev_results2 = wx.SpinCtrl(self.general,
+                                           value=str(abbrev_results),
+                                           size=(60, -1), min=0, max=1000)
+        self.abbrev_results2.Enable(parent.search.abbrev_results != -1)
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add(self.minimize_to_tray, 0, wx.ALL, 5)
         sizer2 = wx.BoxSizer(wx.HORIZONTAL)
         sizer2.Add(wx.StaticText(self.general, label=_("Default font:")), 0,
                    wx.ALIGN_CENTER_VERTICAL)
-        sizer2.Add(self.default_font_face, 0, wx.ALL, 5)
+        sizer2.Add(self.font_face, 0, wx.ALL, 5)
         sizer2.Add(wx.StaticText(self.general, label=_("Size:")), 0,
                    wx.LEFT | wx.ALIGN_CENTER_VERTICAL, 5)
-        sizer2.Add(self.default_font_size, 0, wx.ALL, 5)
-        sizer.Add(sizer2, 0, wx.ALL ^ wx.TOP, 5)
+        sizer2.Add(self.font_size, 0, wx.ALL, 5)
+        sizer.Add(sizer2, 0, wx.LEFT | wx.RIGHT, 5)
+        sizer3 = wx.BoxSizer(wx.HORIZONTAL)
+        sizer3.Add(self.abbrev_results, 0, wx.ALIGN_CENTER_VERTICAL)
+        sizer3.Add(self.abbrev_results2, 0, wx.ALL ^ wx.LEFT, 5)
+        sizer.Add(sizer3, 0, wx.ALL ^ wx.TOP, 5)
         self.general.SetSizer(sizer)
         self.notebook.AddPage(self.general, _("General"))
 
@@ -63,6 +77,9 @@ class PreferencesDialog(wx.Dialog):
         self.Fit()
         self.Center()
 
+    def OnAbbrevResults(self, event):
+        self.abbrev_results2.Enable(event.IsChecked())
+
     def OnOk(self, event):
         version_list = [version for i, version in enumerate(VERSION_NAMES) if
                         self.version_list.IsChecked(i)]
@@ -71,9 +88,8 @@ class PreferencesDialog(wx.Dialog):
                           "Berean", wx.ICON_EXCLAMATION | wx.OK)
             return
         self._parent.minimize_to_tray = self.minimize_to_tray.GetValue()
-        default_font = {"size": int(self.default_font_size.GetValue()),
-                        "normal_face":
-                            self.default_font_face.GetStringSelection()}
+        default_font = {"size": int(self.font_size.GetValue()),
+                        "normal_face": self.font_face.GetStringSelection()}
         if default_font != self._parent.default_font:
             for i in range(self._parent.notebook.GetPageCount()):
                 self._parent.get_htmlwindow(i).SetStandardFonts(**default_font)
@@ -98,6 +114,11 @@ class PreferencesDialog(wx.Dialog):
             wx.MessageBox(_("Changes to version settings will take effect "
                             "after you restart Berean."), "Berean",
                           wx.ICON_INFORMATION | wx.OK)
+        if self.abbrev_results.GetValue():
+            self._parent.search.abbrev_results = \
+                self.abbrev_results2.GetValue()
+        else:
+            self._parent.search.abbrev_results = -1
         self.Destroy()
 
     def OnCancel(self, event):
