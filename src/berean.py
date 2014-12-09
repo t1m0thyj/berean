@@ -22,7 +22,7 @@ import sys
 
 import wx
 
-import debug
+import bugreport
 import mainwindow
 
 
@@ -161,7 +161,7 @@ class Berean(wx.App):
 
 
 def main():
-    sys.excepthook = debug.OnError
+    sys.excepthook = bugreport.OnError
     app = Berean(False)
     app.MainLoop()
 

@@ -1,4 +1,4 @@
-"""debug.py - error handling code"""
+"""bugreport.py - error handling and bug reporting code"""
 
 import platform
 import sys
@@ -33,15 +33,15 @@ class ErrorDialog(wx.Dialog):
                                  bitmap=wx.ArtProvider.GetBitmap(wx.ART_ERROR))
         label = wx.StaticText(self,
                               label=_("An error occurred in the application."))
-        mac_ver = ""
-        if sys.platform == "darwin":
-            mac_ver = "\nmac_ver: %s" % platform.mac_ver()[0]
         self.send = wx.Button(self, label=_("send bug report"))
         self.show = wx.Button(self, label=_("show bug report"))
         self.continue_button = wx.Button(self, label=_("continue application"))
         self.restart = wx.Button(self, label=_("restart application"))
         self.close = wx.Button(self, label=_("close application"))
-        self.textctrl = wx.TextCtrl(self, value=report %
+        mac_ver = ""
+        if sys.platform == "darwin":
+            mac_ver = "\nmac_ver: %s" % platform.mac_ver()[0]
+        self.textctrl = wx.TextCtrl(self, value=REPORT %
                                     (wx.GetOsDescription(), mac_ver,
                                      platform.architecture()[0],
                                      platform.machine(), sys.byteorder,
@@ -114,7 +114,7 @@ class ErrorDialog(wx.Dialog):
         event.Skip()
 
 
-report = """OSDescription: %s%s
+REPORT = """OSDescription: %s%s
 architecture: %s
 machine: %s
 byteorder: %s

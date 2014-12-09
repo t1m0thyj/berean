@@ -25,4 +25,12 @@
 			<param name="Local" value="menu-help.html">
 			</object>
 	</ul>
+	<li><object type="text/sitemap">
+			<param name="Name" value="Credits">
+			<param name="Local" value="credits.html">
+		</object>
+	<li><object type="text/sitemap">
+			<param name="Name" value="License">
+			<param name="Local" value="../../../license.txt">
+		</object>
 </ul>
