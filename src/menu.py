@@ -30,7 +30,7 @@ class MenuBar(wx.MenuBar):
         self.menu_file.Append(wx.ID_PRINT_SETUP, _("Page &Setup..."),
                               _("Changes page layout settings"))
         frame.Bind(wx.EVT_MENU, self.OnPageSetup, id=wx.ID_PRINT_SETUP)
-        self.menu_file.Append(wx.ID_PREVIEW, _("P&rint Preview..."),
+        self.menu_file.Append(wx.ID_PREVIEW, _("P&rint Preview"),
                               _("Previews the current chapter"))
         frame.Bind(wx.EVT_MENU, self.OnPrintPreview, id=wx.ID_PREVIEW)
         if '__WXMAC__' not in wx.PlatformInfo:
@@ -46,7 +46,7 @@ class MenuBar(wx.MenuBar):
         frame.Bind(wx.EVT_MENU, self.OnCopy, id=wx.ID_COPY)
         if '__WXMAC__' not in wx.PlatformInfo:
             self.menu_edit.AppendSeparator()
-        self.menu_edit.Append(wx.ID_PREFERENCES, _("&Preferences..."),
+        self.menu_edit.Append(wx.ID_PREFERENCES, _("&Preferences"),
                               _("Configures program settings"))
         frame.Bind(wx.EVT_MENU, self.OnPreferences, id=wx.ID_PREFERENCES)
         self.Append(self.menu_edit, _("&Edit"))
@@ -108,7 +108,7 @@ class MenuBar(wx.MenuBar):
                    self.add_to_bookmarks_item)
         self.manage_bookmarks_item = \
             self.menu_bookmarks.Append(wx.ID_ANY,
-                                       _("&Manage Bookmarks...\tCtrl+Shift+B"))
+                                       _("&Manage Bookmarks\tCtrl+Shift+B"))
         frame.Bind(wx.EVT_MENU, self.OnManageBookmarks,
                    self.manage_bookmarks_item)
         self.menu_bookmarks.AppendSeparator()
@@ -120,10 +120,10 @@ class MenuBar(wx.MenuBar):
         self.Append(self.menu_bookmarks, _("&Bookmarks"))
 
         self.menu_help = wx.Menu()
-        self.menu_help.Append(wx.ID_HELP, _("&Help Contents...\tF1"),
+        self.menu_help.Append(wx.ID_HELP, _("&Help Contents\tF1"),
                               _("Shows the contents of the help file"))
         frame.Bind(wx.EVT_MENU, self.OnHelp, id=wx.ID_HELP)
-        self.menu_help.Append(wx.ID_ABOUT, _("&About Berean..."),
+        self.menu_help.Append(wx.ID_ABOUT, _("&About Berean"),
                               _("Displays program information, version "
                                 "number, and copyright"))
         frame.Bind(wx.EVT_MENU, self.OnAbout, id=wx.ID_ABOUT)

@@ -401,7 +401,7 @@ class SearchPane(wx.Panel):
         menu.AppendSeparator()
         print_item = menu.Append(wx.ID_PRINT, _("&Print..."))
         self.Bind(wx.EVT_MENU, self.OnPrint, print_item)
-        preview_item = menu.Append(wx.ID_PREVIEW, _("P&rint Preview..."))
+        preview_item = menu.Append(wx.ID_PREVIEW, _("P&rint Preview"))
         self.Bind(wx.EVT_MENU, self.OnPrint, preview_item)
         self.htmlwindow.PopupMenu(menu)
 
