@@ -92,7 +92,7 @@ class ToolBar(aui.AuiToolBar):
                               "Berean", wx.ICON_EXCLAMATION | wx.OK)
                 return
             self._parent.load_chapter(book, chapter, verse)
-        except Exception:
+        except (IndexError, ValueError):
             wx.MessageBox(_("'%s' is not a valid reference.") % reference,
                           "Berean", wx.ICON_EXCLAMATION | wx.OK)
         else:

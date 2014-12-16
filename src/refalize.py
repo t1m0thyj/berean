@@ -127,7 +127,8 @@ def refalize2(references):
     stop_pattern = re.compile(r"(\d+)\W*(\d+)?")
     has_verse = False
     failed = []
-    for i in range(len(references)):
+    i = 0
+    while i < len(references):
         try:
             if "-" in references[i]:
                 start, stop = references[i].split("-")
@@ -175,8 +176,9 @@ def refalize2(references):
             else:
                 reference.extend([-1, -1])
             references[i] = reference + [references[i]]
-        except Exception:
-            failed.append(references[i])
+            i += 1
+        except (IndexError, ValueError):
+            failed.append(references.pop(i))
     return (references, failed)
 
 

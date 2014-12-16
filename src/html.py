@@ -133,7 +133,7 @@ class ChapterWindowBase(HtmlWindowBase):
         menu.Enable(search_item.GetId(), selected)
         menu.AppendSeparator()
         menu.Append(wx.ID_PRINT, _("&Print..."))
-        menu.Append(wx.ID_PREVIEW, _("P&rint Preview..."))
+        menu.Append(wx.ID_PREVIEW, _("P&rint Preview"))
         self.PopupMenu(menu)
 
     def OnSearch(self, event):
