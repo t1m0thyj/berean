@@ -8,16 +8,16 @@
 			<param name="Local" value="menu-file.html">
 		</object>
 	<li><object type="text/sitemap">
-			<param name="Name" value="Print">
-			<param name="Local" value="menu-file.html#Print">
-		</object>
-	<li><object type="text/sitemap">
 			<param name="Name" value="Page setup">
 			<param name="Local" value="menu-file.html#PageSetup">
 		</object>
 	<li><object type="text/sitemap">
 			<param name="Name" value="Print preview">
 			<param name="Local" value="menu-file.html#PrintPreview">
+		</object>
+	<li><object type="text/sitemap">
+			<param name="Name" value="Print">
+			<param name="Local" value="menu-file.html#Print">
 		</object>
 	<li><object type="text/sitemap">
 			<param name="Name" value="Edit menu">
