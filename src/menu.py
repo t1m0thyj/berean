@@ -24,18 +24,18 @@ class MenuBar(wx.MenuBar):
         self.bookmarks = frame._app.config.ReadList("Bookmarks")
 
         self.menu_file = wx.Menu()
+        self.menu_file.Append(wx.ID_PRINT_SETUP, _("Page Set&up..."),
+                              _("Changes page layout settings"))
+        frame.Bind(wx.EVT_MENU, self.OnPageSetup, id=wx.ID_PRINT_SETUP)
+        self.menu_file.Append(wx.ID_PREVIEW, _("Print Pre&view"),
+                              _("Previews the current chapter"))
+        frame.Bind(wx.EVT_MENU, self.OnPrintPreview, id=wx.ID_PREVIEW)
         self.menu_file.Append(wx.ID_PRINT, _("&Print...\tCtrl+P"),
                               _("Prints the current chapter"))
         frame.Bind(wx.EVT_MENU, self.OnPrint, id=wx.ID_PRINT)
-        self.menu_file.Append(wx.ID_PRINT_SETUP, _("Page &Setup..."),
-                              _("Changes page layout settings"))
-        frame.Bind(wx.EVT_MENU, self.OnPageSetup, id=wx.ID_PRINT_SETUP)
-        self.menu_file.Append(wx.ID_PREVIEW, _("P&rint Preview"),
-                              _("Previews the current chapter"))
-        frame.Bind(wx.EVT_MENU, self.OnPrintPreview, id=wx.ID_PREVIEW)
         if '__WXMAC__' not in wx.PlatformInfo:
             self.menu_file.AppendSeparator()
-        self.menu_file.Append(wx.ID_EXIT, _("E&xit\tAlt+F4"),
+        self.menu_file.Append(wx.ID_EXIT, _("E&xit"),
                               _("Exits the application"))
         frame.Bind(wx.EVT_MENU, frame.OnClose, id=wx.ID_EXIT)
         self.Append(self.menu_file, _("&File"))
@@ -71,7 +71,7 @@ class MenuBar(wx.MenuBar):
                               _("Decreases the text size"))
         self.menu_view.Enable(wx.ID_ZOOM_OUT, frame.zoom_level > 1)
         frame.Bind(wx.EVT_MENU, self.OnZoomOut, id=wx.ID_ZOOM_OUT)
-        self.menu_view.Append(wx.ID_ZOOM_100, _("Reset Zoom\tCtrl+0"),
+        self.menu_view.Append(wx.ID_ZOOM_100, _("&Reset Zoom\tCtrl+0"),
                               _("Resets the text size to the default"))
         frame.Bind(wx.EVT_MENU, self.OnZoomDefault, id=wx.ID_ZOOM_100)
         self.menu_view.AppendSeparator()
@@ -81,7 +81,7 @@ class MenuBar(wx.MenuBar):
         self.menu_view.AppendSeparator()
         self.tree_pane_item = \
             self.menu_view.AppendCheckItem(wx.ID_ANY,
-                                           _("T&ree Pane\tCtrl+Shift+T"))
+                                           _("Tr&ee Pane\tCtrl+Shift+T"))
         frame.Bind(wx.EVT_MENU, self.OnTreePane, self.tree_pane_item)
         self.search_pane_item = \
             self.menu_view.AppendCheckItem(wx.ID_ANY,
@@ -93,7 +93,8 @@ class MenuBar(wx.MenuBar):
         frame.Bind(wx.EVT_MENU, self.OnNotesPane, self.notes_pane_item)
         self.multiverse_pane_item = \
             self.menu_view.AppendCheckItem(wx.ID_ANY,
-                                           _("&Multi-Verse Retrieval\tCtrl+M"))
+                                           _("&Multi-Verse Retrieval\t"
+                                             "Ctrl+Shift+M"))
         frame.Bind(wx.EVT_MENU, self.OnMultiVersePane,
                    self.multiverse_pane_item)
         self.Append(self.menu_view, _("&View"))
@@ -144,14 +145,14 @@ class MenuBar(wx.MenuBar):
         self.menu_bookmarks.Enable(self.view_all_item.GetId(),
                                    len(self.bookmarks))
 
-    def OnPrint(self, event):
-        self._frame.printing.print_()
-
     def OnPageSetup(self, event):
         self._frame.printing.PageSetup()
 
     def OnPrintPreview(self, event):
-        self._frame.printing.preview()
+        self._frame.printing.preview_chapter()
+        
+    def OnPrint(self, event):
+        self._frame.printing.print_chapter()
 
     def OnCopy(self, event):
         window = self._frame.FindFocus()

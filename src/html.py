@@ -65,12 +65,12 @@ class PrintingSystem(html.HtmlEasyPrinting):
                                 self._frame.notebook.GetPageText(tab), 1)
         return text
 
-    def print_(self):
+    def print_chapter(self):
         if wx.VERSION_STRING >= "2.9.1":
             self.SetName(self._frame.GetTitle()[9:])
         self.PrintText(self.get_chapter_text())
 
-    def preview(self):
+    def preview_chapter(self):
         if wx.VERSION_STRING >= "2.9.1":
             self.SetName(self._frame.GetTitle()[9:])
         self.PreviewText(self.get_chapter_text())
