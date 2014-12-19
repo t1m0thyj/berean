@@ -33,10 +33,10 @@ class MultiVersePane(wx.Panel):
                              parent.get_bitmap("search"),
                              _("Search (Ctrl+Enter)"))
         self.Bind(wx.EVT_MENU, self.OnSearch, id=ID_SEARCH)
-        self.toolbar.AddTool(wx.ID_PRINT, _("Print"),
+        self.toolbar.AddTool(wx.ID_PREVIEW, _("Print"),
                              parent.get_bitmap("print"), _("Print Verses"))
-        self.toolbar.EnableTool(wx.ID_PRINT, False)
-        self.Bind(wx.EVT_MENU, self.OnPrint, id=wx.ID_PRINT)
+        self.toolbar.EnableTool(wx.ID_PREVIEW, False)
+        self.Bind(wx.EVT_MENU, self.OnPrint, id=wx.ID_PREVIEW)
         self.toolbar.AddTool(wx.ID_COPY, _("Copy"), parent.get_bitmap("copy"),
                              _("Copy Verses"))
         self.toolbar.EnableTool(wx.ID_COPY, False)
@@ -109,7 +109,7 @@ class MultiVersePane(wx.Panel):
         self.html = "<html><body><font size=\"%d\">%s</font></body></html>" % \
             (self._parent.zoom_level, "".join(results))
         self.htmlwindow.SetPage(self.html)
-        self.toolbar.EnableTool(wx.ID_PRINT, True)
+        self.toolbar.EnableTool(wx.ID_PREVIEW, True)
         self.toolbar.EnableTool(wx.ID_COPY, True)
         self.toolbar.Refresh(False)
         self.last_version = version
