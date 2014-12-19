@@ -80,10 +80,10 @@ class SearchPane(wx.Panel):
         self.toolbar.AddTool(ID_SEARCH, "", parent.get_bitmap("search"),
                              _("Search"))
         self.toolbar.Bind(wx.EVT_MENU, self.OnSearch, id=ID_SEARCH)
-        self.toolbar.AddTool(wx.ID_PRINT, "", parent.get_bitmap("print"),
+        self.toolbar.AddTool(wx.ID_PREVIEW, "", parent.get_bitmap("print"),
                              _("Print Results"))
-        self.toolbar.EnableTool(wx.ID_PRINT, False)
-        self.toolbar.Bind(wx.EVT_MENU, self.OnPrint, id=wx.ID_PRINT)
+        self.toolbar.EnableTool(wx.ID_PREVIEW, False)
+        self.toolbar.Bind(wx.EVT_MENU, self.OnPrint, id=wx.ID_PREVIEW)
         self.toolbar.Realize()
         self.htmlwindow = HtmlWindowBase(self, parent)
         self.htmlwindow.Bind(html.EVT_HTML_LINK_CLICKED,
@@ -178,23 +178,29 @@ class SearchPane(wx.Panel):
             self.text.SetValue(self.text.GetString(0))
             self._parent.toolbar.OnGoToVerse(None)
             return
-        with wx.BusyCursor():
-            sec = time.time()
-            results, count = self.get_results(text)
-            results.insert(0, _("<font color=\"gray\">%d verses in the %s "
-                                "(%d&nbsp;msec)</font>") %
-                           (count, self.version.GetStringSelection(),
-                            max(1, (time.time() - sec) * 1000)))
-            if count == 0:
-                results.append(_("<p>No results were found.</p>"))
-            self.html = "<html><body><font size=\"%d\">%s</font></body>" \
-                "</html>" % (self._parent.zoom_level, "".join(results))
-            self.htmlwindow.SetPage(self.html)
+        version_name = self.version.GetStringSelection()
+        try:
+            self._parent.statusbar.PushStatusText(_("Searching %s...") %
+                                                  version_name, 0)
+            with wx.BusyCursor():
+                sec = time.time()
+                results, count = self.get_results(text)
+                results.insert(0, _("<font color=\"gray\">%d verses in the %s "
+                                    "(%d&nbsp;msec)</font>") %
+                               (count, version_name,
+                                max(1, (time.time() - sec) * 1000)))
+                if count == 0:
+                    results.append(_("<p>No verses were found.</p>"))
+                self.html = "<html><body><font size=\"%d\">%s</font></body>" \
+                    "</html>" % (self._parent.zoom_level, "".join(results))
+                self.htmlwindow.SetPage(self.html)
+        finally:
+            self._parent.statusbar.PopStatusText(0)
         if self.text.FindString(text) == -1:
             self.text.Insert(text, 0)
             if self.text.GetCount() > 10:
                 self.text.Delete(10)
-        self.toolbar.EnableTool(wx.ID_PRINT, count > 0)
+        self.toolbar.EnableTool(wx.ID_PREVIEW, count > 0)
         self.toolbar.Refresh(False)
         self.last_search = (text, count, self.version.GetSelection())
         self.htmlwindow.SetFocus()
@@ -371,8 +377,8 @@ class SearchPane(wx.Panel):
         return results
 
     def OnPrint(self, event):
-        header = _("<div align=\"center\"><b>\"%s\"</b><br />occurs in %d "
-                   "verses in the %s.</div>") % \
+        header = _("<div align=\"center\"><font size=\"+1\"><b>Search Results "
+                   "for \"%s\" (%d verses in the %s)</b></font></div>") % \
             (self.last_search[0], self.last_search[1],
              self.version.GetString(self.last_search[2]))
         text = self.html[:self.html.index("<font color=\"gray\">")] + \
