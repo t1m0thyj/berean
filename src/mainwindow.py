@@ -68,7 +68,7 @@ class MainWindow(wx.Frame):
         if wx.VERSION_STRING >= "2.9":
             self.statusbar.SetStatusWidths([-1, -1, self.zoombar.width -
                                             wx.SystemSettings.
-                                            GetMetric(wx.SYS_VSCROLL_X)])
+                                            GetMetric(wx.SYS_VSCROLL_X) + 1])
         else:
             self.statusbar.SetStatusWidths([-1, -1, self.zoombar.width + 1])
 
