@@ -53,6 +53,7 @@ class MainWindow(wx.Frame):
         self.version_list = app.config.ReadList("VersionList", ["KJV"])
         self.verse_history = app.config.ReadList("History")
         self.history_item = -1
+        self.old_versions = []
         self.help = html.HelpSystem(self)
         self.printing = html.PrintingSystem(self)
 
@@ -102,6 +103,8 @@ class MainWindow(wx.Frame):
                                              self.parallel.htmlwindow.
                                              description)
             self.notebook.SetSelection(min(tab, self.notebook.GetPageCount()))
+        else:
+            self.notebook.SetTabCtrlHeight(0)
         self.notebook.Bind(aui.EVT_AUINOTEBOOK_PAGE_CHANGED,
                            self.OnAuiNotebookPageChanged)
         self.aui.AddPane(self.notebook, aui.AuiPaneInfo().Name("notebook").
@@ -256,12 +259,11 @@ class MainWindow(wx.Frame):
         event.Skip()
 
     def OnClose(self, event):
-        if hasattr(self, "old_versions"):  # Delete old indexes
-            for version in self.old_versions:
-                filename = os.path.join(self._app.userdatadir, "indexes",
-                                        "%s.idx" % version)
-                if os.path.isfile(filename):
-                    wx.CallAfter(os.remove, filename)
+        for version in self.old_versions:  # Delete old indexes
+            filename = os.path.join(self._app.userdatadir, "indexes",
+                                    "%s.idx" % version)
+            if os.path.isfile(filename):
+                wx.CallAfter(os.remove, filename)
         for i in range(self.notes.GetPageCount()):
             page = self.notes.GetPage(i)
             page.OnSave(None)

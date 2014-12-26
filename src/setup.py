@@ -49,7 +49,7 @@ setup(options={"py2exe": {"compressed": 1,
                   ("images\\flags", glob.glob("images\\flags\\*.*")),
                   ("locale\\en_US\\help",
                    glob.glob("locale\\en_US\\help\\*.*")),
-                  ("versions", ["versions\\KJV.bbl"]),
+                  ("versions", ["versions\\KJV.bbl", "versions\\WEB.bbl"]),
                   ("", ["license.txt"])],
       zipfile=None)
 for imagedir in ("dist\\images", "dist\\images\\flags"):

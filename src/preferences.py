@@ -1,5 +1,10 @@
 """preferences.py - preferences dialog class"""
 
+import glob
+import os
+import shutil
+import zipfile
+
 import wx
 
 from config import VERSION_NAMES, VERSION_DESCRIPTIONS, FONT_SIZES
@@ -54,16 +59,24 @@ class PreferencesDialog(wx.Dialog):
         self.notebook.AddPage(self.general, _("General"))
 
         self.versions = wx.Panel(self.notebook)
-        self.version_list = wx.CheckListBox(self.versions)
-        for i in range(len(VERSION_NAMES)):
-            self.version_list.Append("%s - %s" %
-                                     (VERSION_NAMES[i],
-                                      VERSION_DESCRIPTIONS[VERSION_NAMES[i]].
-                                      decode("latin_1")))
-            if VERSION_NAMES[i] in parent.version_list:
-                self.version_list.Check(i)
-        sizer = wx.BoxSizer()
-        sizer.Add(self.version_list, 1, wx.EXPAND)
+        self.version_listbox = wx.CheckListBox(self.versions)
+        self.LoadVersions(False)
+        self.version_listbox.Bind(wx.EVT_LISTBOX, self.OnVersionListbox)
+        self.add_versions = wx.HyperlinkCtrl(self.versions,
+                                             label=_("Add versions..."),
+                                             url="",
+                                             style=wx.HL_DEFAULT_STYLE ^
+                                             wx.HL_CONTEXTMENU)
+        self.add_versions.Bind(wx.EVT_HYPERLINK, self.OnAddVersions)
+        self.remove_version = wx.Button(self.versions, label=_("Remove"))
+        self.remove_version.Disable()
+        self.remove_version.Bind(wx.EVT_BUTTON, self.OnRemoveVersion)
+        sizer = wx.BoxSizer(wx.VERTICAL)
+        sizer.Add(self.version_listbox, 1, wx.EXPAND)
+        sizer2 = wx.BoxSizer(wx.HORIZONTAL)
+        sizer2.Add(self.add_versions, 1, wx.LEFT | wx.ALIGN_CENTER_VERTICAL, 3)
+        sizer2.Add(self.remove_version, 0, wx.RIGHT | wx.EXPAND, 3)
+        sizer.Add(sizer2, 0, wx.ALL | wx.EXPAND, 2)
         self.versions.SetSizer(sizer)
         self.notebook.AddPage(self.versions, _("Versions"))
 
@@ -76,13 +89,66 @@ class PreferencesDialog(wx.Dialog):
         self.SetSizer(sizer)
         self.Fit()
         self.Center()
+    
+    def LoadVersions(self, clear=True):
+        if clear:
+            self.version_listbox.Clear()
+        version_files = glob.glob(os.path.join(self._parent._app.cwd,
+                                               "versions", "*.bbl"))
+        if self._parent._app.userdatadir != self._parent._app.cwd:
+            version_files. \
+                extend(glob.glob(os.path.join(self._parent._app.userdatadir,
+                                              "versions", "*.bbl")))
+        version_files.sort(key=os.path.basename)
+        self.version_names = []
+        for i in range(len(version_files)):
+            self.version_names.append(os.path.basename(version_files[i])[:-4])
+            self.version_listbox.Append("%s - %s" %
+                                     (self.version_names[i],
+                                      VERSION_DESCRIPTIONS[self.
+                                                           version_names[i]].
+                                      decode("latin_1")), version_files[i])
+            if self.version_names[i] in self._parent.version_list:
+                self.version_listbox.Check(i)
 
     def OnAbbrevResults(self, event):
         self.abbrev_results2.Enable(event.IsChecked())
 
+    def OnVersionListbox(self, event):
+        self.remove_version.Enable(os.access(event.GetClientData(), os.W_OK))
+
+    def OnAddVersions(self, event):
+        versiondir = os.path.join(self._parent._app.userdatadir, "versions")
+        dialog = wx.FileDialog(self, _("Add versions"), versiondir,
+                               wildcard=_("Bible Files (*.bbl;*.zip)|*.bbl;"
+                                          "*.zip"),
+                               style=wx.OPEN | wx.MULTIPLE)
+        if dialog.ShowModal() == wx.ID_OK:
+            path = dialog.GetPath()
+            if not path.endswith(".zip"):
+                shutil.copy(path, versiondir)
+            else:
+                with zipfile.ZipFile(path) as zipobj:
+                    zipobj.extractall(versiondir)
+            self.LoadVersions()
+        dialog.Destroy()
+
+    def OnRemoveVersion(self, event):
+        delete = wx.MessageBox(_("Are you sure you want to permanently delete "
+                                 "this version?"), "Berean",
+                               wx.ICON_WARNING | wx.YES_NO)
+        if delete == wx.YES:
+            selection = self.version_listbox.GetSelection()
+            os.remove(self.version_listbox.GetClientData(selection))
+            if self.version_names[selection] in self._parent.version_list:
+                self._parent.version_list.remove(self.version_names[selection])
+                self._parent.old_versions.append(self.version_names[selection])
+            self.LoadVersions()
+
     def OnOk(self, event):
-        version_list = [version for i, version in enumerate(VERSION_NAMES) if
-                        self.version_list.IsChecked(i)]
+        version_list = [version for i, version in
+                        enumerate(self.version_names) if
+                        self.version_listbox.IsChecked(i)]
         if not version_list:
             wx.MessageBox(_("You must have at least one version selected."),
                           "Berean", wx.ICON_EXCLAMATION | wx.OK)
@@ -101,8 +167,6 @@ class PreferencesDialog(wx.Dialog):
                 self._parent.notes.GetPage(i).set_default_style(default_font)
             self._parent.default_font = default_font
         if version_list != self._parent.version_list:
-            if not hasattr(self._parent, "old_versions"):
-                self._parent.old_versions = []
             for version in VERSION_NAMES:
                 if (version in self._parent.version_list and
                         version not in version_list):
