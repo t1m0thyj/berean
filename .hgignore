@@ -1,9 +1,11 @@
 syntax: glob
-build
-dist
-versions
+src/build
+src/dist
 *.pyc
 .project
 .pydevproject
 build.bat
 vcredist_x86.exe
+syntax: regexp
+^locale
+^versions

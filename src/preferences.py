@@ -6,10 +6,13 @@ import shutil
 import zipfile
 
 import wx
+from wx import combo
 
 from config import VERSION_NAMES, VERSION_DESCRIPTIONS, FONT_SIZES
 
 _ = wx.GetTranslation
+LANGUAGES = {"en_GB": "English (Great Britain)",
+             "en_US": "English (United States)"}
 
 
 class PreferencesDialog(wx.Dialog):
@@ -21,13 +24,23 @@ class PreferencesDialog(wx.Dialog):
         self.notebook = wx.Notebook(self, style=wx.NB_MULTILINE)
 
         self.general = wx.Panel(self.notebook)
-        self.minimize_to_tray = wx.CheckBox(self.general,
-                                            label=_("Minimize to system tray"))
-        self.minimize_to_tray.SetValue(parent.minimize_to_tray)
+        self.language = combo.BitmapComboBox(self.general, size=(200, -1),
+                                             style=wx.CB_READONLY | wx.CB_SORT)
+        for language in LANGUAGES:
+            self.language.Append(LANGUAGES[language],
+                                 parent.get_bitmap(os.path.join("flags",
+                                                                language[3:])),
+                                 language)
+        self.language. \
+            SetSelection(self.language.FindString(LANGUAGES[parent._app. \
+                                                            language]))
         self.font_face = wx.Choice(self.general, choices=parent.facenames)
         self.font_face.SetStringSelection(parent.default_font["normal_face"])
         self.font_size = wx.ComboBox(self.general, choices=FONT_SIZES)
         self.font_size.SetStringSelection(str(parent.default_font["size"]))
+        self.minimize_to_tray = wx.CheckBox(self.general,
+                                            label=_("Minimize to system tray"))
+        self.minimize_to_tray.SetValue(parent.minimize_to_tray)
         self.abbrev_results = wx.CheckBox(self.general,
                                           label=_("Abbreviate search results "
                                                   "when there are more than"))
@@ -42,19 +55,24 @@ class PreferencesDialog(wx.Dialog):
                                            size=(60, -1), min=0, max=1000)
         self.abbrev_results2.Enable(parent.search.abbrev_results != -1)
         sizer = wx.BoxSizer(wx.VERTICAL)
-        sizer.Add(self.minimize_to_tray, 0, wx.ALL, 5)
         sizer2 = wx.BoxSizer(wx.HORIZONTAL)
-        sizer2.Add(wx.StaticText(self.general, label=_("Default font:")), 0,
+        sizer2.Add(wx.StaticText(self.general, label=_("Language:")), 0,
                    wx.ALIGN_CENTER_VERTICAL)
-        sizer2.Add(self.font_face, 0, wx.ALL, 5)
-        sizer2.Add(wx.StaticText(self.general, label=_("Size:")), 0,
-                   wx.LEFT | wx.ALIGN_CENTER_VERTICAL, 5)
-        sizer2.Add(self.font_size, 0, wx.ALL, 5)
-        sizer.Add(sizer2, 0, wx.LEFT | wx.RIGHT, 5)
+        sizer2.Add(self.language, 1, wx.ALL, 5)
+        sizer.Add(sizer2, 0, wx.ALL ^ wx.BOTTOM | wx.EXPAND, 5)
         sizer3 = wx.BoxSizer(wx.HORIZONTAL)
-        sizer3.Add(self.abbrev_results, 0, wx.ALIGN_CENTER_VERTICAL)
-        sizer3.Add(self.abbrev_results2, 0, wx.ALL ^ wx.LEFT, 5)
-        sizer.Add(sizer3, 0, wx.ALL ^ wx.TOP, 5)
+        sizer3.Add(wx.StaticText(self.general, label=_("Default font:")), 0,
+                   wx.ALIGN_CENTER_VERTICAL)
+        sizer3.Add(self.font_face, 1, wx.ALL, 5)
+        sizer3.Add(wx.StaticText(self.general, label=_("Size:")), 0,
+                   wx.LEFT | wx.ALIGN_CENTER_VERTICAL, 5)
+        sizer3.Add(self.font_size, 0, wx.ALL, 5)
+        sizer.Add(sizer3, 0, wx.LEFT | wx.RIGHT | wx.EXPAND, 5)
+        sizer.Add(self.minimize_to_tray, 0, wx.ALL ^ wx.BOTTOM, 5)
+        sizer4 = wx.BoxSizer(wx.HORIZONTAL)
+        sizer4.Add(self.abbrev_results, 0, wx.ALIGN_CENTER_VERTICAL)
+        sizer4.Add(self.abbrev_results2, 0, wx.ALL ^ wx.LEFT, 5)
+        sizer.Add(sizer4, 0, wx.ALL ^ wx.TOP, 5)
         self.general.SetSizer(sizer)
         self.notebook.AddPage(self.general, _("General"))
 
@@ -62,11 +80,10 @@ class PreferencesDialog(wx.Dialog):
         self.version_listbox = wx.CheckListBox(self.versions)
         self.LoadVersions(False)
         self.version_listbox.Bind(wx.EVT_LISTBOX, self.OnVersionListbox)
-        self.add_versions = wx.HyperlinkCtrl(self.versions,
+        self.add_versions = wx.HyperlinkCtrl(self.versions, wx.ID_ANY,
                                              label=_("Add versions..."),
-                                             url="",
-                                             style=wx.HL_DEFAULT_STYLE ^
-                                             wx.HL_CONTEXTMENU)
+                                             url="", style=wx.NO_BORDER |
+                                             wx.HL_ALIGN_LEFT)
         self.add_versions.Bind(wx.EVT_HYPERLINK, self.OnAddVersions)
         self.remove_version = wx.Button(self.versions, label=_("Remove"))
         self.remove_version.Disable()
@@ -115,7 +132,9 @@ class PreferencesDialog(wx.Dialog):
         self.abbrev_results2.Enable(event.IsChecked())
 
     def OnVersionListbox(self, event):
-        self.remove_version.Enable(os.access(event.GetClientData(), os.W_OK))
+        version_file = event.GetClientData()
+        if version_file:
+            self.remove_version.Enable(os.access(version_file, os.W_OK))
 
     def OnAddVersions(self, event):
         versiondir = os.path.join(self._parent._app.userdatadir, "versions")
@@ -124,12 +143,13 @@ class PreferencesDialog(wx.Dialog):
                                           "*.zip"),
                                style=wx.OPEN | wx.MULTIPLE)
         if dialog.ShowModal() == wx.ID_OK:
-            path = dialog.GetPath()
-            if not path.endswith(".zip"):
-                shutil.copy(path, versiondir)
-            else:
-                with zipfile.ZipFile(path) as zipobj:
-                    zipobj.extractall(versiondir)
+            for path in dialog.GetPaths():
+                if not path.endswith(".zip"):
+                    shutil.copy(path, versiondir)
+                else:
+                    with zipfile.ZipFile(path) as zipobj:
+                        zipobj.extract("%s.bbl" % os.path.basename(path)[:-4],
+                                       versiondir)
             self.LoadVersions()
         dialog.Destroy()
 
@@ -140,10 +160,12 @@ class PreferencesDialog(wx.Dialog):
         if delete == wx.YES:
             selection = self.version_listbox.GetSelection()
             os.remove(self.version_listbox.GetClientData(selection))
-            if self.version_names[selection] in self._parent.version_list:
-                self._parent.version_list.remove(self.version_names[selection])
-                self._parent.old_versions.append(self.version_names[selection])
-            self.LoadVersions()
+            self.version_listbox.Delete(selection)
+            version_name = self.version_names.pop(selection)
+            if version_name in self._parent.version_list:
+                self._parent.version_list.remove(version_name)
+            if version_name not in self._parent.old_versions:
+                self._parent.old_versions.append(version_name)
 
     def OnOk(self, event):
         version_list = [version for i, version in
@@ -153,7 +175,13 @@ class PreferencesDialog(wx.Dialog):
             wx.MessageBox(_("You must have at least one version selected."),
                           "Berean", wx.ICON_EXCLAMATION | wx.OK)
             return
-        self._parent.minimize_to_tray = self.minimize_to_tray.GetValue()
+        language = self.language.GetClientData(self.language.GetSelection())
+        if (language != self._parent._app.language or
+                version_list != self._parent.version_list):
+            wx.MessageBox(_("Changes to language and version settings will "
+                            "take effect after you restart Berean."), "Berean",
+                          wx.ICON_INFORMATION | wx.OK)
+        self._parent._app.language = language
         default_font = {"size": int(self.font_size.GetValue()),
                         "normal_face": self.font_face.GetStringSelection()}
         if default_font != self._parent.default_font:
@@ -175,9 +203,7 @@ class PreferencesDialog(wx.Dialog):
                         version in self._parent.old_versions):
                     self._parent.old_versions.remove(version)
             self._parent.version_list = version_list
-            wx.MessageBox(_("Changes to version settings will take effect "
-                            "after you restart Berean."), "Berean",
-                          wx.ICON_INFORMATION | wx.OK)
+        self._parent.minimize_to_tray = self.minimize_to_tray.GetValue()
         if self.abbrev_results.GetValue():
             self._parent.search.abbrev_results = \
                 self.abbrev_results2.GetValue()
