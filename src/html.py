@@ -20,9 +20,8 @@ class HelpSystem(html.HtmlHelpController):
         self.SetTempDir(os.path.join(frame._app.userdatadir, ""))
         self.SetTitleFormat("%s")
         self.UseConfig(frame._app.config, "Help")
-        filename = os.path.join(frame._app.cwd, "locale",
-                                frame._app.locale.GetCanonicalName(), "help",
-                                "header.hhp")
+        filename = os.path.join(frame._app.cwd, "locale", frame._app.language,
+                                "help", "header.hhp")
         if not os.path.isfile(filename):
             filename = os.path.join(frame._app.cwd, "locale", "en_US", "help",
                                     "header.hhp")

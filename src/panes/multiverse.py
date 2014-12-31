@@ -103,8 +103,8 @@ class MultiVersePane(wx.Panel):
             except IndexError:
                 failed.append(reference)
         if failed:
-            results.insert(0, "<font color=\"red\">There were problems with "
-                           "some of your references.<br />%s</font>" %
+            results.insert(0, "<font color=\"red\">The following references "
+                           "are not valid:<br />%s</font>" %
                            "<br />".join(failed))
         self.html = "<html><body><font size=\"%d\">%s</font></body></html>" % \
             (self._parent.zoom_level, "".join(results))

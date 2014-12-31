@@ -28,8 +28,9 @@ import mainwindow
 
 class FileConfig(wx.FileConfig):
     def __init__(self, app):
-        super(FileConfig, self).__init__(
-            localFilename=os.path.join(app.userdatadir, "berean.ini"))
+        super(FileConfig,
+              self).__init__(localFilename=os.path.join(app.userdatadir,
+                                                        "berean.ini"))
         self._app = app
         self.SetRecordDefaults(True)
 
@@ -46,6 +47,7 @@ class FileConfig(wx.FileConfig):
     def save(self):
         self.SetPath("/Main")
         frame = self._app.frame
+        self.Write("Language", self._app.language)
         self.Write("WindowPosition", ",".join(str(i) for i in
                                               frame.rect.GetPosition()))
         self.Write("WindowSize", ",".join(str(i) for i in
@@ -136,13 +138,16 @@ class Berean(wx.App):
         if not os.path.isdir(self.userdatadir):
             os.mkdir(self.userdatadir)
         self.config = FileConfig(self)
-        self.locale = wx.Locale(wx.LANGUAGE_DEFAULT)
+        locale = wx.Locale(wx.LANGUAGE_DEFAULT)
+        self.language = self.config.Read("Main/Language",
+                                         locale.GetCanonicalName())
+        self.locale = wx.Locale(locale.FindLanguageInfo(self.language). \
+                                Language)
         localedir = os.path.join(self.cwd, "locale")
         self.locale.AddCatalogLookupPathPrefix(localedir)
-        language = self.locale.GetCanonicalName()
-        if os.path.isfile(os.path.join(localedir, language, "LC_MESSAGES",
+        if os.path.isfile(os.path.join(localedir, self.language, "LC_MESSAGES",
                                        "berean.mo")):
-            self.locale.AddCatalog(language)
+            self.locale.AddCatalog("berean")
 
         self.frame = mainwindow.MainWindow(self)
         self.SetTopWindow(self.frame)
