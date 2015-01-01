@@ -139,7 +139,7 @@ class PreferencesDialog(wx.Dialog):
     def OnAddVersions(self, event):
         versiondir = os.path.join(self._parent._app.userdatadir, "versions")
         dialog = wx.FileDialog(self, _("Add versions"), versiondir,
-                               wildcard=_("Bible Files (*.bbl;*.zip)|*.bbl;"
+                               wildcard=_("Bible files (*.bbl;*.zip)|*.bbl;"
                                           "*.zip"),
                                style=wx.OPEN | wx.MULTIPLE)
         if dialog.ShowModal() == wx.ID_OK:

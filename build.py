@@ -20,7 +20,7 @@ version 9.0.21022.8 (available at
 http://www.microsoft.com/en-us/download/details.aspx?id=29) and put it in the
 same directory where this script is.
 
-By default, old builds are moved to an Archive subdirectory after the specified
+By default, old builds are moved to an archive subdirectory after the specified
 builds have been completed. To disable this, pass the argument
 --no-archive-old.
 
@@ -45,11 +45,11 @@ subprocess.call("setup.py py2exe", shell=True)
 os.chdir("..")
 
 if "--build-source-tar" in sys.argv:
-    filename = "src\\build\\Berean_%s_source.tar" % VERSION
+    filename = "releases\\Berean_%s_source.tar" % VERSION
     if os.path.isfile(filename + ".gz"):
         os.remove(filename + ".gz")
     subprocess.call([_7ZIP_PATH, "a", "-ttar", filename, "src\\*.py"])
-    for pathname in ("berean-48.bmp", "build.py", "installer.iss",
+    for pathname in ("berean.iss", "berean-48.bmp", "build.py", "splash.xcf",
                      "src\\berean.pyw", "src\\images", "src\\license.txt",
                      "src\\locale", "src\\versions\\KJV.bbl"):
         subprocess.call([_7ZIP_PATH, "a", filename, pathname])
@@ -59,9 +59,9 @@ if "--build-source-tar" in sys.argv:
 
 def build_zip(portable=False):
     if not portable:
-        filename = "src\\build\\Berean_%s.zip" % VERSION
+        filename = "releases\\Berean_%s.zip" % VERSION
     else:
-        filename = "src\\build\\Berean_%s_Portable.zip" % VERSION
+        filename = "releases\\Berean_%s_Portable.zip" % VERSION
     if os.path.isfile(filename):
         os.remove(filename)
     subprocess.call([_7ZIP_PATH, "a", filename, ".\\src\\dist\\*"])
@@ -71,15 +71,15 @@ if "--build-zip" in sys.argv:
     build_zip()
 
 if "--build-portable-zip" in sys.argv:
-    filename = "src\\build\\Berean_%s_Portable.zip" % VERSION
+    filename = "releases\\Berean_%s_Portable.zip" % VERSION
     if "--build-zip" in sys.argv:
-        shutil.copy("src\\build\\Berean_%s.zip" % VERSION, filename)
+        shutil.copy("releases\\Berean_%s.zip" % VERSION, filename)
     else:
         build_zip(True)
-    with open("src\\build\\portable.ini", 'w'):
+    with open("releases\\portable.ini", 'w'):
         pass
-    subprocess.call([_7ZIP_PATH, "a", filename, ".\\src\\build\\portable.ini"])
-    os.remove("src\\build\\portable.ini")
+    subprocess.call([_7ZIP_PATH, "a", filename, ".\\releases\\portable.ini"])
+    os.remove("releases\\portable.ini")
 
 if "--build-installer" in sys.argv:
     with open("berean.iss", 'r') as fileobj:
@@ -91,13 +91,13 @@ if "--build-installer" in sys.argv:
     subprocess.call([INNO_SETUP_PATH, "berean.iss"])
 
 if "--no-archive-old" not in sys.argv:
-    if not os.path.isdir("src\\build\\Archive"):
-        os.mkdir("src\\build\\Archive")
+    if not os.path.isdir("releases\\archive"):
+        os.mkdir("releases\\archive")
     for pathname in ("Berean*.tar.gz", "Berean*[0-9].zip",
                      "Berean*Portable.zip", "Berean*.exe"):
-        filenames = sorted(glob.glob("src\\build\\%s" % pathname),
+        filenames = sorted(glob.glob("releases\\%s" % pathname),
                            key=os.path.getmtime)
         while len(filenames) > 2:
             filename = filenames.pop(0)
             os.rename(filename,
-                      "src\\build\\Archive\\%s" % os.path.basename(filename))
+                      "releases\\archive\\%s" % os.path.basename(filename))
