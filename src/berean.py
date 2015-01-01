@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """berean.py - main script for Berean
-Copyright (C) 2014 Timothy Johnson <tjohnson@objectmail.com>
+Copyright (C) 2014 Timothy Johnson <timothysw@objectmail.com>
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
