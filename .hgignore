@@ -1,11 +1,11 @@
 syntax: glob
-src/build
+releases
 src/dist
+*.mo
 *.pyc
 .project
 .pydevproject
 build.bat
 vcredist_x86.exe
 syntax: regexp
-^locale
 ^versions
