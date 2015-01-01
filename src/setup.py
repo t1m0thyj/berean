@@ -9,7 +9,7 @@ import py2exe
 
 from config import VERSION
 
-manifest = """<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+MANIFEST = """<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <assembly manifestVersion="1.0" xmlns="urn:schemas-microsoft-com:asm.v1">
   <assemblyIdentity name="berean" processorArchitecture="x86" type="win32" version="1.0.0.0"/>
   <dependency>
@@ -27,16 +27,12 @@ manifest = """<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 
 if os.path.isdir("dist"):
     shutil.rmtree("dist")
-excludes = ["_gtkagg", "_tkagg", "bsddb", "curses", "email", "pywin.debugger",
-            "pywin.debugger.dbgcon", "pywin.dialogs", "tcl", "Tkconstants",
-            "Tkinter"]
-dll_excludes = ["libgdk-win32-2.0-0.dll", "libgobject-2.0-0.dll", "tcl84.dll",
-                "tk84.dll", "msvcp90.dll", "w9xpopen.exe"]
 setup(options={"py2exe": {"compressed": 1,
                           "optimize": 2,
                           "bundle_files": 3,
-                          "excludes": excludes,
-                          "dll_excludes": dll_excludes}},
+                          "excludes": ["_ssl", "doctest", "pdb", "unittest",
+                                       "difflib", "inspect", "email"],
+                          "dll_excludes": ["msvcp90.dll", "w9xpopen.exe"]}},
       windows=[{"script": "berean.py",
                 "name": "Berean",
                 "version": VERSION,
@@ -44,7 +40,7 @@ setup(options={"py2exe": {"compressed": 1,
                 "copyright": "Copyright \xa9 2011-2014 Timothy Johnson",
                 "description": "Berean",
                 "icon_resources": [(1, "images\\berean.ico")],
-                "other_resources": [(24, 1, manifest)]}],
+                "other_resources": [(24, 1, MANIFEST)]}],
       data_files=[("images", glob.glob("images\\*.*")),
                   ("images\\flags", glob.glob("images\\flags\\*.*")),
                   ("locale\\en_GB\\LC_MESSAGES",

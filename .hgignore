@@ -1,5 +1,6 @@
 syntax: glob
 releases
+src/build
 src/dist
 *.mo
 *.pyc
@@ -7,5 +8,6 @@ src/dist
 .pydevproject
 build.bat
 vcredist_x86.exe
+src/locale/messages.pot
 syntax: regexp
 ^versions

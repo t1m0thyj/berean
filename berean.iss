@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "Berean"
-#define MyAppVersion "0.4.8.1"
+#define MyAppVersion "0.4.9"
 #define MyAppPublisher "Timothy Johnson"
 ;#define MyAppURL "http://berean.sf.net"
 #define MyAppExeName "berean.exe"
@@ -23,7 +23,7 @@ DefaultDirName={pf}\{#MyAppName}
 DefaultGroupName={#MyAppName}
 AllowNoIcons=yes
 LicenseFile=src\dist\license.txt
-OutputDir=src\build
+OutputDir=releases
 OutputBaseFilename={#MyAppName}_{#MyAppVersion}_Setup
 Compression=lzma
 SolidCompression=yes
