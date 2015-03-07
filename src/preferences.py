@@ -32,7 +32,7 @@ class PreferencesDialog(wx.Dialog):
                                                                 language[3:])),
                                  language)
         self.language. \
-            SetSelection(self.language.FindString(LANGUAGES[parent._app. \
+            SetSelection(self.language.FindString(LANGUAGES[parent._app.
                                                             language]))
         self.font_face = wx.Choice(self.general, choices=parent.facenames)
         self.font_face.SetStringSelection(parent.default_font["normal_face"])
@@ -106,7 +106,7 @@ class PreferencesDialog(wx.Dialog):
         self.SetSizer(sizer)
         self.Fit()
         self.Center()
-    
+
     def LoadVersions(self, clear=True):
         if clear:
             self.version_listbox.Clear()
@@ -121,10 +121,10 @@ class PreferencesDialog(wx.Dialog):
         for i in range(len(version_files)):
             self.version_names.append(os.path.basename(version_files[i])[:-4])
             self.version_listbox.Append("%s - %s" %
-                                     (self.version_names[i],
-                                      VERSION_DESCRIPTIONS[self.
-                                                           version_names[i]].
-                                      decode("latin_1")), version_files[i])
+                                        (self.version_names[i],
+                                         VERSION_DESCRIPTIONS[
+                                             self.version_names[i]].
+                                         decode("latin_1")), version_files[i])
             if self.version_names[i] in self._parent.version_list:
                 self.version_listbox.Check(i)
 
@@ -200,7 +200,7 @@ class PreferencesDialog(wx.Dialog):
                         version not in version_list):
                     self._parent.old_versions.append(version)
                 elif (version in version_list and
-                        version in self._parent.old_versions):
+                      version in self._parent.old_versions):
                     self._parent.old_versions.remove(version)
             self._parent.version_list = version_list
         self._parent.minimize_to_tray = self.minimize_to_tray.GetValue()

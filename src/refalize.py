@@ -177,7 +177,7 @@ def refalize2(references):
                 reference.extend([-1, -1])
             references[i] = reference + [references[i]]
             i += 1
-        except (IndexError, ValueError):
+        except (AttributeError, IndexError, ValueError):
             failed.append(references.pop(i))
     return (references, failed)
 
