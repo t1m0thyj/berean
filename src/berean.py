@@ -141,7 +141,7 @@ class Berean(wx.App):
         locale = wx.Locale(wx.LANGUAGE_DEFAULT)
         self.language = self.config.Read("Main/Language",
                                          locale.GetCanonicalName())
-        self.locale = wx.Locale(locale.FindLanguageInfo(self.language). \
+        self.locale = wx.Locale(locale.FindLanguageInfo(self.language).
                                 Language)
         localedir = os.path.join(self.cwd, "locale")
         self.locale.AddCatalogLookupPathPrefix(localedir)

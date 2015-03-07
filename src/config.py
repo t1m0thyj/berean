@@ -1,6 +1,6 @@
 """config.py - global variables used throughout Berean"""
 
-VERSION = "0.4.9"
+VERSION = "0.4.9.1"
 
 VERSION_NAMES = (
     "ASV", "BBE", "Darby", "DutSVV", "FreSegond", "GerLut1545", "JPS", "KJV",

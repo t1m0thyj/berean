@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "Berean"
-#define MyAppVersion "0.4.9"
+#define MyAppVersion "0.4.9.1"
 #define MyAppPublisher "Timothy Johnson"
 ;#define MyAppURL "http://berean.sf.net"
 #define MyAppExeName "berean.exe"

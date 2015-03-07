@@ -53,8 +53,8 @@ if "--build-source-tar" in sys.argv:
                      "src\\berean.pyw", "src\\images", "src\\license.txt",
                      "src\\locale", "src\\panes\\*.py",
                      "src\\versions\\KJV.bbl"])
-    subprocess.call([_7ZIP_PATH, "a", "-sdel", "-tgzip", filename + ".gz",
-                     filename])
+    subprocess.call([_7ZIP_PATH, "a", "-tgzip", filename + ".gz", filename])
+    os.remove(filename)
 
 
 def build_zip(portable=False):
