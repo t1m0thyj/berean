@@ -6,8 +6,6 @@ src/dist
 *.pyc
 .project
 .pydevproject
-build.bat
 vcredist_x86.exe
-src/locale/messages.pot
 syntax: regexp
 ^versions

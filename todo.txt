@@ -1,0 +1,4 @@
+autocomplete book names in reference textbox like Bible Gateway does
+reading mode with center pane maximized
+option to allow single instance only
+add verse list features in multiverse dialog

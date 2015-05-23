@@ -24,6 +24,10 @@ MANIFEST = """<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
   </dependency>
 </assembly>
 """
+mo_files = [(folder, [os.path.join(folder, "berean.mo")]) for folder in
+            glob.glob("locale\\*\\LC_MESSAGES")]
+help_files = [(folder, glob.glob("%s\\*.*" % folder)) for folder in
+              glob.glob("locale\\*\\help")]
 
 if os.path.isdir("dist"):
     shutil.rmtree("dist")
@@ -43,14 +47,10 @@ setup(options={"py2exe": {"compressed": 1,
                 "other_resources": [(24, 1, MANIFEST)]}],
       data_files=[("images", glob.glob("images\\*.*")),
                   ("images\\flags", glob.glob("images\\flags\\*.*")),
-                  ("locale\\en_GB\\LC_MESSAGES",
-                   ["locale\\en_GB\\LC_MESSAGES\\berean.mo"]),
-                  ("locale\\en_US\\help",
-                   glob.glob("locale\\en_US\\help\\*.*")),
                   ("versions", ["versions\\KJV.bbl", "versions\\WEB.bbl"]),
-                  ("", ["license.txt"])],
+                  ("", ["license.txt"])] + mo_files + help_files,
       zipfile=None)
 for imagedir in ("dist\\images", "dist\\images\\flags"):
     thumbs_db = os.path.join(imagedir, "Thumbs.db")
-    if os.path.isfile(thumbs_db):  # Remove WinXP thumbnail caches
+    if os.path.isfile(thumbs_db):  # Remove WinXP thumbnail caches in dist dir
         os.remove(thumbs_db)
