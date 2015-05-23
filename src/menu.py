@@ -137,7 +137,7 @@ class MenuBar(wx.MenuBar):
             for i in range(len(self.bookmarks)):
                 self.menu_bookmarks.Insert(i + 3, wx.ID_HIGHEST + i + 1,
                                            self.bookmarks[i].
-                                           replace("\\t", "\t"))
+                                           replace("=", "\t"))
                 self._frame.Bind(wx.EVT_MENU, self.OnBookmark,
                                  id=wx.ID_HIGHEST + i + 1)
         else:
@@ -235,8 +235,8 @@ class MenuBar(wx.MenuBar):
         self._frame.show_multiverse_pane()
         bookmarks = self.bookmarks[:]
         for i, bookmark in enumerate(bookmarks):
-            if "\\t" in bookmark:
-                bookmarks[i] = bookmark[:bookmark.index("\\t")]
+            if "=" in bookmark:
+                bookmarks[i] = bookmark[:bookmark.index("=")]
         self._frame.multiverse.verse_list.SetValue("\n".join(bookmarks))
         self._frame.multiverse.OnSearch(None)
 
@@ -263,7 +263,7 @@ class BookmarksDialog(wx.Dialog):
         self._parent = parent
         self.listbox = gizmos.EditableListBox(self,
                                               label=_("Separate keywords or "
-                                                      "hotkeys by '\\t'"))
+                                                      "hotkeys by '=' "))
         self.listbox.SetStrings(parent.menubar.bookmarks)
         self.listbox.Bind(wx.EVT_LIST_END_LABEL_EDIT, self.OnListEndLabelEdit)
         sizer = wx.BoxSizer(wx.VERTICAL)

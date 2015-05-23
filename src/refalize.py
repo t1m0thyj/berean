@@ -103,7 +103,7 @@ def get_book_index(abbrev, no_error=False):
 
 
 def refalize(reference):
-    groups = re.match(r"((?:[1-3]\s?|i{1,3}\s)?[a-z]+)\s*(\d+)?\W*(\d+)?",
+    groups = re.match(r"((?:[1-3]\s?|i{1,3}\s)?[a-z]+)\W*(\d+)?\W*(\d+)?",
                       reference.lstrip(), flags=re.IGNORECASE).groups()
     book = get_book_index(groups[0])
     if groups[2]:
@@ -122,7 +122,7 @@ def refalize2(references):
                   re.split(r"[\n,;]", references)]
     references = [reference for reference in references if reference]
     start_pattern = re.compile(
-        r"((?:[1-3]\s?|i{1,3}\s)?[a-z]+)?\s*(\d+)?\W*(\d+)?",
+        r"((?:[1-3]\s?|i{1,3}\s)?[a-z]+)?\W*(\d+)?\W*(\d+)?",
         flags=re.IGNORECASE)
     stop_pattern = re.compile(r"(\d+)\W*(\d+)?")
     has_verse = False
