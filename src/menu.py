@@ -136,8 +136,7 @@ class MenuBar(wx.MenuBar):
         if self.bookmarks:
             for i in range(len(self.bookmarks)):
                 self.menu_bookmarks.Insert(i + 3, wx.ID_HIGHEST + i + 1,
-                                           self.bookmarks[i].
-                                           replace("=", "\t"))
+                                           *self.bookmarks[i].split("="))
                 self._frame.Bind(wx.EVT_MENU, self.OnBookmark,
                                  id=wx.ID_HIGHEST + i + 1)
         else:
@@ -262,8 +261,8 @@ class BookmarksDialog(wx.Dialog):
                              style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER)
         self._parent = parent
         self.listbox = gizmos.EditableListBox(self,
-                                              label=_("Separate keywords or "
-                                                      "hotkeys by '=' "))
+                                              label=_("Separate keywords by "
+                                                      "'=' "))
         self.listbox.SetStrings(parent.menubar.bookmarks)
         self.listbox.Bind(wx.EVT_LIST_END_LABEL_EDIT, self.OnListEndLabelEdit)
         sizer = wx.BoxSizer(wx.VERTICAL)

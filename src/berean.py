@@ -25,6 +25,8 @@ import wx
 import bugreport
 import mainwindow
 
+_ = wx.GetTranslation
+
 
 class FileConfig(wx.FileConfig):
     def __init__(self, app):
@@ -48,11 +50,13 @@ class FileConfig(wx.FileConfig):
         self.SetPath("/Main")
         frame = self._app.frame
         self.Write("Language", self._app.language)
+        self.WriteBool("SingleInstance", self._app.single_instance)
         self.Write("WindowPosition", ",".join(str(i) for i in
                                               frame.rect.GetPosition()))
         self.Write("WindowSize", ",".join(str(i) for i in
                                           frame.rect.GetSize()))
         self.WriteBool("IsMaximized", frame.IsMaximized())
+        self.WriteBool("MinimizeToTray", frame.minimize_to_tray)
         self.WriteInt("CurrentBook", frame.reference[0])
         self.WriteInt("CurrentChapter", frame.reference[1])
         self.WriteInt("CurrentVerse", frame.reference[2])
@@ -61,7 +65,6 @@ class FileConfig(wx.FileConfig):
         self.WriteInt("ZoomLevel", frame.zoom_level)
         self.Write("LastVerse", frame.toolbar.verse_entry.GetValue())
         self.WriteInt("ActiveVersionTab", frame.notebook.GetSelection())
-        self.WriteBool("MinimizeToTray", frame.minimize_to_tray)
         self.WriteList("../VersionList", frame.version_list)
         self.WriteList("../Bookmarks", frame.menubar.bookmarks)
         self.WriteList("../VerseHistory",
@@ -149,6 +152,13 @@ class Berean(wx.App):
                                        "berean.mo")):
             self.locale.AddCatalog("berean")
 
+        self.single_instance = self.config.ReadBool("Main/SingleInstance")
+        if self.single_instance:
+            self.SetSingleInstance(True)
+            if self.checker.IsAnotherRunning():
+                wx.MessageBox(_("Berean is already running."), "Berean",
+                              wx.ICON_ERROR)
+                wx.Exit()
         self.frame = mainwindow.MainWindow(self)
         self.SetTopWindow(self.frame)
         self.Bind(wx.EVT_QUERY_END_SESSION, self.OnQueryEndSession)
@@ -160,6 +170,13 @@ class Berean(wx.App):
         if show_splash:
             splash.Destroy()
         return True
+
+    def SetSingleInstance(self, single_instance):
+        if single_instance:
+            self.checker = wx.SingleInstanceChecker("berean-%s" %
+                                                    wx.GetUserName())
+        elif hasattr(self, "checker"):
+            del self.checker
 
     def OnQueryEndSession(self, event):
         pass

@@ -8,4 +8,4 @@ src/dist
 .pydevproject
 vcredist_x86.exe
 syntax: regexp
-^versions
+src/versions/.+?\.(?!py)

@@ -104,7 +104,7 @@ def get_book_index(abbrev, no_error=False):
 
 def refalize(reference):
     groups = re.match(r"((?:[1-3]\s?|i{1,3}\s)?[a-z]+)\W*(\d+)?\W*(\d+)?",
-                      reference.lstrip(), flags=re.IGNORECASE).groups()
+                      reference, flags=re.IGNORECASE).groups()
     book = get_book_index(groups[0])
     if groups[2]:
         return (book, int(groups[1]), int(groups[2]))
@@ -183,7 +183,6 @@ def refalize2(references):
 
 
 def validate(reference, check_book=True):
-    reference = reference.strip()
     if reference[-1].isdigit():
         return True
     if check_book:
