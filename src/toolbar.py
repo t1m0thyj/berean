@@ -23,6 +23,8 @@ class ToolBar(aui.AuiToolBar):
                                        ReadList("VerseHistory"),
                                        size=(150, -1),
                                        style=wx.TE_PROCESS_ENTER)
+        if wx.VERSION_STRING >= "2.9":
+            self.verse_entry.AutoComplete(BOOK_NAMES)
         self.verse_entry.SetValue(
             parent._app.config.Read("Main/LastVerse", "Genesis 1"))
         self.verse_entry.Bind(wx.EVT_TEXT_ENTER, self.OnGoToVerse)
@@ -68,16 +70,26 @@ class ToolBar(aui.AuiToolBar):
         self.Realize()
 
     def OnGoToVerse(self, event):
-        reference = self.verse_entry.GetValue()
+        reference = self.verse_entry.GetValue().strip()
         if not reference:
             return
-        elif not validate(reference):
-            if not self._parent.aui.GetPane("search_pane").IsShown():
-                self._parent.show_search_pane()
-            self._parent.search.text.SetValue(reference)
-            self.verse_entry.SetValue(self.verse_entry.GetString(0))
-            self._parent.search.OnSearch(None)
-            return
+        else:
+            kw_match = -1
+            for i, bookmark in enumerate(self._parent.menubar.bookmarks):
+                if ("=" in bookmark and
+                        bookmark[bookmark.index("=") + 1:] == reference):
+                    kw_match = i
+            if kw_match != -1:
+                reference = self._parent.menubar. \
+                    bookmarks[kw_match][:bookmark.index("=")]
+                self.verse_entry.SetValue(reference)
+            elif not validate(reference):
+                if not self._parent.aui.GetPane("search_pane").IsShown():
+                    self._parent.show_search_pane()
+                self._parent.search.text.SetValue(reference)
+                self.verse_entry.SetValue(self.verse_entry.GetString(0))
+                self._parent.search.OnSearch(None)
+                return
         try:
             book, chapter, verse = refalize(reference)
             if chapter > BOOK_LENGTHS[book - 1]:

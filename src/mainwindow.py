@@ -275,6 +275,7 @@ class MainWindow(wx.Frame):
         self.aui.UnInit()
         del self.help
         self.Destroy()
+        self._app.SetSingleInstance(False)
         del self._app.locale
         self._app.ExitMainLoop()
 

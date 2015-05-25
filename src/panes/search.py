@@ -170,7 +170,7 @@ class SearchPane(wx.Panel):
                     self.indexes[version] = cPickle.load(fileobj)
 
     def OnSearch(self, event):
-        text = self.text.GetValue()
+        text = self.text.GetValue().strip()
         if not text:
             return
         elif validate(text, False):

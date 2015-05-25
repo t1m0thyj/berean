@@ -38,6 +38,10 @@ class PreferencesDialog(wx.Dialog):
         self.font_face.SetStringSelection(parent.default_font["normal_face"])
         self.font_size = wx.ComboBox(self.general, choices=FONT_SIZES)
         self.font_size.SetStringSelection(str(parent.default_font["size"]))
+        self.single_instance = wx.CheckBox(self.general,
+                                           label=_("Allow single instance "
+                                                   "only"))
+        self.single_instance.SetValue(parent._app.single_instance)
         self.minimize_to_tray = wx.CheckBox(self.general,
                                             label=_("Minimize to system tray"))
         self.minimize_to_tray.SetValue(parent.minimize_to_tray)
@@ -68,6 +72,7 @@ class PreferencesDialog(wx.Dialog):
                    wx.LEFT | wx.ALIGN_CENTER_VERTICAL, 5)
         sizer3.Add(self.font_size, 0, wx.ALL, 5)
         sizer.Add(sizer3, 0, wx.LEFT | wx.RIGHT | wx.EXPAND, 5)
+        sizer.Add(self.single_instance, 0, wx.ALL ^ wx.BOTTOM, 5)
         sizer.Add(self.minimize_to_tray, 0, wx.ALL ^ wx.BOTTOM, 5)
         sizer4 = wx.BoxSizer(wx.HORIZONTAL)
         sizer4.Add(self.abbrev_results, 0, wx.ALIGN_CENTER_VERTICAL)
@@ -203,6 +208,8 @@ class PreferencesDialog(wx.Dialog):
                       version in self._parent.old_versions):
                     self._parent.old_versions.remove(version)
             self._parent.version_list = version_list
+        self._parent._app.single_instance = self.single_instance.GetValue()
+        self._parent._app.SetSingleInstance(self._parent._app.single_instance)
         self._parent.minimize_to_tray = self.minimize_to_tray.GetValue()
         if self.abbrev_results.GetValue():
             self._parent.search.abbrev_results = \

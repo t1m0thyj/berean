@@ -53,7 +53,8 @@ if "--build-source-tar" in sys.argv:
                      "src\\*.py", "src\\berean.pyw", "src\\images",
                      "src\\license.txt", "src\\locale\\messages.pot",
                      "src\\locale\\*\\*.po", "src\\locale\\*\\help",
-                     "src\\panes\\*.py", "src\\versions\\KJV.bbl", "todo.txt"])
+                     "src\\panes\\*.py", "src\\versions\\*\\*.py",
+                     "src\\versions\\KJV.bbl"])
     subprocess.call([_7ZIP_PATH, "a", "-tgzip", filename + ".gz", filename])
     os.remove(filename)
 
