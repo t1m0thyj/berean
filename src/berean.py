@@ -64,6 +64,7 @@ class FileConfig(wx.FileConfig):
         self.WriteInt("HtmlFontSize", frame.default_font["size"])
         self.WriteInt("ZoomLevel", frame.zoom_level)
         self.Write("LastVerse", frame.toolbar.verse_entry.GetValue())
+        self.WriteBool("AutocompBooks", frame.toolbar.autocomp_books)
         self.WriteInt("ActiveVersionTab", frame.notebook.GetSelection())
         self.WriteList("../VersionList", frame.version_list)
         self.WriteList("../Bookmarks", frame.menubar.bookmarks)

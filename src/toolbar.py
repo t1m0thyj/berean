@@ -17,13 +17,15 @@ class ToolBar(aui.AuiToolBar):
                                       aui.AUI_TB_OVERFLOW |
                                       aui.AUI_TB_HORZ_TEXT)
         self._parent = parent
+        self.autocomp_books = parent._app.config.ReadBool("Main/AutocompBooks",
+                                                          True)
 
         self.verse_entry = wx.ComboBox(self,
                                        choices=parent._app.config.
                                        ReadList("VerseHistory"),
                                        size=(150, -1),
                                        style=wx.TE_PROCESS_ENTER)
-        if wx.VERSION_STRING >= "2.9":
+        if self.autocomp_books and wx.VERSION_STRING >= "2.9":
             self.verse_entry.AutoComplete(BOOK_NAMES)
         self.verse_entry.SetValue(
             parent._app.config.Read("Main/LastVerse", "Genesis 1"))
@@ -60,13 +62,18 @@ class ToolBar(aui.AuiToolBar):
                      _("Print (Ctrl+P)"))
         self.AddTool(wx.ID_COPY, "", parent.get_bitmap("copy"),
                      _("Copy (Ctrl+C)"))
+        self.ID_READING_MODE = wx.NewId()
+        self.AddTool(self.ID_READING_MODE, "",
+                     parent.get_bitmap("reading-mode"),
+                     _("Reading Mode (Ctrl+R)"), wx.ITEM_CHECK)
+        self.Bind(wx.EVT_MENU, self.OnReadingMode, id=self.ID_READING_MODE)
         self.AddSeparator()
         self.AddTool(parent.menubar.add_to_bookmarks_item.GetId(), "",
                      parent.get_bitmap("add-to-bookmarks"),
                      _("Add to Bookmarks (Ctrl+D)"))
         self.AddTool(parent.menubar.manage_bookmarks_item.GetId(), "",
                      parent.get_bitmap("manage-bookmarks"),
-                     _("Manage Bookmarks"))
+                     _("Manage Bookmarks (Ctrl+Shift+B)"))
         self.Realize()
 
     def OnGoToVerse(self, event):
@@ -156,6 +163,9 @@ class ToolBar(aui.AuiToolBar):
     def OnChapter(self, event):
         self._parent.load_chapter(self._parent.reference[0],
                                   self.chapterctrl.GetValue())
+
+    def OnReadingMode(self, event):
+        self._parent.toggle_reading_mode(update_toolbar=False)
 
 
 class ZoomBar(wx.ToolBar):

@@ -107,6 +107,8 @@ class MainWindow(wx.Frame):
             self.notebook.SetTabCtrlHeight(0)
         self.notebook.Bind(aui.EVT_AUINOTEBOOK_PAGE_CHANGED,
                            self.OnAuiNotebookPageChanged)
+        self.notebook.Bind(aui.EVT_AUINOTEBOOK_BG_DCLICK,
+                           self.OnAuiNotebookBgDclick)
         self.aui.AddPane(self.notebook, aui.AuiPaneInfo().Name("notebook").
                          CenterPane().PaneBorder(False))
 
@@ -134,6 +136,10 @@ class MainWindow(wx.Frame):
             with open(filename, 'r') as fileobj:
                 self.aui.LoadPerspective(fileobj.read())
         self.aui.Update()
+        reading_mode = self.aui.GetPane("notebook").IsMaximized()
+        self.menubar.Check(self.menubar.reading_mode_item.GetId(),
+                           reading_mode)
+        self.toolbar.ToggleTool(self.toolbar.ID_READING_MODE, reading_mode)
         for pane in ("toolbar", "tree_pane", "search_pane", "notes_pane",
                      "multiverse_pane"):
             self.menubar.Check(getattr(self.menubar, "%s_item" % pane).GetId(),
@@ -212,6 +218,21 @@ class MainWindow(wx.Frame):
         self.menubar.Enable(wx.ID_ZOOM_IN, zoom < 7)
         self.menubar.Enable(wx.ID_ZOOM_OUT, zoom > 1)
 
+    def toggle_reading_mode(self, update_toolbar=True):
+        pane = self.aui.GetPane("notebook")
+        maximized = pane.IsMaximized()
+        if not pane.IsMaximized():
+            self.aui.MaximizePane(pane)
+        else:
+            self.aui.RestorePane(pane)
+        self.aui.Update()
+        self.menubar.Check(self.menubar.reading_mode_item.GetId(),
+                           not maximized)
+        if update_toolbar:
+            self.toolbar.ToggleTool(self.toolbar.ID_READING_MODE,
+                                    not maximized)
+            self.toolbar.Refresh(False)
+
     def show_search_pane(self, show=True):
         self.aui.GetPane("search_pane").Show(show)
         self.aui.Update()
@@ -233,6 +254,9 @@ class MainWindow(wx.Frame):
         if tab < len(self.version_list):
             self.search.version.SetSelection(tab)
             self.multiverse.version.SetSelection(tab)
+
+    def OnAuiNotebookBgDclick(self, event):
+        self.toggle_reading_mode()
 
     def OnAuiPaneClose(self, event):
         self.menubar.Check(getattr(self.menubar, "%s_item" %
