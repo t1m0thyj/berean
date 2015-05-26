@@ -75,6 +75,18 @@ class MenuBar(wx.MenuBar):
                               _("Resets the text size to the default"))
         frame.Bind(wx.EVT_MENU, self.OnZoomDefault, id=wx.ID_ZOOM_100)
         self.menu_view.AppendSeparator()
+        self.reading_mode_item = \
+            self.menu_view.AppendCheckItem(wx.ID_ANY,
+                                           _("R&eading Mode\tCtrl+R"),
+                                           _("Maximizes the Bible pane"))
+        frame.Bind(wx.EVT_MENU, self.OnReadingMode, self.reading_mode_item)
+        self.fullscreen_item = \
+            self.menu_view.AppendCheckItem(wx.ID_ANY,
+                                           _("F&ull Screen\tF11"),
+                                           _("Displays the window in full "
+                                             "screen"))
+        frame.Bind(wx.EVT_MENU, self.OnFullScreen, self.fullscreen_item)
+        self.menu_view.AppendSeparator()
         self.toolbar_item = self.menu_view.AppendCheckItem(wx.ID_ANY,
                                                            _("&Toolbar"))
         frame.Bind(wx.EVT_MENU, self.OnToolbar, self.toolbar_item)
@@ -190,6 +202,12 @@ class MenuBar(wx.MenuBar):
 
     def OnZoomDefault(self, event):
         self._frame.set_zoom(0)
+
+    def OnReadingMode(self, event):
+        self._frame.toggle_reading_mode()
+
+    def OnFullScreen(self, event):
+        self._frame.ShowFullScreen(event.IsChecked())
 
     def OnToolbar(self, event):
         self._frame.aui.GetPane("toolbar").Show(event.IsChecked())

@@ -45,6 +45,12 @@ class PreferencesDialog(wx.Dialog):
         self.minimize_to_tray = wx.CheckBox(self.general,
                                             label=_("Minimize to system tray"))
         self.minimize_to_tray.SetValue(parent.minimize_to_tray)
+        self.autocomp_books = wx.CheckBox(self.general,
+                                          label=_("Auto-complete book names "
+                                                  "in reference textbox"))
+        self.autocomp_books.SetValue(parent.toolbar.autocomp_books)
+        if wx.VERSION_STRING < "2.9":
+            self.autocomp_books.Hide()
         self.abbrev_results = wx.CheckBox(self.general,
                                           label=_("Abbreviate search results "
                                                   "when there are more than"))
@@ -74,6 +80,7 @@ class PreferencesDialog(wx.Dialog):
         sizer.Add(sizer3, 0, wx.LEFT | wx.RIGHT | wx.EXPAND, 5)
         sizer.Add(self.single_instance, 0, wx.ALL ^ wx.BOTTOM, 5)
         sizer.Add(self.minimize_to_tray, 0, wx.ALL ^ wx.BOTTOM, 5)
+        sizer.Add(self.autocomp_books, 0, wx.ALL ^ wx.BOTTOM, 5)
         sizer4 = wx.BoxSizer(wx.HORIZONTAL)
         sizer4.Add(self.abbrev_results, 0, wx.ALIGN_CENTER_VERTICAL)
         sizer4.Add(self.abbrev_results2, 0, wx.ALL ^ wx.LEFT, 5)
@@ -211,6 +218,7 @@ class PreferencesDialog(wx.Dialog):
         self._parent._app.single_instance = self.single_instance.GetValue()
         self._parent._app.SetSingleInstance(self._parent._app.single_instance)
         self._parent.minimize_to_tray = self.minimize_to_tray.GetValue()
+        self._parent.toolbar.autocomp_books = self.autocomp_books.GetValue()
         if self.abbrev_results.GetValue():
             self._parent.search.abbrev_results = \
                 self.abbrev_results2.GetValue()
