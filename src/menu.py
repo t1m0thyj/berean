@@ -264,7 +264,7 @@ class MenuBar(wx.MenuBar):
         info = wx.AboutDialogInfo()
         info.SetName("Berean")
         info.SetVersion(VERSION)
-        info.SetCopyright("Copyright (C) 2011-2014 Timothy Johnson")
+        info.SetCopyright("Copyright (C) 2011-2015 Timothy Johnson")
         info.SetDescription(
             _("An open source, cross-platform Bible study program"))
         ##info.SetWebSite("http://berean.sf.net")

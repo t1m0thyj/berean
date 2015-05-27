@@ -8,7 +8,7 @@ import zipfile
 import wx
 from wx import combo
 
-from config import VERSION_NAMES, VERSION_DESCRIPTIONS, FONT_SIZES
+from config import VERSION_NAMES, VERSION_DESCRIPTIONS, BOOK_NAMES, FONT_SIZES
 
 _ = wx.GetTranslation
 LANGUAGES = {"en_GB": "English (Great Britain)",
@@ -218,7 +218,12 @@ class PreferencesDialog(wx.Dialog):
         self._parent._app.single_instance = self.single_instance.GetValue()
         self._parent._app.SetSingleInstance(self._parent._app.single_instance)
         self._parent.minimize_to_tray = self.minimize_to_tray.GetValue()
-        self._parent.toolbar.autocomp_books = self.autocomp_books.GetValue()
+        autocomp_books = self.autocomp_books.GetValue()
+        self._parent.toolbar.autocomp_books = autocomp_books
+        if wx.VERSION_STRING >= "2.9":
+            self._parent.toolbar.verse_entry.AutoComplete(BOOK_NAMES if
+                                                          autocomp_books else
+                                                          [])
         if self.abbrev_results.GetValue():
             self._parent.search.abbrev_results = \
                 self.abbrev_results2.GetValue()
