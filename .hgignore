@@ -4,8 +4,6 @@ src/build
 src/dist
 *.mo
 *.pyc
-.project
-.pydevproject
 vcredist_x86.exe
 syntax: regexp
 src/versions/.+?\.(?!py)

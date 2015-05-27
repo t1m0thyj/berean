@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2015-05-16 18:19+Eastern Daylight Time\n"
+"POT-Creation-Date: 2015-05-26 21:07+Eastern Daylight Time\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -14,6 +14,10 @@ msgstr ""
 "Content-Transfer-Encoding: ENCODING\n"
 "Generated-By: pygettext.py 1.5\n"
 
+
+#: src\berean.py:160
+msgid "Berean is already running."
+msgstr ""
 
 #: src\bugreport.py:30 src\html.py:159
 msgid "Error"
@@ -82,27 +86,27 @@ msgstr ""
 msgid "Parallel"
 msgstr ""
 
-#: src\mainwindow.py:115
+#: src\mainwindow.py:117
 msgid "Tree"
 msgstr ""
 
-#: src\mainwindow.py:119 src\panes\multiverse.py:32 src\panes\search.py:81
+#: src\mainwindow.py:121 src\panes\multiverse.py:32 src\panes\search.py:81
 msgid "Search"
 msgstr ""
 
-#: src\mainwindow.py:123
+#: src\mainwindow.py:125
 msgid "Notes"
 msgstr ""
 
-#: src\mainwindow.py:128 src\panes\multiverse.py:120
+#: src\mainwindow.py:130 src\panes\multiverse.py:120
 msgid "Multi-Verse Retrieval"
 msgstr ""
 
-#: src\mainwindow.py:293
+#: src\mainwindow.py:318
 msgid "Restore"
 msgstr ""
 
-#: src\mainwindow.py:295
+#: src\mainwindow.py:320
 msgid "Exit"
 msgstr ""
 
@@ -210,92 +214,108 @@ msgstr ""
 msgid "Resets the text size to the default"
 msgstr ""
 
-#: src\menu.py:79
+#: src\menu.py:80
+msgid "R&eading Mode\tCtrl+R"
+msgstr ""
+
+#: src\menu.py:81
+msgid "Maximizes the Bible pane"
+msgstr ""
+
+#: src\menu.py:85
+msgid "F&ull Screen\tF11"
+msgstr ""
+
+#: src\menu.py:86
+msgid "Displays the window in full screen"
+msgstr ""
+
+#: src\menu.py:91
 msgid "&Toolbar"
 msgstr ""
 
-#: src\menu.py:84
+#: src\menu.py:96
 msgid "Tr&ee Pane\tCtrl+Shift+T"
 msgstr ""
 
-#: src\menu.py:88
+#: src\menu.py:100
 msgid "&Search Pane\tCtrl+Shift+S"
 msgstr ""
 
-#: src\menu.py:92
+#: src\menu.py:104
 msgid "&Notes Pane\tCtrl+Shift+N"
 msgstr ""
 
-#: src\menu.py:96
+#: src\menu.py:108
 msgid "&Multi-Verse Retrieval\tCtrl+Shift+M"
 msgstr ""
 
-#: src\menu.py:100
+#: src\menu.py:112
 msgid "&View"
 msgstr ""
 
-#: src\menu.py:105
+#: src\menu.py:117
 msgid "&Add to Bookmarks\tCtrl+D"
 msgstr ""
 
-#: src\menu.py:106
+#: src\menu.py:118
 msgid "Adds the current chapter to your bookmarks"
 msgstr ""
 
-#: src\menu.py:112
+#: src\menu.py:124
 msgid "&Manage Bookmarks\tCtrl+Shift+B"
 msgstr ""
 
-#: src\menu.py:118
+#: src\menu.py:130
 msgid "View All"
 msgstr ""
 
-#: src\menu.py:121
+#: src\menu.py:133
 msgid "&Bookmarks"
 msgstr ""
 
-#: src\menu.py:124
+#: src\menu.py:136
 msgid "&Help Contents\tF1"
 msgstr ""
 
-#: src\menu.py:125
+#: src\menu.py:137
 msgid "Shows the contents of the help file"
 msgstr ""
 
-#: src\menu.py:127
+#: src\menu.py:139
 msgid "&About Berean"
 msgstr ""
 
-#: src\menu.py:128
+#: src\menu.py:140
 msgid "Displays program information, version number, and copyright"
 msgstr ""
 
-#: src\menu.py:131
+#: src\menu.py:143
 msgid "&Help"
 msgstr ""
 
-#: src\menu.py:144
+#: src\menu.py:155
 msgid "(Empty)"
 msgstr ""
 
-#: src\menu.py:219 src\menu.py:292
+#: src\menu.py:236 src\menu.py:309
 msgid "A bookmark for %s already exists."
 msgstr ""
 
-#: src\menu.py:231 src\menu.py:286 src\toolbar.py:96
+#: src\menu.py:248 src\menu.py:303 src\toolbar.py:115
 msgid "'%s' is not a valid reference."
 msgstr ""
 
-#: src\menu.py:252
+#: src\menu.py:269
 msgid "An open source, cross-platform Bible study program"
 msgstr ""
 
-#: src\menu.py:261 src\toolbar.py:67
+#: src\menu.py:278
 msgid "Manage Bookmarks"
 msgstr ""
 
-#: src\menu.py:265
-msgid "Separate keywords or hotkeys by '=' "
+#: src\menu.py:282
+msgid "Separate keywords by '=' "
 msgstr ""
 
 #: src\panes\multiverse.py:25
@@ -342,7 +362,7 @@ msgstr ""
 msgid "Cut (Ctrl+X)"
 msgstr ""
 
-#: src\panes\notes.py:85 src\toolbar.py:60
+#: src\panes\notes.py:85 src\toolbar.py:64
 msgid "Copy (Ctrl+C)"
 msgstr ""
 
@@ -547,102 +567,118 @@ msgid "Preferences"
 msgstr ""
 
 #: src\preferences.py:42
+msgid "Allow single instance only"
+msgstr ""
+
+#: src\preferences.py:46
 msgid "Minimize to system tray"
 msgstr ""
 
-#: src\preferences.py:45
+#: src\preferences.py:49
+msgid "Auto-complete book names in reference textbox"
+msgstr ""
+
+#: src\preferences.py:55
 msgid "Abbreviate search results when there are more than"
 msgstr ""
 
-#: src\preferences.py:59
+#: src\preferences.py:69
 msgid "Language:"
 msgstr ""
 
-#: src\preferences.py:64
+#: src\preferences.py:74
 msgid "Default font:"
 msgstr ""
 
-#: src\preferences.py:67
+#: src\preferences.py:77
 msgid "Size:"
 msgstr ""
 
-#: src\preferences.py:77
+#: src\preferences.py:89
 msgid "General"
 msgstr ""
 
-#: src\preferences.py:84
+#: src\preferences.py:96
 msgid "Add versions..."
 msgstr ""
 
-#: src\preferences.py:88
+#: src\preferences.py:100
 msgid "Remove"
 msgstr ""
 
-#: src\preferences.py:98
+#: src\preferences.py:110
 msgid "Versions"
 msgstr ""
 
-#: src\preferences.py:141
+#: src\preferences.py:153
 msgid "Add versions"
 msgstr ""
 
-#: src\preferences.py:142
+#: src\preferences.py:154
 msgid "Bible files (*.bbl;*.zip)|*.bbl;*.zip"
 msgstr ""
 
-#: src\preferences.py:157
+#: src\preferences.py:169
 msgid "Are you sure you want to permanently delete this version?"
 msgstr ""
 
-#: src\preferences.py:175
+#: src\preferences.py:187
 msgid "You must have at least one version selected."
 msgstr ""
 
-#: src\preferences.py:181
+#: src\preferences.py:193
 msgid "Changes to language and version settings will take effect after you restart Berean."
 msgstr ""
 
-#: src\toolbar.py:31
+#: src\toolbar.py:35
 msgid "Go to Verse"
 msgstr ""
 
-#: src\toolbar.py:33
+#: src\toolbar.py:37
 msgid "Back"
 msgstr ""
 
-#: src\toolbar.py:34
+#: src\toolbar.py:38
 msgid "Go Back (Alt+Left)"
 msgstr ""
 
-#: src\toolbar.py:38
+#: src\toolbar.py:42
 msgid "Forward"
 msgstr ""
 
-#: src\toolbar.py:40
+#: src\toolbar.py:44
 msgid "Go Forward (Alt+Right)"
 msgstr ""
 
-#: src\toolbar.py:58
+#: src\toolbar.py:62
 msgid "Print (Ctrl+P)"
 msgstr ""
 
-#: src\toolbar.py:64
+#: src\toolbar.py:68
+msgid "Reading Mode (Ctrl+R)"
+msgstr ""
+
+#: src\toolbar.py:73
 msgid "Add to Bookmarks (Ctrl+D)"
 msgstr ""
 
-#: src\toolbar.py:84
+#: src\toolbar.py:76
+msgid "Manage Bookmarks (Ctrl+Shift+B)"
+msgstr ""
+
+#: src\toolbar.py:103
 msgid "The book of %s has only %d chapters."
 msgstr ""
 
-#: src\toolbar.py:89
+#: src\toolbar.py:108
 msgid "%s chapter %d has only %d verses."
 msgstr ""
 
-#: src\toolbar.py:155
+#: src\toolbar.py:177
 msgid "Zoom Out (Ctrl+-)"
 msgstr ""
 
-#: src\toolbar.py:162
+#: src\toolbar.py:184
 msgid "Zoom In (Ctrl++)"
 msgstr ""
 
