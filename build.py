@@ -20,8 +20,12 @@ version 9.0.21022.8 (available at
 http://www.microsoft.com/en-us/download/details.aspx?id=29) and put it in the
 same directory where this script is.
 
-By default, old builds are moved to an archive subdirectory after the specified
-builds have been completed. To disable this, pass the argument
+As part of the build process, .po language files are compiled to .mo binary
+files if they have not yet been converted. To disable this, pass the argument
+--no-compile-po.
+
+By default, old builds are also moved to an archive subdirectory after the
+specified builds have been completed. To disable this, pass the argument
 --no-archive-old.
 
 You will need to modify the path constants at the beginning of this script so
@@ -39,6 +43,11 @@ from config import VERSION
 
 _7ZIP_PATH = "C:\\Program Files\\7-Zip\\7z.exe"
 INNO_SETUP_PATH = "C:\\Program Files (x86)\\Inno Setup 5\\ISCC.exe"
+
+if "--no-compile-po" not in sys.argv:
+    os.chdir("src\\locale")
+    subprocess.call("compile_po.py", shell=True)
+    os.chdir("..\\..")
 
 os.chdir("src")
 subprocess.call("setup.py py2exe", shell=True)
