@@ -56,8 +56,8 @@
 			<param name="Local" value="menu-view.html#ResetZoom">
 		</object>
 	<li><object type="text/sitemap">
-			<param name="Name" value="Reading mode">
-			<param name="Local" value="menu-view.html#ReadingMode">
+			<param name="Name" value="Reader view">
+			<param name="Local" value="menu-view.html#ReaderView">
 		</object>
 	<li><object type="text/sitemap">
 			<param name="Name" value="Full screen">

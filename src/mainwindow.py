@@ -77,9 +77,13 @@ class MainWindow(wx.Frame):
                                         aui.AUI_NB_TOP |
                                         aui.AUI_NB_SCROLL_BUTTONS |
                                         aui.AUI_NB_WINDOWLIST_BUTTON)
-        versiondir = os.path.join(app.userdatadir, "versions")
-        if not os.path.isdir(versiondir):
-            os.mkdir(versiondir)
+        if not app.portable:
+            self.versiondir = os.path.join(wx.StandardPaths.Get().
+                                           GetUserLocalDataDir(), "versions")
+        else:
+            self.versiondir = os.path.join(app.userdatadir, "versions")
+        if not os.path.isdir(self.versiondir):
+            os.makedirs(self.versiondir)
         i = 0
         tab = app.config.ReadInt("Main/ActiveVersionTab")
         while i < len(self.version_list):
@@ -136,10 +140,9 @@ class MainWindow(wx.Frame):
             with open(filename, 'r') as fileobj:
                 self.aui.LoadPerspective(fileobj.read())
         self.aui.Update()
-        reading_mode = self.aui.GetPane("notebook").IsMaximized()
-        self.menubar.Check(self.menubar.reading_mode_item.GetId(),
-                           reading_mode)
-        self.toolbar.ToggleTool(self.toolbar.ID_READING_MODE, reading_mode)
+        reader_view = self.aui.GetPane("notebook").IsMaximized()
+        self.menubar.Check(self.menubar.reader_view_item.GetId(), reader_view)
+        self.toolbar.ToggleTool(self.toolbar.ID_READER_VIEW, reader_view)
         for pane in ("toolbar", "tree_pane", "search_pane", "notes_pane",
                      "multiverse_pane"):
             self.menubar.Check(getattr(self.menubar, "%s_item" % pane).GetId(),
@@ -218,7 +221,7 @@ class MainWindow(wx.Frame):
         self.menubar.Enable(wx.ID_ZOOM_IN, zoom < 7)
         self.menubar.Enable(wx.ID_ZOOM_OUT, zoom > 1)
 
-    def toggle_reading_mode(self, update_toolbar=True):
+    def toggle_reader_view(self, update_toolbar=True):
         pane = self.aui.GetPane("notebook")
         maximized = pane.IsMaximized()
         if not pane.IsMaximized():
@@ -226,11 +229,10 @@ class MainWindow(wx.Frame):
         else:
             self.aui.RestorePane(pane)
         self.aui.Update()
-        self.menubar.Check(self.menubar.reading_mode_item.GetId(),
+        self.menubar.Check(self.menubar.reader_view_item.GetId(),
                            not maximized)
         if update_toolbar:
-            self.toolbar.ToggleTool(self.toolbar.ID_READING_MODE,
-                                    not maximized)
+            self.toolbar.ToggleTool(self.toolbar.ID_READER_VIEW, not maximized)
             self.toolbar.Refresh(False)
 
     def show_search_pane(self, show=True):
@@ -256,7 +258,7 @@ class MainWindow(wx.Frame):
             self.multiverse.version.SetSelection(tab)
 
     def OnAuiNotebookBgDclick(self, event):
-        self.toggle_reading_mode()
+        self.toggle_reader_view()
 
     def OnAuiPaneClose(self, event):
         self.menubar.Check(getattr(self.menubar, "%s_item" %

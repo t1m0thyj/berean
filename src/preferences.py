@@ -126,8 +126,7 @@ class PreferencesDialog(wx.Dialog):
                                                "versions", "*.bbl"))
         if self._parent._app.userdatadir != self._parent._app.cwd:
             version_files. \
-                extend(glob.glob(os.path.join(self._parent._app.userdatadir,
-                                              "versions", "*.bbl")))
+                extend(glob.glob("%s\\*.bbl" % self._parent.versiondir))
         version_files.sort(key=os.path.basename)
         self.version_names = []
         for i in range(len(version_files)):
@@ -149,19 +148,19 @@ class PreferencesDialog(wx.Dialog):
             self.remove_version.Enable(os.access(version_file, os.W_OK))
 
     def OnAddVersions(self, event):
-        versiondir = os.path.join(self._parent._app.userdatadir, "versions")
-        dialog = wx.FileDialog(self, _("Add versions"), versiondir,
+        dialog = wx.FileDialog(self, _("Add versions"),
+                               self._parent.versiondir,
                                wildcard=_("Bible files (*.bbl;*.zip)|*.bbl;"
                                           "*.zip"),
                                style=wx.OPEN | wx.MULTIPLE)
         if dialog.ShowModal() == wx.ID_OK:
             for path in dialog.GetPaths():
                 if not path.endswith(".zip"):
-                    shutil.copy(path, versiondir)
+                    shutil.copy(path, self._parent.versiondir)
                 else:
                     with zipfile.ZipFile(path) as zipobj:
                         zipobj.extract("%s.bbl" % os.path.basename(path)[:-4],
-                                       versiondir)
+                                       self._parent.versiondir)
             self.LoadVersions()
         dialog.Destroy()
 

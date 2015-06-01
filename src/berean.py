@@ -131,6 +131,7 @@ class Berean(wx.App):
                                      style=wx.BORDER_SIMPLE)
             self.Yield()
 
+        self.portable = True
         if "--datadir" in optlist:
             self.userdatadir = optlist["--datadir"]
             if not os.path.isabs(self.userdatadir):
@@ -139,6 +140,7 @@ class Berean(wx.App):
             self.userdatadir = self.cwd
         else:
             self.userdatadir = wx.StandardPaths.Get().GetUserDataDir()
+            self.portable = False
         if not os.path.isdir(self.userdatadir):
             os.mkdir(self.userdatadir)
         self.config = FileConfig(self)

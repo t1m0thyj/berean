@@ -149,8 +149,7 @@ class ChapterWindow(ChapterWindowBase):
         filename = os.path.join(self._frame._app.cwd, "versions",
                                 "%s.bbl" % version)
         if not os.path.isfile(filename):
-            filename = os.path.join(self._frame._app.userdatadir, "versions",
-                                    "%s.bbl" % version)
+            filename = os.path.join(self._frame.versiondir, "%s.bbl" % version)
         try:
             with open(filename, 'rb') as Bible:
                 self.Bible = cPickle.load(Bible)
