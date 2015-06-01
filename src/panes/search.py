@@ -350,12 +350,12 @@ class SearchPane(wx.Panel):
                             verse[start + offset:end + offset2] + "</b>" + \
                             verse[end + offset2:]
                         offset += 7
-                results.append("<p><a href=\"%d.%d.%d\">%s %d:%d</a><br />%s"
+                results.append("<p><a href=\"%d.%d.%d\">%s %d:%d</a><br>%s"
                                "</p>" % (b, c, v, BOOK_NAMES[b - 1], c, v,
                                          verse.replace("[", "<i>").
                                          replace("]", "</i>")))
         else:
-            results.append("<br />")
+            results.append("<br>")
             i = last_book = 0
             while i < len(matches):
                 b, c, v = matches[i]
@@ -370,7 +370,7 @@ class SearchPane(wx.Panel):
                     results.append(", <a href=\"%d.%d.%d\">%d:%d-%d</a>" %
                                    (b, c, v, c, v, v + verses - 1))
                 if b > last_book:
-                    results[-1] = "<br /><b>%s</b>" % \
+                    results[-1] = "<br><b>%s</b>" % \
                         BOOK_NAMES[b - 1].upper() + results[-1][1:]
                     last_book = b
                 i += verses

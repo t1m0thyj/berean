@@ -165,7 +165,7 @@ class ChapterWindow(ChapterWindowBase):
             header = "<font size=\"+2\"><b>%s %d</b></font>" % \
                 (BOOK_NAMES[book - 1], chapter)
             if self.Bible[book][chapter][0]:
-                header += "<br /><i>%s</i>" % self.Bible[book][chapter][0]. \
+                header += "<br><i>%s</i>" % self.Bible[book][chapter][0]. \
                     replace("]", "<i>").replace("[", "</i>")
             verses = []
             for i in range(1, len(self.Bible[book][chapter])):
@@ -178,7 +178,7 @@ class ChapterWindow(ChapterWindowBase):
                     text = "<b>%s</b>" % text
                 verses.append("<a name=\"%d\">%s</a>" % (i, text))
             if chapter == BOOK_LENGTHS[book - 1] and self.Bible[book][0]:
-                verses[-1] += "<hr /><div align=\"center\"><i>%s</i></div>" % \
+                verses[-1] += "<hr><div align=\"center\"><i>%s</i></div>" % \
                     self.Bible[book][0].replace("]", "<i>"). \
                     replace("[", "</i>")
         else:
@@ -187,4 +187,4 @@ class ChapterWindow(ChapterWindowBase):
                         "</font>") % (BOOK_NAMES[book - 1], chapter)]
         return "<html><body><font size=\"%d\"><div align=center>%s</div>%s" \
             "</font></body></html>" % (self._frame.zoom_level, header,
-                                       "<br />".join(verses))
+                                       "<br>".join(verses))

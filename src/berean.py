@@ -153,7 +153,8 @@ class Berean(wx.App):
                                        "berean.mo")):
             self.locale.AddCatalog("berean")
 
-        self.single_instance = self.config.ReadBool("Main/SingleInstance")
+        self.single_instance = self.config.ReadBool("Main/SingleInstance",
+                                                    True)
         if self.single_instance:
             self.SetSingleInstance(True)
             if self.checker.IsAnotherRunning():

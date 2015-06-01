@@ -179,7 +179,7 @@ class MenuBar(wx.MenuBar):
     def OnPreferences(self, event):
         import preferences
         dialog = preferences.PreferencesDialog(self._frame)
-        dialog.Show()
+        dialog.ShowModal()
 
     def OnGoToVerse(self, event):
         self._frame.toolbar.OnGoToVerse(None)
@@ -238,7 +238,7 @@ class MenuBar(wx.MenuBar):
 
     def OnManageBookmarks(self, event):
         dialog = BookmarksDialog(self._frame)
-        dialog.Show()
+        dialog.ShowModal()
 
     def OnBookmark(self, event):
         reference = self.bookmarks[event.GetId() - wx.ID_HIGHEST - 1]
@@ -287,6 +287,7 @@ class BookmarksDialog(wx.Dialog):
         sizer.Add(self.listbox, 1, wx.ALL | wx.EXPAND, 5)
         button_sizer = self.CreateStdDialogButtonSizer(wx.OK | wx.CANCEL)
         self.Bind(wx.EVT_BUTTON, self.OnOk, id=wx.ID_OK)
+        self.Bind(wx.EVT_BUTTON, self.OnCancel, id=wx.ID_CANCEL)
         sizer.Add(button_sizer, 0, wx.ALL | wx.EXPAND, 5)
         self.SetSizer(sizer)
         self.Fit()
@@ -316,6 +317,9 @@ class BookmarksDialog(wx.Dialog):
     def OnOk(self, event):
         self._parent.menubar.bookmarks = self.listbox.GetStrings()
         self._parent.menubar.update_bookmarks()
+        self.Destroy()
+
+    def OnCancel(self, event):
         self.Destroy()
 
 

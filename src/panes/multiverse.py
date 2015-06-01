@@ -77,7 +77,7 @@ class MultiVersePane(wx.Panel):
                 if c2 == -1 and v2 == -1:
                     if Bible[b][c][v]:
                         results.append("<p><a href=\"%d.%d.%d\">%s %d:%d (%s)"
-                                       "</a><br />%s</p>" %
+                                       "</a><br>%s</p>" %
                                        (b, c, v, BOOK_NAMES[b - 1], c, v,
                                         version_name, Bible[b][c][v]))
                     else:
@@ -97,15 +97,14 @@ class MultiVersePane(wx.Panel):
                         if not verses:
                             raise IndexError
                         results.append("<p><a href=\"%d.%d.%d\">%s %d:%d-%d "
-                                       "(%s)</a><br />%s</p>" %
+                                       "(%s)</a><br>%s</p>" %
                                        (b, c3, v3, BOOK_NAMES[b - 1], c3, v3,
                                         v4, version_name, " ".join(verses)))
             except IndexError:
                 failed.append(reference)
         if failed:
             results.insert(0, "<font color=\"red\">The following references "
-                           "are not valid:<br />%s</font>" %
-                           "<br />".join(failed))
+                           "are not valid:<br>%s</font>" % "<br>".join(failed))
         self.html = "<html><body><font size=\"%d\">%s</font></body></html>" % \
             (self._parent.zoom_level, "".join(results))
         self.htmlwindow.SetPage(self.html)
