@@ -40,7 +40,7 @@ class ParallelWindow(ChapterWindowBase):
             if (not Bibles[-1][book]) or (not Bibles[-1][book][chapter][0]):
                 text.append("<td align=\"center\">%s</td>" % title)
             else:
-                text.append("<td align=\"center\">%s<br/><i>%s</i></td>" %
+                text.append("<td align=\"center\">%s<br><i>%s</i></td>" %
                             (title, Bibles[-1][book][chapter][0].
                              replace("]", "<i>").replace("[", "</i>")))
         text.append("</tr>")
@@ -60,7 +60,7 @@ class ParallelWindow(ChapterWindowBase):
                 if (i == CHAPTER_LENGTHS[book - 1][chapter - 1] and
                         chapter == BOOK_LENGTHS[book - 1] and
                         Bibles[j][book] and Bibles[j][book][0]):
-                    text.append("<hr /><div align=\"center\"><i>%s</i></div>" %
+                    text.append("<hr><div align=\"center\"><i>%s</i></div>" %
                                 Bibles[j][book][0].replace("]", "<i>").
                                 replace("[", "</i>"))
                 text.append("</td>")
