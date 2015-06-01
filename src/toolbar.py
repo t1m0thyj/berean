@@ -62,11 +62,11 @@ class ToolBar(aui.AuiToolBar):
                      _("Print (Ctrl+P)"))
         self.AddTool(wx.ID_COPY, "", parent.get_bitmap("copy"),
                      _("Copy (Ctrl+C)"))
-        self.ID_READING_MODE = wx.NewId()
-        self.AddTool(self.ID_READING_MODE, "",
-                     parent.get_bitmap("reading-mode"),
-                     _("Reading Mode (Ctrl+R)"), wx.ITEM_CHECK)
-        self.Bind(wx.EVT_MENU, self.OnReadingMode, id=self.ID_READING_MODE)
+        self.ID_READER_VIEW = wx.NewId()
+        self.AddTool(self.ID_READER_VIEW, "",
+                     parent.get_bitmap("reader-view"),
+                     _("Reader View (Ctrl+R)"), wx.ITEM_CHECK)
+        self.Bind(wx.EVT_MENU, self.OnReaderView, id=self.ID_READER_VIEW)
         self.AddSeparator()
         self.AddTool(parent.menubar.add_to_bookmarks_item.GetId(), "",
                      parent.get_bitmap("add-to-bookmarks"),
@@ -164,8 +164,8 @@ class ToolBar(aui.AuiToolBar):
         self._parent.load_chapter(self._parent.reference[0],
                                   self.chapterctrl.GetValue())
 
-    def OnReadingMode(self, event):
-        self._parent.toggle_reading_mode(update_toolbar=False)
+    def OnReaderView(self, event):
+        self._parent.toggle_reader_view(update_toolbar=False)
 
 
 class ZoomBar(wx.ToolBar):
