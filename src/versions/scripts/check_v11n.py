@@ -18,6 +18,6 @@ for version in VERSION_NAMES:
             try:
                 if len(Bible[b][c]) != CHAPTER_LENGTHS[b - 1][c - 1] + 1:
                     print >> fileobj, "%d.%d" % (b, c)
-            except:
+            except StandardError:
                 print >> fileobj, "*%d.%d" % (b, c)
     print >> fileobj

@@ -244,7 +244,7 @@ class MenuBar(wx.MenuBar):
         reference = self.bookmarks[event.GetId() - wx.ID_HIGHEST - 1]
         try:
             self._frame.load_chapter(*refalize(reference))
-        except Exception:
+        except StandardError:
             wx.MessageBox(_("'%s' is not a valid reference.") % reference,
                           "Berean", wx.ICON_EXCLAMATION | wx.OK)
 
@@ -300,7 +300,7 @@ class BookmarksDialog(wx.Dialog):
         label = event.GetLabel()
         try:
             reference = refalize(label)
-        except Exception:
+        except StandardError:
             wx.MessageBox(_("'%s' is not a valid reference.") % label,
                           "Berean", wx.ICON_EXCLAMATION | wx.OK)
             event.Veto()

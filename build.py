@@ -54,42 +54,42 @@ subprocess.call("setup.py py2exe", shell=True)
 os.chdir("..")
 
 if "--build-source-tar" in sys.argv:
-    filename = "releases\\Berean_%s_source.tar" % VERSION
-    if os.path.isfile(filename + ".gz"):
-        os.remove(filename + ".gz")
-    subprocess.call([_7ZIP_PATH, "a", "-ttar", filename, "berean-48.bmp",
+    tar_file = "releases\\Berean_%s_source.tar" % VERSION
+    if os.path.isfile(tar_file + ".gz"):
+        os.remove(tar_file + ".gz")
+    subprocess.call([_7ZIP_PATH, "a", "-ttar", tar_file, "berean-48.bmp",
                      "berean.iss", "build.bat", "build.py", "splash.xcf",
                      "src\\*.py", "src\\berean.pyw", "src\\images",
                      "src\\license.txt", "src\\locale\\messages.pot",
                      "src\\locale\\*\\*.po", "src\\locale\\*\\help",
                      "src\\panes\\*.py", "src\\versions\\*\\*.py",
                      "src\\versions\\KJV.bbl"])
-    subprocess.call([_7ZIP_PATH, "a", "-tgzip", filename + ".gz", filename])
-    os.remove(filename)
+    subprocess.call([_7ZIP_PATH, "a", "-tgzip", tar_file + ".gz", tar_file])
+    os.remove(tar_file)
 
 
 def build_zip(portable=False):
     if not portable:
-        filename = "releases\\Berean_%s.zip" % VERSION
+        zip_file = "releases\\Berean_%s.zip" % VERSION
     else:
-        filename = "releases\\Berean_%s_Portable.zip" % VERSION
-    if os.path.isfile(filename):
-        os.remove(filename)
-    subprocess.call([_7ZIP_PATH, "a", filename, ".\\src\\dist\\*"])
+        zip_file = "releases\\Berean_%s_Portable.zip" % VERSION
+    if os.path.isfile(zip_file):
+        os.remove(zip_file)
+    subprocess.call([_7ZIP_PATH, "a", zip_file, ".\\src\\dist\\*"])
 
 
 if "--build-zip" in sys.argv:
     build_zip()
 
 if "--build-portable-zip" in sys.argv:
-    filename = "releases\\Berean_%s_Portable.zip" % VERSION
+    zip_file = "releases\\Berean_%s_Portable.zip" % VERSION
     if "--build-zip" in sys.argv:
-        shutil.copy("releases\\Berean_%s.zip" % VERSION, filename)
+        shutil.copy("releases\\Berean_%s.zip" % VERSION, zip_file)
     else:
         build_zip(True)
     with open("releases\\portable.ini", 'w'):
         pass
-    subprocess.call([_7ZIP_PATH, "a", filename, ".\\releases\\portable.ini"])
+    subprocess.call([_7ZIP_PATH, "a", zip_file, ".\\releases\\portable.ini"])
     os.remove("releases\\portable.ini")
 
 if "--build-installer" in sys.argv:

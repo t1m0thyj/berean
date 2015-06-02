@@ -29,10 +29,10 @@ class ToolBar(aui.AuiToolBar):
             self.verse_entry.AutoComplete(BOOK_NAMES)
         self.verse_entry.SetValue(
             parent._app.config.Read("Main/LastVerse", "Genesis 1"))
-        self.verse_entry.Bind(wx.EVT_TEXT_ENTER, self.OnGoToVerse)
+        self.verse_entry.Bind(wx.EVT_KEY_DOWN, self.OnVerseEntryKeyDown)
         self.AddControl(self.verse_entry)
         self.AddTool(parent.menubar.go_to_verse_item.GetId(), "",
-                     parent.get_bitmap("go-to-verse"), _("Go to Verse"))
+                     parent.get_bitmap("search"), _("Go to Verse"))
         self.AddSeparator()
         self.AddTool(wx.ID_BACKWARD, _("Back"), parent.get_bitmap("go-back"),
                      _("Go Back (Alt+Left)"))
@@ -75,6 +75,11 @@ class ToolBar(aui.AuiToolBar):
                      parent.get_bitmap("manage-bookmarks"),
                      _("Manage Bookmarks (Ctrl+Shift+B)"))
         self.Realize()
+
+    def OnVerseEntryKeyDown(self, event):
+        if event.GetKeyCode() == wx.WXK_RETURN:
+            self.OnGoToVerse(event)
+        event.Skip()
 
     def OnGoToVerse(self, event):
         reference = self.verse_entry.GetValue().strip()
