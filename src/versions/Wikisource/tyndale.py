@@ -1,74 +1,48 @@
 #!/usr/bin/env python
+"""tyndale.py - downloads Tyndale from Wikisource and converts it to USFM
+Based on wycliffe.py by Chris Little (Sword Project)
+https://crosswire.org/svn/sword-tools/trunk/modules/wikisource/wycliffe.py
+"""
 
 import urllib, urllib2
 import re
 import codecs
 
-WSbase = 'Bible_(Wycliffe)/'
+WSbase = 'Bible_(Tyndale)/'
 WSbooks = (
     'Genesis', 'Exodus', 'Leviticus', 'Numbers',
-    'Deuteronomy', 'Joshua', 'Judges', 'Ruth',
-    '1 Kings', '2 Kings', '3 Kings', '4 Kings',
-    '1 Paralipomenon', '2 Paralipomenon', '1 Esdras', '2 Esdras',
-    '3 Esdras', 'Tobit', 'Judith', 'Esther',
-    'Job', 'Psalms', 'Proverbs', 'Ecclesiastes',
-    'Songes of Songes', 'Wisdom', 'Syrach', 'Isaiah',
-    'Jeremiah', 'Lamentations', 'Preier of Jeremye', 'Baruk',
-    'Ezechiel', 'Daniel', 'Osee', 'Joel',
-    'Amos', 'Abdias', 'Jonas', 'Mychee',
-    'Naum', 'Abacuk', 'Sofonye', 'Aggey',
-    'Sacarie', 'Malachie', '1 Machabeis', '2 Machabeis',
-    'Matheu', 'Mark', 'Luke', 'John',
-    'Dedis of Apostlis', 'Romaynes', '1 Corinthis', '2 Corinthis',
-    'Galathies', 'Effesies', 'Filipensis', 'Colosencis',
-    '1 Thessalonycensis', '2 Thessalonycensis', '1 Tymothe', '2 Tymothe',
-    'Tite', 'Filemon', 'Ebrews', 'James',
-    '1 Petre', '2 Petre', '1 Joon', '2 Joon',
-    '3 Joon', 'Judas', 'Apocalips', 'Laodicensis'
+    'Deuteronomy', 'Jonah', 'Matthew', 'Mark',
+    'Luke', 'John', 'Acts', 'Romans',
+    '1 Corinthians', '2 Corinthians', 'Galatians', 'Ephesians',
+    'Philippians', 'Colossians', '1 Thessalonians', '2 Thessalonians',
+    '1 Timothy', '2 Timothy', 'Titus', 'Philemon',
+    'Hebrews', 'James', '1 Peter', '2 Peter',
+    '1 John', '2 John', '3 John', 'Jude',
+    'Revelation'
     )
 
 OSISbook = (
     'Gen', 'Exod', 'Lev', 'Num',
-    'Deut', 'Josh', 'Judg', 'Ruth',
-    '1Sam', '2Sam', '1Kgs', '2Kgs',
-    '1Chr', '2Chr', 'Ezra', 'Neh',
-    '1Esd', 'Tob', 'Jdt', 'Esth',
-    'Job', 'Ps', 'Prov', 'Eccl',
-    'Song', 'Wis', 'Sir', 'Isa',
-    'Jer', 'Lam', 'EpJer', 'Bar',
-    'Ezek', 'Dan', 'Hos', 'Joel',
-    'Amos', 'Obad', 'Jonah', 'Mic',
-    'Nah', 'Hab', 'Zeph', 'Hag',
-    'Zech', 'Mal', '1Macc', '2Macc',
-    'Matt', 'Mark', 'Luke', 'John',
-    'Acts', 'Rom', '1Cor', '2Cor',
-    'Gal', 'Eph', 'Phil', 'Col',
-    '1Thess', '2Thess', '1Tim', '2Tim',
-    'Titus', 'Phlm', 'Heb', 'Jas',
-    '1Pet', '2Pet', '1John', '2John',
-    '3John', 'Jude', 'Rev', 'EpLao'
+    'Deut', 'Jonah', 'Matt', 'Mark',
+    'Luke', 'John', 'Acts', 'Rom',
+    '1Cor', '2Cor', 'Gal', 'Eph',
+    'Phil', 'Col', '1Thess', '2Thess',
+    '1Tim', '2Tim', 'Titus', 'Phlm',
+    'Heb', 'Jas', '1Pet', '2Pet',
+    '1John', '2John', '3John', 'Jude',
+    'Rev'
     )
 
 USFMbook = (
     'GEN', 'EXO', 'LEV', 'NUM',
-    'DEU', 'JOS', 'JDG', 'RUT',
-    '1SA', '2SA', '1KI', '2KI',
-    '1CH', '2CH', 'EZR', 'NEH',
-    '1ES', 'TOB', 'JDT', 'EST',
-    'JOB', 'PSA', 'PRO', 'ECC',
-    'SNG', 'WIS', 'SIR', 'ISA',
-    'JER', 'LAM', 'LJE', 'BAR',
-    'EZK', 'DAN', 'HOS', 'JOL',
-    'AMO', 'OBA', 'JON', 'MIC',
-    'NAM', 'HAB', 'ZEP', 'HAG',
-    'ZEC', 'MAL', '1MA', '2MA',
-    'MAT', 'MRK', 'LUK', 'JHN',
-    'ACT', 'ROM', '1CO', '2CO',
-    'GAL', 'EPH', 'PHP', 'COL',
-    '1TH', '2TH', '1TI', '2TI', 
-    'TIT', 'PHM', 'HEB', 'JAS',
-    '1PE', '2PE', '1JN', '2JN', 
-    '3JN', 'JUD', 'REV', 'LAO'
+    'DEU', 'JON', 'MAT', 'MRK',
+    'LUK', 'JHN', 'ACT', 'ROM',
+    '1CO', '2CO', 'GAL', 'EPH',
+    'PHP', 'COL', '1TH', '2TH',
+    '1TI', '2TI', 'TIT', 'PHM',
+    'HEB', 'JAS', '1PE', '2PE',
+    '1JN', '2JN', '3JN', 'JUD',
+    'REV'
     );
 
 """
@@ -112,7 +86,7 @@ for i in range(len(WSbooks)):
     inputDoc = re.sub(r'\[Note:(.+?) +\]', r'\\f + \1\\f*', inputDoc, flags=re.DOTALL|re.IGNORECASE)
     inputDoc = re.sub(r'\[(.+?)\]', r'\\it \1\\it*', inputDoc, flags=re.DOTALL|re.IGNORECASE)
 
-    USFMdoc = codecs.open('wycliffe_'+str(i+1).zfill(2)+'_'+USFMbook[i]+'.usfm', 'w', 'utf-8')
+    USFMdoc = codecs.open('tyndale_'+str(i+1).zfill(2)+'_'+USFMbook[i]+'.usfm', 'w', 'utf-8')
     
     USFMdoc.write('\id '+USFMbook[i]+'\n')
     USFMdoc.write('\mt1 '+WSbooks[i]+'\n')

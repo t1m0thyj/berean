@@ -57,13 +57,11 @@ if "--build-source-tar" in sys.argv:
     tar_file = "releases\\Berean_%s_source.tar" % VERSION
     if os.path.isfile(tar_file + ".gz"):
         os.remove(tar_file + ".gz")
-    subprocess.call([_7ZIP_PATH, "a", "-ttar", tar_file, "berean-48.bmp",
-                     "berean.iss", "build.bat", "build.py", "splash.xcf",
-                     "src\\*.py", "src\\berean.pyw", "src\\images",
-                     "src\\license.txt", "src\\locale\\messages.pot",
-                     "src\\locale\\*\\*.po", "src\\locale\\*\\help",
-                     "src\\panes\\*.py", "src\\versions\\*\\*.py",
-                     "src\\versions\\KJV.bbl"])
+    subprocess.call([_7ZIP_PATH, "a", "-ttar", tar_file, "*.*", "src\\*.*",
+                     "src\\images", "src\\locale", "src\\locale\\*\\help",
+                     "src\\panes", "src\\versions\\KJV.bbl",
+                     "src\\versions\\*\\*.py", "-x!.hg", "-x!vcredist_x86.exe",
+                     "-xr!*.pyc", "-xr!LC_MESSAGES"])
     subprocess.call([_7ZIP_PATH, "a", "-tgzip", tar_file + ".gz", tar_file])
     os.remove(tar_file)
 

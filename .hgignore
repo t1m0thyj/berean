@@ -6,4 +6,4 @@ src/dist
 *.pyc
 vcredist_x86.exe
 syntax: regexp
-src/versions/.+?\.(?!py)
+src/versions/.*\.(?!py$)

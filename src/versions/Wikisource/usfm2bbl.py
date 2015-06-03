@@ -1,5 +1,4 @@
 import cPickle
-import os.path
 import re
 import sys
 
@@ -31,8 +30,7 @@ for b in range(1, 67):
     if not usfm_books[b - 1]:
         Bible.append(tuple())
         continue
-    fileobj = open(os.path.join(version, "%s_%s.usfm" %
-                                (version.lower(), usfm_books[b - 1])), 'r')
+    fileobj = open("%s_%s.usfm" % (version.lower(), usfm_books[b - 1]), 'r')
     lines = [line.rstrip() for line in fileobj]
     fileobj.close()
     if version == "Tyndale":
