@@ -60,8 +60,8 @@ if "--build-source-tar" in sys.argv:
     subprocess.call([_7ZIP_PATH, "a", "-ttar", tar_file, "*.*", "src\\*.*",
                      "src\\images", "src\\locale", "src\\locale\\*\\help",
                      "src\\panes", "src\\versions\\KJV.bbl",
-                     "src\\versions\\*\\*.py", "-x!.hg", "-x!vcredist_x86.exe",
-                     "-xr!*.pyc", "-xr!LC_MESSAGES"])
+                     "src\\versions\\*\\*.py", "-x!.hg*",
+                     "-x!vcredist_x86.exe", "-xr!*.pyc", "-xr!LC_MESSAGES"])
     subprocess.call([_7ZIP_PATH, "a", "-tgzip", tar_file + ".gz", tar_file])
     os.remove(tar_file)
 

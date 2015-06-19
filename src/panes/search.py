@@ -1,6 +1,7 @@
 """search.py - search pane class"""
 
 import cPickle
+import difflib
 import os
 import re
 import threading
@@ -190,7 +191,16 @@ class SearchPane(wx.Panel):
                                (count, version_name,
                                 max(1, (time.time() - sec) * 1000)))
                 if count == 0:
-                    results.append(_("<p>No verses were found.</p>"))
+                    results.append(_("<p>No verses were found.</p>"
+                                     "<p>Did you mean:<ul>"))
+                    words = self.indexes[version_name].keys()
+                    if text in words:
+                        words.remove(text)
+                    results.extend(["<li><a href=\"@%s\">%s</a></li>" % (li,
+                                                                         li)
+                                    for li in difflib.
+                                    get_close_matches(text, words, 5)])
+                    results.append("</ul></p>")
                 self.html = "<html><body><font size=\"%d\">%s</font></body>" \
                     "</html>" % (self._parent.zoom_level, "".join(results))
                 self.htmlwindow.SetPage(self.html)
@@ -391,11 +401,15 @@ class SearchPane(wx.Panel):
             self._parent.printing.PreviewText(text)
 
     def OnHtmlLinkClicked(self, event):
-        if (self._parent.notebook.GetSelection() != self.last_search[2] and
-                not wx.GetKeyState(wx.WXK_CONTROL)):
-            self._parent.notebook.SetSelection(self.last_search[2])
-        self._parent.load_chapter(*[int(i) for i in
-                                    event.GetLinkInfo().GetHref().split(".")])
+        href = event.GetLinkInfo().GetHref()
+        if not href.startswith("@"):
+            if (self._parent.notebook.GetSelection() != self.last_search[2] and
+                    not wx.GetKeyState(wx.WXK_CONTROL)):
+                self._parent.notebook.SetSelection(self.last_search[2])
+            self._parent.load_chapter(*[int(i) for i in href.split(".")])
+        else:
+            self.text.SetValue(href[1:])
+            self.OnSearch(None)
 
     def OnContextMenu(self, event):
         if not self.html:
