@@ -5,8 +5,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: berean\n"
-"POT-Creation-Date: 2015-06-02 11:52+Eastern Daylight Time\n"
-"PO-Revision-Date: 2015-06-02 12:02+Eastern Daylight Time\n"
+"POT-Creation-Date: 2015-06-19 14:44+Eastern Daylight Time\n"
+"PO-Revision-Date: 2015-06-19 14:45+Eastern Daylight Time\n"
 "Last-Translator: Timothy Johnson <timothysw@objectmail.com>\n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -51,11 +51,11 @@ msgstr ""
 msgid "<div align=\"center\"><font size=\"-1\">Page @PAGENUM@</font></div>"
 msgstr ""
 
-#: src\html.py:127 src\panes\multiverse.py:145 src\panes\search.py:405
+#: src\html.py:127 src\panes\multiverse.py:145 src\panes\search.py:419
 msgid "&Copy"
 msgstr ""
 
-#: src\html.py:128 src\panes\multiverse.py:146 src\panes\search.py:406
+#: src\html.py:128 src\panes\multiverse.py:146 src\panes\search.py:420
 msgid "Select &All"
 msgstr ""
 
@@ -63,11 +63,11 @@ msgstr ""
 msgid "&Search for Selected Text"
 msgstr ""
 
-#: src\html.py:134 src\panes\multiverse.py:148 src\panes\search.py:408
+#: src\html.py:134 src\panes\multiverse.py:148 src\panes\search.py:422
 msgid "&Print..."
 msgstr ""
 
-#: src\html.py:135 src\panes\multiverse.py:150 src\panes\search.py:410
+#: src\html.py:135 src\panes\multiverse.py:150 src\panes\search.py:424
 msgid "P&rint Preview"
 msgstr ""
 
@@ -90,7 +90,7 @@ msgstr ""
 msgid "Tree"
 msgstr ""
 
-#: src\mainwindow.py:125 src\panes\multiverse.py:32 src\panes\search.py:81
+#: src\mainwindow.py:125 src\panes\multiverse.py:32 src\panes\search.py:82
 msgid "Search"
 msgstr ""
 
@@ -426,127 +426,127 @@ msgstr ""
 msgid "Verse Notes"
 msgstr ""
 
-#: src\panes\search.py:20
+#: src\panes\search.py:21
 msgid "Indexing %s"
 msgstr ""
 
-#: src\panes\search.py:23
+#: src\panes\search.py:24
 msgid "Processing %s..."
 msgstr ""
 
-#: src\panes\search.py:32
+#: src\panes\search.py:33
 msgid "Saving index..."
 msgstr ""
 
-#: src\panes\search.py:84
+#: src\panes\search.py:85
 msgid "Print Results"
 msgstr ""
 
-#: src\panes\search.py:92
+#: src\panes\search.py:93
 msgid "Options"
 msgstr ""
 
-#: src\panes\search.py:96
+#: src\panes\search.py:97
 msgid "All Words in Verse"
 msgstr ""
 
-#: src\panes\search.py:96
+#: src\panes\search.py:97
 msgid "Case Sensitive"
 msgstr ""
 
-#: src\panes\search.py:97
+#: src\panes\search.py:98
 msgid "Exact Match Needed"
 msgstr ""
 
-#: src\panes\search.py:97
+#: src\panes\search.py:98
 msgid "Phrase in Order"
 msgstr ""
 
-#: src\panes\search.py:98
+#: src\panes\search.py:99
 msgid "Regular Expression"
 msgstr ""
 
-#: src\panes\search.py:112
+#: src\panes\search.py:113
 msgid "Entire Bible"
 msgstr ""
 
-#: src\panes\search.py:112
+#: src\panes\search.py:113
 msgid "Old Testament"
 msgstr ""
 
-#: src\panes\search.py:113
+#: src\panes\search.py:114
 msgid "History (Josh - Esth)"
 msgstr ""
 
-#: src\panes\search.py:113
+#: src\panes\search.py:114
 msgid "Pentateuch (Gen - Deut)"
 msgstr ""
 
-#: src\panes\search.py:114
+#: src\panes\search.py:115
 msgid "Major Prophets (Isa - Dan)"
 msgstr ""
 
-#: src\panes\search.py:114
+#: src\panes\search.py:115
 msgid "Wisdom (Job - Song)"
 msgstr ""
 
-#: src\panes\search.py:115
+#: src\panes\search.py:116
 msgid "Minor Prophets (Hos - Mal)"
 msgstr ""
 
-#: src\panes\search.py:115
+#: src\panes\search.py:116
 msgid "New Testament"
 msgstr ""
 
-#: src\panes\search.py:116
+#: src\panes\search.py:117
 msgid "Gospels & Acts (Matt - Acts)"
 msgstr ""
 
-#: src\panes\search.py:117
+#: src\panes\search.py:118
 msgid "Paul's Letters (Rom - Heb)"
 msgstr ""
 
-#: src\panes\search.py:118
+#: src\panes\search.py:119
 msgid "Apocalypse (Rev)"
 msgstr ""
 
-#: src\panes\search.py:118
+#: src\panes\search.py:119
 msgid "General Letters (Jas - Jude)"
 msgstr ""
 
-#: src\panes\search.py:119
+#: src\panes\search.py:120
 msgid "Custom..."
 msgstr ""
 
-#: src\panes\search.py:119
+#: src\panes\search.py:120
 msgid "Just Current Book"
 msgstr ""
 
-#: src\panes\search.py:126
+#: src\panes\search.py:127
 msgid "to"
 msgstr ""
 
-#: src\panes\search.py:147
+#: src\panes\search.py:148
 msgid "Search in"
 msgstr ""
 
-#: src\panes\search.py:183
+#: src\panes\search.py:184
 msgid "Searching %s..."
 msgstr ""
 
-#: src\panes\search.py:188
+#: src\panes\search.py:189
 msgid "<font color=\"gray\">%d verses in the %s (%d&nbsp;msec)</font>"
 msgstr ""
 
-#: src\panes\search.py:193
-msgid "<p>No verses were found.</p>"
+#: src\panes\search.py:194
+msgid "<p>No verses were found.</p><p>Did you mean:<ul>"
 msgstr ""
 
-#: src\panes\search.py:380
+#: src\panes\search.py:390
 msgid "<div align=\"center\"><font size=\"+1\"><b>Search Results for \"%s\" (%d verses in the %s)</b></font></div>"
 msgstr ""
 
-#: src\panes\search.py:387
+#: src\panes\search.py:397
 msgid "Search Results"
 msgstr ""
 
