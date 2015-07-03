@@ -5,8 +5,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: berean\n"
-"POT-Creation-Date: 2015-06-19 14:44+Eastern Daylight Time\n"
-"PO-Revision-Date: 2015-06-19 14:45+Eastern Daylight Time\n"
+"POT-Creation-Date: 2015-07-03 11:39+Eastern Daylight Time\n"
+"PO-Revision-Date: 2015-07-03 11:46+Eastern Daylight Time\n"
 "Last-Translator: Timothy Johnson <timothysw@objectmail.com>\n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -102,11 +102,11 @@ msgstr ""
 msgid "Multi-Verse Retrieval"
 msgstr ""
 
-#: src\mainwindow.py:320
+#: src\mainwindow.py:322
 msgid "Restore"
 msgstr ""
 
-#: src\mainwindow.py:322
+#: src\mainwindow.py:324
 msgid "Exit"
 msgstr ""
 
@@ -302,7 +302,7 @@ msgstr ""
 msgid "A bookmark for %s already exists."
 msgstr ""
 
-#: src\menu.py:248 src\menu.py:304 src\toolbar.py:120
+#: src\menu.py:248 src\menu.py:304 src\toolbar.py:128
 msgid "'%s' is not a valid reference."
 msgstr ""
 
@@ -362,7 +362,7 @@ msgstr ""
 msgid "Cut (Ctrl+X)"
 msgstr ""
 
-#: src\panes\notes.py:85 src\toolbar.py:64
+#: src\panes\notes.py:85 src\toolbar.py:72
 msgid "Copy (Ctrl+C)"
 msgstr ""
 
@@ -387,8 +387,8 @@ msgid "Align Left (Ctrl+L)"
 msgstr ""
 
 #: src\panes\notes.py:124
-msgid "Align Centre (Ctrl+E)"
-msgstr ""
+msgid "Align Center (Ctrl+E)"
+msgstr "Align Centre (Ctrl+E)"
 
 #: src\panes\notes.py:128
 msgid "Align Right (Ctrl+R)"
@@ -415,8 +415,8 @@ msgid "Highlighting"
 msgstr ""
 
 #: src\panes\notes.py:159 src\panes\notes.py:468
-msgid "Font Colour"
-msgstr ""
+msgid "Font Color"
+msgstr "Font Colour"
 
 #: src\panes\notes.py:528
 msgid "Subject Notes"
@@ -566,67 +566,67 @@ msgstr ""
 msgid "Preferences"
 msgstr ""
 
-#: src\preferences.py:42
+#: src\preferences.py:39
 msgid "Allow single instance only"
 msgstr ""
 
-#: src\preferences.py:46
-msgid "Minimise to system tray"
-msgstr ""
+#: src\preferences.py:43
+msgid "Minimize to system tray"
+msgstr "Minimise to system tray"
 
-#: src\preferences.py:49
+#: src\preferences.py:46
 msgid "Auto-complete book names in reference textbox"
 msgstr ""
 
-#: src\preferences.py:55
+#: src\preferences.py:52
 msgid "Abbreviate search results when there are more than"
 msgstr ""
 
-#: src\preferences.py:69
+#: src\preferences.py:71
 msgid "Language:"
 msgstr ""
 
-#: src\preferences.py:74
+#: src\preferences.py:76
 msgid "Default font:"
 msgstr ""
 
-#: src\preferences.py:77
+#: src\preferences.py:79
 msgid "Size:"
 msgstr ""
 
-#: src\preferences.py:89
+#: src\preferences.py:91
 msgid "General"
 msgstr ""
 
-#: src\preferences.py:96
+#: src\preferences.py:98
 msgid "Add versions..."
 msgstr ""
 
-#: src\preferences.py:100
+#: src\preferences.py:102
 msgid "Remove"
 msgstr ""
 
-#: src\preferences.py:110
+#: src\preferences.py:112
 msgid "Versions"
 msgstr ""
 
-#: src\preferences.py:151
+#: src\preferences.py:153
 msgid "Add versions"
 msgstr ""
 
-#: src\preferences.py:153
+#: src\preferences.py:155
 msgid "Bible files (*.bbl;*.zip)|*.bbl;*.zip"
 msgstr ""
 
-#: src\preferences.py:168
+#: src\preferences.py:170
 msgid "Are you sure you want to permanently delete this version?"
 msgstr ""
 
-#: src\preferences.py:186
+#: src\preferences.py:188
 msgid "You must have at least one version selected."
 msgstr ""
 
-#: src\preferences.py:192
+#: src\preferences.py:194
 msgid "Changes to language and version settings will take effect after you restart Berean."
 msgstr ""
 
@@ -650,35 +650,35 @@ msgstr ""
 msgid "Go Forward (Alt+Right)"
 msgstr ""
 
-#: src\toolbar.py:62
+#: src\toolbar.py:70
 msgid "Print (Ctrl+P)"
 msgstr ""
 
-#: src\toolbar.py:68
+#: src\toolbar.py:76
 msgid "Reader View (Ctrl+R)"
 msgstr ""
 
-#: src\toolbar.py:73
+#: src\toolbar.py:81
 msgid "Add to Bookmarks (Ctrl+D)"
 msgstr ""
 
-#: src\toolbar.py:76
+#: src\toolbar.py:84
 msgid "Manage Bookmarks (Ctrl+Shift+B)"
 msgstr ""
 
-#: src\toolbar.py:108
+#: src\toolbar.py:116
 msgid "The book of %s has only %d chapters."
 msgstr ""
 
-#: src\toolbar.py:113
+#: src\toolbar.py:121
 msgid "%s chapter %d has only %d verses."
 msgstr ""
 
-#: src\toolbar.py:182
+#: src\toolbar.py:190
 msgid "Zoom Out (Ctrl+-)"
 msgstr ""
 
-#: src\toolbar.py:189
+#: src\toolbar.py:201
 msgid "Zoom In (Ctrl++)"
 msgstr ""
 

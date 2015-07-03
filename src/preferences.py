@@ -27,13 +27,10 @@ class PreferencesDialog(wx.Dialog):
         self.language = combo.BitmapComboBox(self.general, size=(200, -1),
                                              style=wx.CB_READONLY | wx.CB_SORT)
         for language in LANGUAGES:
-            self.language. \
-                Append(LANGUAGES[language], parent.
-                       get_bitmap(os.path.join("flags", language[3:].lower())),
-                       language)
-        self.language. \
-            SetSelection(self.language.FindString(LANGUAGES[parent._app.
-                                                            language]))
+            bitmap = parent.get_bitmap(os.path.join("flags",
+                                                    language[3:].lower()))
+            self.language.Append(LANGUAGES[language], bitmap, language)
+        self.language.SetStringSelection(LANGUAGES[parent._app.language])
         self.font_face = wx.Choice(self.general, choices=parent.facenames)
         self.font_face.SetStringSelection(parent.default_font["normal_face"])
         self.font_size = wx.ComboBox(self.general, choices=FONT_SIZES)
