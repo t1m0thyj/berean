@@ -271,6 +271,8 @@ class MainWindow(wx.Frame):
 
     def OnSize(self, event):
         x, y, width, height = self.statusbar.GetFieldRect(2)
+        if 'gtk3' in wx.PlatformInfo:
+            height -= 16
         self.zoombar.SetRect(wx.Rect(x, (y + height - 19) / 2 -
                                      self.zoombar.GetToolSeparation(),
                                      self.zoombar.width, -1))

@@ -201,7 +201,7 @@ class MenuBar(wx.MenuBar):
         self._frame.set_zoom(self._frame.zoom_level - 1)
 
     def OnZoomDefault(self, event):
-        self._frame.set_zoom(0)
+        self._frame.set_zoom(3)
 
     def OnReaderView(self, event):
         self._frame.toggle_reader_view()

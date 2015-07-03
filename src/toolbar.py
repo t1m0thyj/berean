@@ -50,10 +50,18 @@ class ToolBar(aui.AuiToolBar):
         self.bookctrl.SetSelection(parent.reference[0] - 1)
         self.AddControl(self.bookctrl)
         self.bookctrl.Bind(wx.EVT_CHOICE, self.OnBook)
-        self.chapterctrl = wx.SpinCtrl(self, value=str(parent.reference[1]),
-                                       size=(60, -1), min=1,
-                                       max=BOOK_LENGTHS[parent.reference[0] -
-                                                        1])
+        if '__WXGTK__' not in wx.PlatformInfo:
+            self.chapterctrl = wx.SpinCtrl(self,
+                                           value=str(parent.reference[1]),
+                                           size=(60, -1), min=1,
+                                           max=BOOK_LENGTHS[parent.
+                                                            reference[0] - 1])
+        else:
+            self.chapterctrl = wx.SpinCtrl(self,
+                                           value=str(parent.reference[1]),
+                                           min=1,
+                                           max=BOOK_LENGTHS[parent.
+                                                            reference[0] - 1])
         self.AddControl(self.chapterctrl)
         self.chapterctrl.Bind(wx.EVT_SPINCTRL, self.OnChapter)
         self.chapterctrl.Bind(wx.EVT_TEXT_ENTER, self.OnChapter)
@@ -181,8 +189,12 @@ class ZoomBar(wx.ToolBar):
         self.AddLabelTool(wx.ID_ZOOM_OUT, "", frame.get_bitmap("zoom-out"),
                           shortHelp=_("Zoom Out (Ctrl+-)"))
         self.EnableTool(wx.ID_ZOOM_OUT, frame.zoom_level > 1)
-        self.slider = wx.Slider(self, value=frame.zoom_level, minValue=1,
-                                maxValue=7)
+        if '__WXGTK__' not in wx.PlatformInfo:
+            self.slider = wx.Slider(self, value=frame.zoom_level, minValue=1,
+                                    maxValue=7)
+        else:
+            self.slider = wx.Slider(self, value=frame.zoom_level, minValue=1,
+                                    maxValue=7, size=(100, -1))
         self.slider.Bind(wx.EVT_SLIDER, self.OnSlider)
         self.AddControl(self.slider)
         self.AddLabelTool(wx.ID_ZOOM_IN, "", frame.get_bitmap("zoom-in"),
@@ -191,6 +203,8 @@ class ZoomBar(wx.ToolBar):
         self.Realize()
         self.width = (self.GetToolSize()[0] + self.GetToolSeparation()) * 2 + \
             self.slider.GetSize()[0]
+        if 'gtk3' in wx.PlatformInfo:
+            self.width += 60
 
     def OnSlider(self, event):
         self._frame.set_zoom(event.GetSelection())
