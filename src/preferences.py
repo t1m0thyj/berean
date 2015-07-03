@@ -27,10 +27,10 @@ class PreferencesDialog(wx.Dialog):
         self.language = combo.BitmapComboBox(self.general, size=(200, -1),
                                              style=wx.CB_READONLY | wx.CB_SORT)
         for language in LANGUAGES:
-            self.language.Append(LANGUAGES[language],
-                                 parent.get_bitmap(os.path.join("flags",
-                                                                language[3:])),
-                                 language)
+            self.language. \
+                Append(LANGUAGES[language], parent.
+                       get_bitmap(os.path.join("flags", language[3:].lower())),
+                       language)
         self.language. \
             SetSelection(self.language.FindString(LANGUAGES[parent._app.
                                                             language]))
@@ -60,9 +60,14 @@ class PreferencesDialog(wx.Dialog):
             abbrev_results = parent.search.abbrev_results
         else:
             abbrev_results = 1000
-        self.abbrev_results2 = wx.SpinCtrl(self.general,
-                                           value=str(abbrev_results),
-                                           size=(60, -1), min=0, max=1000)
+        if '__WXGTK__' not in wx.PlatformInfo:
+            self.abbrev_results2 = wx.SpinCtrl(self.general,
+                                               value=str(abbrev_results),
+                                               size=(60, -1), min=0, max=1000)
+        else:
+            self.abbrev_results2 = wx.SpinCtrl(self.general,
+                                               value=str(abbrev_results),
+                                               min=0, max=1000)
         self.abbrev_results2.Enable(parent.search.abbrev_results != -1)
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer2 = wx.BoxSizer(wx.HORIZONTAL)
