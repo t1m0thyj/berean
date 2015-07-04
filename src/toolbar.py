@@ -94,14 +94,13 @@ class ToolBar(aui.AuiToolBar):
         if not reference:
             return
         else:
-            kw_match = -1
-            for i, bookmark in enumerate(self._parent.menubar.bookmarks):
-                if ("=" in bookmark and
-                        bookmark[bookmark.index("=") + 1:] == reference):
-                    kw_match = i
-            if kw_match != -1:
-                reference = self._parent.menubar. \
-                    bookmarks[kw_match][:bookmark.index("=")]
+            kw_match = None
+            for bookmark in self._parent.menubar.bookmarks:
+                if bookmark.partition("+")[2] == reference:
+                    kw_match = bookmark[:bookmark.index("+")]
+                    break
+            if kw_match:
+                reference = kw_match
                 self.verse_entry.SetValue(reference)
             elif not validate(reference):
                 if not self._parent.aui.GetPane("search_pane").IsShown():

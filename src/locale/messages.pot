@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2015-07-03 11:42+Eastern Daylight Time\n"
+"POT-Creation-Date: 2015-07-03 20:43+Eastern Daylight Time\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -298,24 +298,24 @@ msgstr ""
 msgid "(Empty)"
 msgstr ""
 
-#: src\menu.py:236 src\menu.py:310
+#: src\menu.py:236 src\menu.py:307
 msgid "A bookmark for %s already exists."
 msgstr ""
 
-#: src\menu.py:248 src\menu.py:304 src\toolbar.py:128
+#: src\menu.py:248 src\menu.py:301 src\toolbar.py:127
 msgid "'%s' is not a valid reference."
 msgstr ""
 
-#: src\menu.py:269
+#: src\menu.py:266
 msgid "An open source, cross-platform Bible study program"
 msgstr ""
 
-#: src\menu.py:278
+#: src\menu.py:275
 msgid "Manage Bookmarks"
 msgstr ""
 
-#: src\menu.py:282
-msgid "Separate keywords by '=' "
+#: src\menu.py:279
+msgid "Separate keywords by '+' "
 msgstr ""
 
 #: src\panes\multiverse.py:25
@@ -666,19 +666,19 @@ msgstr ""
 msgid "Manage Bookmarks (Ctrl+Shift+B)"
 msgstr ""
 
-#: src\toolbar.py:116
+#: src\toolbar.py:115
 msgid "The book of %s has only %d chapters."
 msgstr ""
 
-#: src\toolbar.py:121
+#: src\toolbar.py:120
 msgid "%s chapter %d has only %d verses."
 msgstr ""
 
-#: src\toolbar.py:190
+#: src\toolbar.py:189
 msgid "Zoom Out (Ctrl+-)"
 msgstr ""
 
-#: src\toolbar.py:201
+#: src\toolbar.py:200
 msgid "Zoom In (Ctrl++)"
 msgstr ""
 
