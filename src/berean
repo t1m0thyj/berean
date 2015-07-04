@@ -1,0 +1,6 @@
+#!/usr/bin/env python
+"""berean - Linux shell launcher for Berean"""
+
+import berean
+
+berean.main()
