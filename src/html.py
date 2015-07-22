@@ -38,7 +38,7 @@ class HelpSystem(html.HtmlHelpController):
 
     def OnHtmlLinkClicked(self, event):
         url = event.GetLinkInfo().GetHref()
-        if url.startswith("http:") or url.startswith("https:"):
+        if url.partition(":")[0] in ("http", "https", "mailto"):
             webbrowser.open(url)
         else:
             event.Skip()

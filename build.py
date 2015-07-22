@@ -20,11 +20,10 @@ version 9.0.21022.8 (available at
 http://www.microsoft.com/en-us/download/details.aspx?id=29) and put it in the
 same directory where this script is.
 
-As part of the build process, .po language files are compiled to .mo binary
-files if they have not yet been converted. To disable this, pass the argument
---no-compile-po.
+By default, .po language files are compiled to .mo binary files if they have
+not yet been converted. To disable this, pass the argument --no-compile-po.
 
-By default, old builds are also moved to an archive subdirectory after the
+Old builds are automatically moved to an archive subdirectory after the
 specified builds have been completed. To disable this, pass the argument
 --no-archive-old.
 
