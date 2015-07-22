@@ -4,7 +4,7 @@
 #define MyAppName "Berean"
 #define MyAppVersion "0.4.10.1"
 #define MyAppPublisher "Timothy Johnson"
-;#define MyAppURL "http://berean.sf.net"
+;#define MyAppURL "http://berean.bitbucket.org"
 #define MyAppExeName "berean.exe"
 
 [Setup]

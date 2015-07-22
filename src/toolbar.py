@@ -96,8 +96,8 @@ class ToolBar(aui.AuiToolBar):
         else:
             kw_match = None
             for bookmark in self._parent.menubar.bookmarks:
-                if bookmark.partition("+")[2] == reference:
-                    kw_match = bookmark[:bookmark.index("+")]
+                if bookmark.partition("=")[2] == reference:
+                    kw_match = bookmark[:bookmark.index("=")]
                     break
             if kw_match:
                 reference = kw_match

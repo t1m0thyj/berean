@@ -89,7 +89,7 @@ class ErrorDialog(wx.Dialog):
         body = self.textctrl.GetValue()
         if '__WXMAC__' not in wx.PlatformInfo:
             body = urllib.quote(body)
-        webbrowser.open("mailto:berean_bugs@objectmail.com?subject=Berean Bug "
+        webbrowser.open("mailto:pythoneer@outlook.com?subject=Berean Bug "
                         "Report&body=%s" % body)
 
     def OnShow(self, event):

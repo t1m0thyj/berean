@@ -1,5 +1,5 @@
 """berean.py - main script for Berean
-Copyright (C) 2015 Timothy Johnson <timothysw@objectmail.com>
+Copyright (c) 2015 Timothy Johnson <pythoneer@outlook.com>
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
