@@ -57,8 +57,7 @@ class MainWindow(wx.Frame):
         self.help = html.HelpSystem(self)
         self.printing = html.PrintingSystem(self)
 
-        self.aui = aui.AuiManager(self, aui.AUI_MGR_DEFAULT |
-                                  aui.AUI_MGR_ALLOW_ACTIVE_PANE)
+        self.aui = aui.AuiManager(self)
         self.menubar = menu.MenuBar(self)
         self.SetMenuBar(self.menubar)
         self.toolbar = toolbar.ToolBar(self)
@@ -132,8 +131,8 @@ class MainWindow(wx.Frame):
         self.aui.AddPane(self.multiverse, aui.AuiPaneInfo().
                          Name("multiverse_pane").
                          Caption(_("Multi-Verse Retrieval")).
-                         BestSize((600, 440)).Float().Hide().
-                         MaximizeButton(True))
+                         BestSize((600, 440)).Right().Layer(1).Hide().
+                         PinButton(True))
 
         filename = os.path.join(app.userdatadir, "layout.dat")
         if os.path.isfile(filename):
@@ -147,6 +146,8 @@ class MainWindow(wx.Frame):
                      "multiverse_pane"):
             self.menubar.Check(getattr(self.menubar, "%s_item" % pane).GetId(),
                                self.aui.GetPane(pane).IsShown())
+        globals()["BOOK_NAMES"] = BOOK_NAMES[:18] + ("Psalm",) + \
+            BOOK_NAMES[19:]
         self.load_chapter(self.reference[0], self.reference[1],
                           self.reference[2], False)
         self.Bind(aui.EVT_AUI_PANE_CLOSE, self.OnAuiPaneClose)
@@ -238,10 +239,12 @@ class MainWindow(wx.Frame):
     def show_search_pane(self, show=True):
         self.aui.GetPane("search_pane").Show(show)
         self.aui.Update()
+        self.menubar.Check(self.menubar.search_pane_item.GetId(), show)
 
     def show_multiverse_pane(self, show=True):
         self.aui.GetPane("multiverse_pane").Show(show)
         self.aui.Update()
+        self.menubar.Check(self.menubar.multiverse_pane_item.GetId(), show)
 
     def OnAuiNotebookPageChanged(self, event):
         tab = event.GetSelection()
