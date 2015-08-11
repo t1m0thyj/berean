@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2015-07-03 20:43+Eastern Daylight Time\n"
+"POT-Creation-Date: 2015-08-11 14:46+Eastern Daylight Time\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -15,7 +15,7 @@ msgstr ""
 "Generated-By: pygettext.py 1.5\n"
 
 
-#: src\berean.py:163
+#: src\berean.py:162
 msgid "Berean is already running."
 msgstr ""
 
@@ -82,31 +82,31 @@ msgstr ""
 msgid "<font color=\"gray\">%s %d is not in this version.</font>"
 msgstr ""
 
-#: src\mainwindow.py:104
+#: src\mainwindow.py:103
 msgid "Parallel"
 msgstr ""
 
-#: src\mainwindow.py:121
+#: src\mainwindow.py:120
 msgid "Tree"
 msgstr ""
 
-#: src\mainwindow.py:125 src\panes\multiverse.py:32 src\panes\search.py:82
+#: src\mainwindow.py:124 src\panes\multiverse.py:32 src\panes\search.py:82
 msgid "Search"
 msgstr ""
 
-#: src\mainwindow.py:129
+#: src\mainwindow.py:128
 msgid "Notes"
 msgstr ""
 
-#: src\mainwindow.py:134 src\panes\multiverse.py:119
+#: src\mainwindow.py:133 src\panes\multiverse.py:119
 msgid "Multi-Verse Retrieval"
 msgstr ""
 
-#: src\mainwindow.py:322
+#: src\mainwindow.py:325
 msgid "Restore"
 msgstr ""
 
-#: src\mainwindow.py:324
+#: src\mainwindow.py:327
 msgid "Exit"
 msgstr ""
 
@@ -298,11 +298,11 @@ msgstr ""
 msgid "(Empty)"
 msgstr ""
 
-#: src\menu.py:236 src\menu.py:307
+#: src\menu.py:236 src\menu.py:309
 msgid "A bookmark for %s already exists."
 msgstr ""
 
-#: src\menu.py:248 src\menu.py:301 src\toolbar.py:127
+#: src\menu.py:248 src\menu.py:303 src\toolbar.py:127
 msgid "'%s' is not a valid reference."
 msgstr ""
 
@@ -314,8 +314,12 @@ msgstr ""
 msgid "Manage Bookmarks"
 msgstr ""
 
-#: src\menu.py:279
-msgid "Separate keywords by '+' "
+#: src\menu.py:278
+msgid "Bookmarks"
+msgstr ""
+
+#: src\menu.py:281
+msgid "Tip: You can add keywords separated by an equals sign"
 msgstr ""
 
 #: src\panes\multiverse.py:25
