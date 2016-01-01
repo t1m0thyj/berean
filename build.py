@@ -2,7 +2,7 @@
 
 To build Berean you need the following dependencies:
     Python 2.6 or 2.7
-    wxPython 2.8 or higher (2.9 or higher recommended)
+    wxPython 2.9 or higher
     py2exe (0.6.9 recommended)
 
 To build a tar.gz archive containing Berean source code, pass the command line
@@ -56,12 +56,10 @@ if "--build-source-tar" in sys.argv:
     tar_file = "releases\\Berean_%s_source.tar" % VERSION
     if os.path.isfile(tar_file + ".gz"):
         os.remove(tar_file + ".gz")
-    subprocess.call([_7ZIP_PATH, "a", "-ttar", tar_file, "*.*", "src\\*.*",
-                     "src\\berean", "src\\images", "src\\locale",
-                     "src\\locale\\*\\help", "src\\panes",
-                     "src\\versions\\KJV.bbl", "src\\versions\\*\\*.py",
-                     "-x!.hg*", "-x!vcredist_x86.exe", "-xr!*.pyc",
-                     "-x!src\\locale\\*\\LC_MESSAGES"])
+    subprocess.call([_7ZIP_PATH, "a", "-ttar", tar_file, "*.*", "src\\*.*", "src\\berean",
+                     "src\\images", "src\\locale", "src\\locale\\*\\help", "src\\panes",
+                     "src\\versions\\KJV.bbl", "src\\versions\\*\\*.py", "-x!.hg*",
+                     "-x!vcredist_x86.exe", "-xr!*.pyc", "-x!src\\locale\\*\\LC_MESSAGES"])
     subprocess.call([_7ZIP_PATH, "a", "-tgzip", tar_file + ".gz", tar_file])
     os.remove(tar_file)
 
@@ -102,11 +100,8 @@ if "--build-installer" in sys.argv:
 if "--no-archive-old" not in sys.argv:
     if not os.path.isdir("releases\\archive"):
         os.mkdir("releases\\archive")
-    for pathname in ("Berean*.tar.gz", "Berean*[0-9].zip",
-                     "Berean*Portable.zip", "Berean*.exe"):
-        filenames = sorted(glob.glob("releases\\%s" % pathname),
-                           key=os.path.getmtime)
+    for pathname in ("Berean*.tar.gz", "Berean*[0-9].zip", "Berean*Portable.zip", "Berean*.exe"):
+        filenames = sorted(glob.glob("releases\\%s" % pathname), key=os.path.getmtime)
         while len(filenames) > 2:
             filename = filenames.pop(0)
-            os.rename(filename,
-                      "releases\\archive\\%s" % os.path.basename(filename))
+            os.rename(filename, "releases\\archive\\%s" % os.path.basename(filename))

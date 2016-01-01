@@ -24,18 +24,16 @@ MANIFEST = """<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
   </dependency>
 </assembly>
 """
-mo_files = [(folder, [os.path.join(folder, "berean.mo")]) for folder in
-            glob.glob("locale\\*\\LC_MESSAGES")]
-help_files = [(folder, glob.glob("%s\\*.*" % folder)) for folder in
-              glob.glob("locale\\*\\help")]
+mo_files = [(folder, [os.path.join(folder, "berean.mo")])
+            for folder in glob.glob("locale\\*\\LC_MESSAGES")]
+help_files = [(folder, glob.glob("%s\\*.*" % folder)) for folder in glob.glob("locale\\*\\help")]
 
 if os.path.isdir("dist"):
     shutil.rmtree("dist")
 setup(options={"py2exe": {"compressed": 1,
                           "optimize": 2,
                           "bundle_files": 3,
-                          "excludes": ["_ssl", "doctest", "pdb", "unittest",
-                                       "inspect", "email"],
+                          "excludes": ["_ssl", "doctest", "pdb", "unittest", "inspect", "email"],
                           "dll_excludes": ["msvcp90.dll", "w9xpopen.exe"]}},
       windows=[{"script": "berean.py",
                 "name": "Berean",
