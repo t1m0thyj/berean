@@ -29,9 +29,7 @@ _ = wx.GetTranslation
 
 class FileConfig(wx.FileConfig):
     def __init__(self, app):
-        super(FileConfig,
-              self).__init__(localFilename=os.path.join(app.userdatadir,
-                                                        "berean.ini"))
+        super(FileConfig, self).__init__(localFilename=os.path.join(app.userdatadir, "berean.ini"))
         self._app = app
         self.SetRecordDefaults(True)
 
@@ -50,10 +48,8 @@ class FileConfig(wx.FileConfig):
         frame = self._app.frame
         self.Write("Language", self._app.language)
         self.WriteBool("SingleInstance", self._app.single_instance)
-        self.Write("WindowPosition", ",".join(str(i) for i in
-                                              frame.rect.GetPosition()))
-        self.Write("WindowSize", ",".join(str(i) for i in
-                                          frame.rect.GetSize()))
+        self.Write("WindowPosition", ",".join(str(i) for i in frame.rect.GetPosition()))
+        self.Write("WindowSize", ",".join(str(i) for i in frame.rect.GetSize()))
         self.WriteBool("IsMaximized", frame.IsMaximized())
         self.WriteBool("MinimizeToTray", frame.minimize_to_tray)
         self.WriteInt("CurrentBook", frame.reference[0])
@@ -67,8 +63,7 @@ class FileConfig(wx.FileConfig):
         self.WriteInt("ActiveVersionTab", frame.notebook.GetSelection())
         self.WriteList("../VersionList", frame.version_list)
         self.WriteList("../Bookmarks", frame.menubar.bookmarks)
-        self.WriteList("../VerseHistory",
-                       frame.toolbar.verse_entry.GetStrings())
+        self.WriteList("../VerseHistory", frame.toolbar.verse_entry.GetStrings())
         self.WriteList("../History", frame.verse_history)
         parallel_versions = []
         if hasattr(frame, "parallel"):
@@ -85,22 +80,18 @@ class FileConfig(wx.FileConfig):
         self.WriteInt("AbbrevResults", frame.search.abbrev_results)
         self.WriteBool("ShowOptions", frame.search.optionspane.IsExpanded())
         for option in frame.search.options:
-            self.WriteBool(option,
-                           getattr(frame.search, option).GetValue())
+            self.WriteBool(option, getattr(frame.search, option).GetValue())
         self.SetPath("/Notes")
         self.WriteInt("ActiveTab", frame.notes.GetSelection())
         subject_notes = frame.notes.GetPage(0)
         ##self.Write("CurrentSubjectTopic", subject_notes.db_key)
-        self.WriteInt("SplitterPosition1",
-                      subject_notes.splitter.GetSashPosition())
+        self.WriteInt("SplitterPosition1", subject_notes.splitter.GetSashPosition())
         verse_notes = frame.notes.GetPage(1)
         ##self.Write("CurrentVerseTopic", verse_notes.db_key)
-        self.WriteInt("SplitterPosition2",
-                      verse_notes.splitter.GetSashPosition())
+        self.WriteInt("SplitterPosition2", verse_notes.splitter.GetSashPosition())
         self.SetPath("/MultiVerse")
         self.Write("LastVerseList", frame.multiverse.verse_list.GetValue())
-        self.WriteInt("SplitterPosition",
-                      frame.multiverse.splitter.GetSashPosition())
+        self.WriteInt("SplitterPosition", frame.multiverse.splitter.GetSashPosition())
         self.Flush()
 
     def WriteList(self, key, value):
@@ -113,20 +104,16 @@ class FileConfig(wx.FileConfig):
 class Berean(wx.App):
     def OnInit(self):
         self.SetAppName("Berean")
-        optlist = dict(getopt.getopt(sys.argv[1:], "", ["datadir=", "nosplash",
-                                                        "systemtray"])[0])
+        optlist = dict(getopt.getopt(sys.argv[1:], "", ["datadir=", "nosplash", "systemtray"])[0])
         if not hasattr(sys, "frozen"):
             self.cwd = os.path.dirname(__file__)
         else:
             self.cwd = os.path.dirname(sys.argv[0])
-        show_splash = not ("--nosplash" in optlist or
-                           "--systemtray" in optlist)
+        show_splash = not ("--nosplash" in optlist or "--systemtray" in optlist)
         if show_splash:
-            splash = wx.SplashScreen(wx.Bitmap(os.path.join(self.cwd, "images",
-                                                            "splash.png"),
+            splash = wx.SplashScreen(wx.Bitmap(os.path.join(self.cwd, "images", "splash.png"),
                                                wx.BITMAP_TYPE_PNG),
-                                     wx.SPLASH_CENTRE_ON_SCREEN |
-                                     wx.SPLASH_NO_TIMEOUT, 0, None,
+                                     wx.SPLASH_CENTRE_ON_SCREEN | wx.SPLASH_NO_TIMEOUT, 0, None,
                                      style=wx.BORDER_SIMPLE)
             self.Yield()
 
@@ -144,23 +131,18 @@ class Berean(wx.App):
             os.mkdir(self.userdatadir)
         self.config = FileConfig(self)
         locale = wx.Locale(wx.LANGUAGE_DEFAULT)
-        self.language = self.config.Read("Main/Language",
-                                         locale.GetCanonicalName())
-        self.locale = wx.Locale(locale.FindLanguageInfo(self.language).
-                                Language)
+        self.language = self.config.Read("Main/Language", locale.GetCanonicalName())
+        self.locale = wx.Locale(locale.FindLanguageInfo(self.language).Language)
         localedir = os.path.join(self.cwd, "locale")
         self.locale.AddCatalogLookupPathPrefix(localedir)
-        if os.path.isfile(os.path.join(localedir, self.language, "LC_MESSAGES",
-                                       "berean.mo")):
+        if os.path.isfile(os.path.join(localedir, self.language, "LC_MESSAGES", "berean.mo")):
             self.locale.AddCatalog("berean")
 
-        self.single_instance = self.config.ReadBool("Main/SingleInstance",
-                                                    True)
+        self.single_instance = self.config.ReadBool("Main/SingleInstance", True)
         if self.single_instance:
             self.SetSingleInstance(True)
             if self.checker.IsAnotherRunning():
-                wx.MessageBox(_("Berean is already running."), "Berean",
-                              wx.ICON_ERROR)
+                wx.MessageBox(_("Berean is already running."), "Berean", wx.ICON_ERROR)
                 wx.Exit()
         self.frame = mainwindow.MainWindow(self)
         self.SetTopWindow(self.frame)
@@ -176,8 +158,7 @@ class Berean(wx.App):
 
     def SetSingleInstance(self, single_instance):
         if single_instance:
-            self.checker = wx.SingleInstanceChecker("berean-%s" %
-                                                    wx.GetUserName())
+            self.checker = wx.SingleInstanceChecker("berean-%s" % wx.GetUserName())
         elif hasattr(self, "checker"):
             del self.checker
 

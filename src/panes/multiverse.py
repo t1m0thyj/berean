@@ -17,10 +17,8 @@ class MultiVersePane(wx.Panel):
         self.html = ""
         self.last_version = -1
 
-        self.toolbar = aui.AuiToolBar(self, wx.ID_ANY, wx.DefaultPosition,
-                                      wx.DefaultSize,
-                                      aui.AUI_TB_DEFAULT_STYLE |
-                                      aui.AUI_TB_OVERFLOW |
+        self.toolbar = aui.AuiToolBar(self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize,
+                                      aui.AUI_TB_DEFAULT_STYLE | aui.AUI_TB_OVERFLOW |
                                       aui.AUI_TB_HORZ_TEXT)
         self.toolbar.AddLabel(-1, _("Version:"))
         self.version = wx.Choice(self.toolbar, choices=parent.version_list)
@@ -29,16 +27,14 @@ class MultiVersePane(wx.Panel):
         self.toolbar.AddControl(self.version)
         self.toolbar.AddSeparator()
         ID_SEARCH = wx.NewId()
-        self.toolbar.AddTool(ID_SEARCH, _("Search"),
-                             parent.get_bitmap("search"),
+        self.toolbar.AddTool(ID_SEARCH, _("Search"), parent.get_bitmap("search"),
                              _("Search (Ctrl+Enter)"))
         self.Bind(wx.EVT_MENU, self.OnSearch, id=ID_SEARCH)
-        self.toolbar.AddTool(wx.ID_PREVIEW, _("Print"),
-                             parent.get_bitmap("print"), _("Print Verses"))
+        self.toolbar.AddTool(wx.ID_PREVIEW, _("Print"), parent.get_bitmap("print"),
+                             _("Print Verses"))
         self.toolbar.EnableTool(wx.ID_PREVIEW, False)
         self.Bind(wx.EVT_MENU, self.OnPrint, id=wx.ID_PREVIEW)
-        self.toolbar.AddTool(wx.ID_COPY, _("Copy"), parent.get_bitmap("copy"),
-                             _("Copy Verses"))
+        self.toolbar.AddTool(wx.ID_COPY, _("Copy"), parent.get_bitmap("copy"), _("Copy Verses"))
         self.toolbar.EnableTool(wx.ID_COPY, False)
         self.Bind(wx.EVT_MENU, self.OnCopy, id=wx.ID_COPY)
         self.toolbar.Realize()
@@ -46,20 +42,17 @@ class MultiVersePane(wx.Panel):
         self.splitter = wx.SplitterWindow(self)
         self.splitter.SetMinimumPaneSize(60)
         self.verse_list = wx.TextCtrl(self.splitter,
-                                      value=parent._app.config.
-                                      Read("MultiVerse/LastVerseList"),
+                                      value=parent._app.config.Read("MultiVerse/LastVerseList"),
                                       style=wx.TE_MULTILINE)
         self.verse_list.SetAcceleratorTable(wx.AcceleratorTable([
             (wx.ACCEL_CTRL, wx.WXK_RETURN, ID_SEARCH),
             (wx.ACCEL_CTRL, ord("A"), wx.ID_SELECTALL)]))
         self.htmlwindow = HtmlWindowBase(self.splitter, parent)
-        self.htmlwindow.Bind(html.EVT_HTML_LINK_CLICKED,
-                             self.OnHtmlLinkClicked)
-        self.htmlwindow.BindContextMenuEvent(self.OnContextMenu)
+        self.htmlwindow.Bind(html.EVT_HTML_LINK_CLICKED, self.OnHtmlLinkClicked)
+        self.Bind(wx.EVT_CONTEXT_MENU, self.OnContextMenu)
         self.splitter.SplitHorizontally(self.verse_list, self.htmlwindow,
-                                        parent._app.config.
-                                        ReadInt("MultiVerse/SplitterPosition",
-                                                60))
+                                        parent._app.config.ReadInt("MultiVerse/SplitterPosition",
+                                                                   60))
 
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add(self.toolbar, 0)
@@ -76,14 +69,12 @@ class MultiVersePane(wx.Panel):
             try:
                 if c2 == -1 and v2 == -1:
                     if Bible[b][c][v]:
-                        results.append("<p><a href=\"%d.%d.%d\">%s %d:%d (%s)"
-                                       "</a><br>%s</p>" %
-                                       (b, c, v, BOOK_NAMES[b - 1], c, v,
-                                        version_name, Bible[b][c][v]))
+                        results.append("<p><a href=\"%d.%d.%d\">%s %d:%d (%s)</a><br>%s</p>" %
+                                       (b, c, v, BOOK_NAMES[b - 1], c, v, version_name,
+                                        Bible[b][c][v]))
                     else:
-                        results.append(_("<p><font color=\"gray\">%s %d:%d "
-                                         "is not in the %s.</font></p>") %
-                                       (BOOK_NAMES[b - 1], c, v, version_name))
+                        results.append(_("<p><font color=\"gray\">%s %d:%d is not in the %s."
+                                         "</font></p>") % (BOOK_NAMES[b - 1], c, v, version_name))
                 else:
                     for c3 in range(c, c2 + 1):
                         v3 = 1 if c3 != c else v
@@ -91,20 +82,18 @@ class MultiVersePane(wx.Panel):
                         verses = []
                         for v5 in range(v3, v4 + 1):
                             if Bible[b][c3][v5]:
-                                verses.append("<font size=\"-1\">%d&nbsp;"
-                                              "</font>%s" %
+                                verses.append("<font size=\"-1\">%d&nbsp;</font>%s" %
                                               (v5, Bible[b][c3][v5]))
                         if not verses:
                             raise IndexError
-                        results.append("<p><a href=\"%d.%d.%d\">%s %d:%d-%d "
-                                       "(%s)</a><br>%s</p>" %
-                                       (b, c3, v3, BOOK_NAMES[b - 1], c3, v3,
-                                        v4, version_name, " ".join(verses)))
+                        results.append("<p><a href=\"%d.%d.%d\">%s %d:%d-%d (%s)</a><br>%s</p>" %
+                                       (b, c3, v3, BOOK_NAMES[b - 1], c3, v3, v4, version_name,
+                                        " ".join(verses)))
             except IndexError:
                 failed.append(reference)
         if failed:
-            results.insert(0, "<font color=\"red\">The following references "
-                           "are not valid:<br>%s</font>" % "<br>".join(failed))
+            results.insert(0, "<font color=\"red\">The following references are not valid:<br>%s"
+                           "</font>" % "<br>".join(failed))
         self.html = "<html><body><font size=\"%d\">%s</font></body></html>" % \
             (self._parent.zoom_level, "".join(results))
         self.htmlwindow.SetPage(self.html)
@@ -134,8 +123,7 @@ class MultiVersePane(wx.Panel):
         if (self._parent.notebook.GetSelection() != self.last_version and
                 not wx.GetKeyState(wx.WXK_CONTROL)):
             self._parent.notebook.SetSelection(self.last_version)
-        self._parent.load_chapter(*[int(i) for i in
-                                    event.GetLinkInfo().GetHref().split(".")])
+        self._parent.load_chapter(*[int(i) for i in event.GetLinkInfo().GetHref().split(".")])
 
     def OnContextMenu(self, event):
         if not self.html:

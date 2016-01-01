@@ -18,20 +18,16 @@ _ = wx.GetTranslation
 
 class MainWindow(wx.Frame):
     def __init__(self, app):
-        pos = [int(i) for i in app.config.Read("Main/WindowPosition",
-                                               "-1,-1").split(",")]
+        pos = [int(i) for i in app.config.Read("Main/WindowPosition", "-1,-1").split(",")]
         display_size = wx.GetDisplaySize()
         default_size = (int(display_size[0] * 0.8), int(display_size[1] * 0.8))
-        size = [int(i) for i in app.config.Read("Main/WindowSize", "%d,%d" %
-                                                default_size).split(",")]
+        size = [int(i) for i in app.config.Read("Main/WindowSize", "%d,%d" % default_size).
+                split(",")]
         self.rect = wx.RectPS(pos, size)
-        super(MainWindow, self).__init__(None, title="Berean", pos=pos,
-                                         size=size)
+        super(MainWindow, self).__init__(None, title="Berean", pos=pos, size=size)
         icons = wx.IconBundle()
-        icons.AddIconFromFile(os.path.join(app.cwd, "images", "berean-16.png"),
-                              wx.BITMAP_TYPE_PNG)
-        icons.AddIconFromFile(os.path.join(app.cwd, "images", "berean-32.png"),
-                              wx.BITMAP_TYPE_PNG)
+        icons.AddIconFromFile(os.path.join(app.cwd, "images", "berean-16.png"), wx.BITMAP_TYPE_PNG)
+        icons.AddIconFromFile(os.path.join(app.cwd, "images", "berean-32.png"), wx.BITMAP_TYPE_PNG)
         self.SetIcons(icons)
         if app.config.ReadBool("Main/IsMaximized"):
             self.Maximize()
@@ -43,11 +39,9 @@ class MainWindow(wx.Frame):
         self.default_font = {
             "size": app.config.ReadInt("Main/HtmlFontSize", 12),
             "normal_face": app.config.Read("Main/HtmlFontFace",
-                                           wx.FFont(-1, wx.ROMAN).
-                                           GetFaceName())}
-        self.facenames = sorted([facename for facename in
-                                 wx.FontEnumerator.GetFacenames() if
-                                 not facename.startswith("@")])
+                                           wx.FFont(-1, wx.ROMAN).GetFaceName())}
+        self.facenames = sorted([facename for facename in wx.FontEnumerator.GetFacenames()
+                                 if not facename.startswith("@")])
         self.zoom_level = app.config.ReadInt("Main/ZoomLevel", 3)
         self.minimize_to_tray = app.config.ReadBool("Main/MinimizeToTray")
         self.version_list = app.config.ReadList("VersionList", ["KJV"])
@@ -61,24 +55,18 @@ class MainWindow(wx.Frame):
         self.menubar = menu.MenuBar(self)
         self.SetMenuBar(self.menubar)
         self.toolbar = toolbar.ToolBar(self)
-        self.aui.AddPane(self.toolbar, aui.AuiPaneInfo().Name("toolbar").
-                         Caption("Toolbar").ToolbarPane().Top())
+        self.aui.AddPane(self.toolbar, aui.AuiPaneInfo().Name("toolbar").Caption("Toolbar").
+                         ToolbarPane().Top())
         self.statusbar = self.CreateStatusBar(3)
         self.zoombar = toolbar.ZoomBar(self.statusbar, self)
-        if wx.VERSION_STRING >= "2.9":
-            self.statusbar.SetStatusWidths([-1, -1, self.zoombar.width -
-                                            wx.SystemSettings.
-                                            GetMetric(wx.SYS_VSCROLL_X) + 1])
-        else:
-            self.statusbar.SetStatusWidths([-1, -1, self.zoombar.width + 1])
+        self.statusbar.SetStatusWidths([-1, -1, self.zoombar.width -
+                                        wx.SystemSettings.GetMetric(wx.SYS_VSCROLL_X) + 1])
 
-        self.notebook = aui.AuiNotebook(self, style=wx.BORDER_NONE |
-                                        aui.AUI_NB_TOP |
-                                        aui.AUI_NB_SCROLL_BUTTONS |
-                                        aui.AUI_NB_WINDOWLIST_BUTTON)
+        self.notebook = aui.AuiNotebook(self, style=wx.BORDER_NONE | aui.AUI_NB_TOP |
+                                        aui.AUI_NB_SCROLL_BUTTONS | aui.AUI_NB_WINDOWLIST_BUTTON)
         if not app.portable:
-            self.versiondir = os.path.join(wx.StandardPaths.Get().
-                                           GetUserLocalDataDir(), "versions")
+            self.versiondir = os.path.join(wx.StandardPaths.Get().GetUserLocalDataDir(),
+                                           "versions")
         else:
             self.versiondir = os.path.join(app.userdatadir, "versions")
         if not os.path.isdir(self.versiondir):
@@ -103,36 +91,28 @@ class MainWindow(wx.Frame):
             self.notebook.AddPage(self.parallel, _("Parallel"))
             if wx.VERSION_STRING >= "2.9.4":
                 self.notebook.SetPageToolTip(len(self.version_list),
-                                             self.parallel.htmlwindow.
-                                             description)
+                                             self.parallel.htmlwindow.description)
             self.notebook.SetSelection(min(tab, self.notebook.GetPageCount()))
         else:
             self.notebook.SetTabCtrlHeight(0)
-        self.notebook.Bind(aui.EVT_AUINOTEBOOK_PAGE_CHANGED,
-                           self.OnAuiNotebookPageChanged)
-        self.notebook.Bind(aui.EVT_AUINOTEBOOK_BG_DCLICK,
-                           self.OnAuiNotebookBgDclick)
-        self.aui.AddPane(self.notebook, aui.AuiPaneInfo().Name("notebook").
-                         CenterPane().PaneBorder(False))
+        self.notebook.Bind(aui.EVT_AUINOTEBOOK_PAGE_CHANGED, self.OnAuiNotebookPageChanged)
+        self.notebook.Bind(aui.EVT_AUINOTEBOOK_BG_DCLICK, self.OnAuiNotebookBgDclick)
+        self.aui.AddPane(self.notebook, aui.AuiPaneInfo().Name("notebook").CenterPane().
+                         PaneBorder(False))
 
         self.tree = panes.TreePane(self)
-        self.aui.AddPane(self.tree, aui.AuiPaneInfo().Name("tree_pane").
-                         Caption(_("Tree")).BestSize((150, -1)).Left().
-                         Layer(1))
+        self.aui.AddPane(self.tree, aui.AuiPaneInfo().Name("tree_pane").Caption(_("Tree")).
+                         BestSize((150, -1)).Left().Layer(1))
         self.search = panes.SearchPane(self)
-        self.aui.AddPane(self.search, aui.AuiPaneInfo().Name("search_pane").
-                         Caption(_("Search")).BestSize((300, -1)).Right().
-                         Layer(1).MaximizeButton(True))
+        self.aui.AddPane(self.search, aui.AuiPaneInfo().Name("search_pane").Caption(_("Search")).
+                         BestSize((300, -1)).Right().Layer(1).MaximizeButton(True))
         self.notes = panes.NotesPane(self)
-        self.aui.AddPane(self.notes, aui.AuiPaneInfo().Name("notes_pane").
-                         Caption(_("Notes")).BestSize((-1, 270)).Bottom().
-                         MaximizeButton(True))
+        self.aui.AddPane(self.notes, aui.AuiPaneInfo().Name("notes_pane").Caption(_("Notes")).
+                         BestSize((-1, 270)).Bottom().MaximizeButton(True))
         self.multiverse = panes.MultiVersePane(self)
-        self.aui.AddPane(self.multiverse, aui.AuiPaneInfo().
-                         Name("multiverse_pane").
-                         Caption(_("Multi-Verse Retrieval")).
-                         BestSize((600, 440)).Right().Layer(1).Hide().
-                         PinButton(True))
+        self.aui.AddPane(self.multiverse, aui.AuiPaneInfo().Name("multiverse_pane").
+                         Caption(_("Multi-Verse Retrieval")).BestSize((600, 440)).Right().
+                         Layer(1).Hide().PinButton(True))
 
         filename = os.path.join(app.userdatadir, "layout.dat")
         if os.path.isfile(filename):
@@ -142,14 +122,11 @@ class MainWindow(wx.Frame):
         reader_view = self.aui.GetPane("notebook").IsMaximized()
         self.menubar.Check(self.menubar.reader_view_item.GetId(), reader_view)
         self.toolbar.ToggleTool(self.toolbar.ID_READER_VIEW, reader_view)
-        for pane in ("toolbar", "tree_pane", "search_pane", "notes_pane",
-                     "multiverse_pane"):
+        for pane in ("toolbar", "tree_pane", "search_pane", "notes_pane", "multiverse_pane"):
             self.menubar.Check(getattr(self.menubar, "%s_item" % pane).GetId(),
                                self.aui.GetPane(pane).IsShown())
-        globals()["BOOK_NAMES"] = BOOK_NAMES[:18] + ("Psalm",) + \
-            BOOK_NAMES[19:]
-        self.load_chapter(self.reference[0], self.reference[1],
-                          self.reference[2], False)
+        globals()["BOOK_NAMES"] = BOOK_NAMES[:18] + ("Psalm",) + BOOK_NAMES[19:]
+        self.load_chapter(self.reference[0], self.reference[1], self.reference[2], False)
         self.Bind(aui.EVT_AUI_PANE_CLOSE, self.OnAuiPaneClose)
         self.Bind(wx.EVT_MOVE, self.OnMove)
         self.Bind(wx.EVT_SIZE, self.OnSize)
@@ -157,8 +134,8 @@ class MainWindow(wx.Frame):
         self.Bind(wx.EVT_CLOSE, self.OnClose)
 
     def get_bitmap(self, name):
-        return wx.Bitmap(os.path.join(self._app.cwd, "images",
-                                      "%s.png" % name), wx.BITMAP_TYPE_PNG)
+        return wx.Bitmap(os.path.join(self._app.cwd, "images", "%s.png" % name),
+                         wx.BITMAP_TYPE_PNG)
 
     def get_htmlwindow(self, tab=-1):
         if tab == -1:
@@ -171,8 +148,8 @@ class MainWindow(wx.Frame):
         htmlwindow = self.get_htmlwindow()
         htmlwindow.load_chapter(book, chapter, verse)
         tab = self.notebook.GetSelection()
-        self.SetTitle("Berean - %s %d (%s)" % (BOOK_NAMES[book - 1], chapter,
-                                               self.notebook.GetPageText(tab)))
+        self.SetTitle("Berean - %s %d (%s)" %
+                      (BOOK_NAMES[book - 1], chapter, self.notebook.GetPageText(tab)))
         reference = reference_str(book, chapter, verse)
         if reference not in self.verse_history:
             self.verse_history = self.verse_history[:self.history_item + 1]
@@ -184,8 +161,7 @@ class MainWindow(wx.Frame):
             self.verse_history.append(reference)
         self.history_item = self.verse_history.index(reference)
         self.toolbar.EnableTool(wx.ID_BACKWARD, self.history_item > 0)
-        self.toolbar.EnableTool(wx.ID_FORWARD, self.history_item <
-                                len(self.verse_history) - 1)
+        self.toolbar.EnableTool(wx.ID_FORWARD, self.history_item < len(self.verse_history) - 1)
         self.toolbar.Refresh(False)
         if book != self.reference[0]:
             self.toolbar.bookctrl.SetSelection(book - 1)
@@ -200,12 +176,10 @@ class MainWindow(wx.Frame):
             page = self.notes.GetPage(1)
             page.save_text()
             page.load_text("%d.%d" % (book, chapter))
-        self.statusbar.SetStatusText("%s %d" % (BOOK_NAMES[book - 1], chapter),
-                                     0)
+        self.statusbar.SetStatusText("%s %d" % (BOOK_NAMES[book - 1], chapter), 0)
         self.statusbar.SetStatusText(htmlwindow.description, 1)
         self.menubar.Enable(wx.ID_BACKWARD, self.history_item > 0)
-        self.menubar.Enable(wx.ID_FORWARD, self.history_item <
-                            len(self.verse_history) - 1)
+        self.menubar.Enable(wx.ID_FORWARD, self.history_item < len(self.verse_history) - 1)
         self.reference = (book, chapter, verse)
         for i in range(self.notebook.GetPageCount()):
             if i != tab:
@@ -230,8 +204,7 @@ class MainWindow(wx.Frame):
         else:
             self.aui.RestorePane(pane)
         self.aui.Update()
-        self.menubar.Check(self.menubar.reader_view_item.GetId(),
-                           not maximized)
+        self.menubar.Check(self.menubar.reader_view_item.GetId(), not maximized)
         if update_toolbar:
             self.toolbar.ToggleTool(self.toolbar.ID_READER_VIEW, not maximized)
             self.toolbar.Refresh(False)
@@ -249,8 +222,7 @@ class MainWindow(wx.Frame):
     def OnAuiNotebookPageChanged(self, event):
         tab = event.GetSelection()
         htmlwindow = self.get_htmlwindow()
-        if (htmlwindow.reference != self.reference or
-                htmlwindow.zoom_level != self.zoom_level):
+        if htmlwindow.reference != self.reference or htmlwindow.zoom_level != self.zoom_level:
             htmlwindow.load_chapter(*self.reference)
         self.SetTitle("Berean - %s %d (%s)" %
                       (BOOK_NAMES[self.reference[0] - 1], self.reference[1],
@@ -264,8 +236,7 @@ class MainWindow(wx.Frame):
         self.toggle_reader_view()
 
     def OnAuiPaneClose(self, event):
-        self.menubar.Check(getattr(self.menubar, "%s_item" %
-                                   event.GetPane().name).GetId(), False)
+        self.menubar.Check(getattr(self.menubar, "%s_item" % event.GetPane().name).GetId(), False)
 
     def OnMove(self, event):
         if self.HasCapture():
@@ -276,23 +247,20 @@ class MainWindow(wx.Frame):
         x, y, width, height = self.statusbar.GetFieldRect(2)
         if 'gtk3' in wx.PlatformInfo:
             height -= 16
-        self.zoombar.SetRect(wx.Rect(x, (y + height - 19) / 2 -
-                                     self.zoombar.GetToolSeparation(),
+        self.zoombar.SetRect(wx.Rect(x, (y + height - 19) / 2 - self.zoombar.GetToolSeparation(),
                                      self.zoombar.width, -1))
         if self.HasCapture():
             self.rect = wx.RectPS(self.GetPosition(), self.GetSize())
 
     def OnIconize(self, event):
-        if (self.minimize_to_tray and event.Iconized() and
-                not hasattr(self, "taskbaricon")):
+        if self.minimize_to_tray and event.Iconized() and not hasattr(self, "taskbaricon"):
             self.taskbaricon = TaskBarIcon(self)
             self.Hide()
         event.Skip()
 
     def OnClose(self, event):
         for version in self.old_versions:  # Delete old indexes
-            filename = os.path.join(self._app.userdatadir, "indexes",
-                                    "%s.idx" % version)
+            filename = os.path.join(self._app.userdatadir, "indexes", "%s.idx" % version)
             if os.path.isfile(filename):
                 wx.CallAfter(os.remove, filename)
         for i in range(self.notes.GetPageCount()):
@@ -300,8 +268,7 @@ class MainWindow(wx.Frame):
             page.OnSave(None)
             page.conn.close()
         self._app.config.save()
-        with open(os.path.join(self._app.userdatadir, "layout.dat"), 'w') as \
-                fileobj:
+        with open(os.path.join(self._app.userdatadir, "layout.dat"), 'w') as fileobj:
             fileobj.write(self.aui.SavePerspective())
         self.aui.UnInit()
         del self.help
@@ -315,8 +282,7 @@ class TaskBarIcon(wx.TaskBarIcon):
     def __init__(self, frame):
         super(TaskBarIcon, self).__init__()
         self._frame = frame
-        self.SetIcon(wx.Icon(os.path.join(frame._app.cwd, "images",
-                                          "berean-16.png"),
+        self.SetIcon(wx.Icon(os.path.join(frame._app.cwd, "images", "berean-16.png"),
                              wx.BITMAP_TYPE_PNG), frame.GetTitle())
         self.Bind(wx.EVT_TASKBAR_LEFT_DOWN, self.OnRestore)
 

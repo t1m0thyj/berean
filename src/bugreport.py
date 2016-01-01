@@ -29,10 +29,8 @@ class ErrorDialog(wx.Dialog):
         ErrorDialog.active = True
         super(ErrorDialog, self).__init__(None, title=_("Error"))
 
-        bitmap = wx.StaticBitmap(self,
-                                 bitmap=wx.ArtProvider.GetBitmap(wx.ART_ERROR))
-        label = wx.StaticText(self,
-                              label=_("An error occurred in the application."))
+        bitmap = wx.StaticBitmap(self, bitmap=wx.ArtProvider.GetBitmap(wx.ART_ERROR))
+        label = wx.StaticText(self, label=_("An error occurred in the application."))
         self.send = wx.Button(self, label=_("send bug report"))
         self.show = wx.Button(self, label=_("show bug report"))
         self.continue_button = wx.Button(self, label=_("continue application"))
@@ -42,15 +40,11 @@ class ErrorDialog(wx.Dialog):
         if sys.platform == "darwin":
             mac_ver = "\nmac_ver: %s" % platform.mac_ver()[0]
         self.textctrl = wx.TextCtrl(self, value=REPORT %
-                                    (wx.GetOsDescription(), mac_ver,
-                                     platform.architecture()[0],
-                                     platform.machine(), sys.byteorder,
-                                     sys.version, sys.getdefaultencoding(),
-                                     sys.getfilesystemencoding(), wx.version(),
-                                     wx.PlatformInfo,
-                                     wx.GetDefaultPyEncoding(), VERSION,
-                                     hasattr(sys, "frozen"),
-                                     exc_info.rstrip()),
+                                    (wx.GetOsDescription(), mac_ver, platform.architecture()[0],
+                                     platform.machine(), sys.byteorder, sys.version,
+                                     sys.getdefaultencoding(), sys.getfilesystemencoding(),
+                                     wx.version(), wx.PlatformInfo, wx.GetDefaultPyEncoding(),
+                                     VERSION, hasattr(sys, "frozen"), exc_info.rstrip()),
                                     style=wx.TE_MULTILINE | wx.TE_READONLY)
         self.textctrl.Hide()
         self.Bind(wx.EVT_BUTTON, self.OnSend, self.send)
@@ -70,8 +64,7 @@ class ErrorDialog(wx.Dialog):
         sizer3.AddStretchSpacer(1)
         sizer5 = wx.BoxSizer(wx.HORIZONTAL)
         sizer5.Add(self.send, 0, wx.EXPAND)
-        sizer5.Add(self.show, 0,
-                   wx.LEFT | wx.EXPAND | wx.RESERVE_SPACE_EVEN_IF_HIDDEN, 5)
+        sizer5.Add(self.show, 0, wx.LEFT | wx.EXPAND | wx.RESERVE_SPACE_EVEN_IF_HIDDEN, 5)
         sizer3.Add(sizer5, 0, wx.ALL | wx.EXPAND, 5)
         sizer2.Add(sizer3, 1, wx.EXPAND)
         sizer6 = wx.BoxSizer(wx.VERTICAL)
@@ -89,8 +82,7 @@ class ErrorDialog(wx.Dialog):
         body = self.textctrl.GetValue()
         if '__WXMAC__' not in wx.PlatformInfo:
             body = urllib.quote(body)
-        webbrowser.open("mailto:pythoneer@outlook.com?subject=Berean Bug "
-                        "Report&body=%s" % body)
+        webbrowser.open("mailto:pythoneer@outlook.com?subject=Berean Bug Report&body=%s" % body)
 
     def OnShow(self, event):
         self.textctrl.Show()

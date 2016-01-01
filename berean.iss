@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "Berean"
-#define MyAppVersion "0.4.10.1"
+#define MyAppVersion "0.4.11"
 #define MyAppPublisher "Timothy Johnson"
 ;#define MyAppURL "http://berean.bitbucket.org"
 #define MyAppExeName "berean.exe"
@@ -20,8 +20,7 @@ AppPublisher={#MyAppPublisher}
 ;AppSupportURL={#MyAppURL}
 ;AppUpdatesURL={#MyAppURL}
 DefaultDirName={pf}\{#MyAppName}
-DefaultGroupName={#MyAppName}
-AllowNoIcons=yes
+DisableProgramGroupPage=yes
 LicenseFile=src\dist\license.txt
 OutputDir=releases
 OutputBaseFilename={#MyAppName}_{#MyAppVersion}_Setup
@@ -68,8 +67,7 @@ Source: "vcredist_x86.exe"; DestDir: "{tmp}"; Flags: deleteafterinstall
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]
-Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
-Name: "{group}\{#MyAppName} Help"; Filename: "{app}\locale\en_US\help\main.html"
+Name: "{commonprograms}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
 Name: "{commondesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon
 Name: "{userappdata}\Microsoft\Internet Explorer\Quick Launch\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: quicklaunchicon
 

@@ -4,16 +4,12 @@ import wx
 
 from config import BOOK_NAMES, BOOK_LENGTHS
 
-_ = wx.GetTranslation
-
 
 class TreePane(wx.TreeCtrl):
     def __init__(self, parent):
-        super(TreePane, self).__init__(parent, style=wx.TR_DEFAULT_STYLE |
-                                       wx.BORDER_NONE | wx.TR_TWIST_BUTTONS |
-                                       wx.TR_NO_LINES |
-                                       wx.TR_FULL_ROW_HIGHLIGHT |
-                                       wx.TR_HIDE_ROOT)
+        super(TreePane, self).__init__(parent, style=wx.TR_DEFAULT_STYLE | wx.BORDER_NONE |
+                                       wx.TR_TWIST_BUTTONS | wx.TR_NO_LINES |
+                                       wx.TR_FULL_ROW_HIGHLIGHT | wx.TR_HIDE_ROOT)
         self._parent = parent
 
         root = self.AddRoot("")
@@ -41,8 +37,7 @@ class TreePane(wx.TreeCtrl):
     def OnSelChanged(self, event):
         item = event.GetItem()
         if self.ItemHasChildren(item):
-            self.add_children(self.top_level_items.index(event.GetItem()) + 1,
-                              True)
+            self.add_children(self.top_level_items.index(event.GetItem()) + 1, True)
         else:
             parent = self.GetItemParent(item)
             if parent != self.GetRootItem():
