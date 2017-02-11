@@ -5,7 +5,7 @@ import subprocess
 import sys
 
 sys.path.insert(0, "..\\..")
-from config import VERSION_NAMES
+from settings import VERSION_NAMES
 
 diff_tool = "C:\\Program Files (x86)\\WinMerge\\WinMergeU.exe"
 os.mkdir("versions")

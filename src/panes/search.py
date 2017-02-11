@@ -8,11 +8,12 @@ import threading
 import time
 
 import wx
-from wx import aui, html
+from wx import html
+from wx.lib.agw import aui
 
-from config import BOOK_NAMES, BOOK_RANGES
 from html import HtmlWindowBase
 from refalize import validate
+from settings import BOOK_NAMES, BOOK_RANGES
 
 _ = wx.GetTranslation
 
@@ -64,14 +65,13 @@ class SearchPane(wx.Panel):
                                 style=wx.TE_PROCESS_ENTER)
         self.text.SetValue(parent._app.config.Read("Search/LastSearch"))
         self.text.Bind(wx.EVT_TEXT_ENTER, self.OnSearch)
-        style = aui.AUI_TB_DEFAULT_STYLE
-        if wx.VERSION_STRING >= "2.9.5":
-            style |= aui.AUI_TB_PLAIN_BACKGROUND
-        self.toolbar = aui.AuiToolBar(self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, style)
+        self.toolbar = aui.AuiToolBar(self, wx.ID_ANY, agwStyle=aui.AUI_TB_DEFAULT_STYLE |
+                                      aui.AUI_TB_PLAIN_BACKGROUND)
         ID_SEARCH = wx.NewId()
-        self.toolbar.AddTool(ID_SEARCH, "", parent.get_bitmap("search"), _("Search"))
+        self.toolbar.AddSimpleTool(ID_SEARCH, "", parent.get_bitmap("search"), _("Search"))
         self.toolbar.Bind(wx.EVT_MENU, self.OnSearch, id=ID_SEARCH)
-        self.toolbar.AddTool(wx.ID_PREVIEW, "", parent.get_bitmap("print"), _("Print Results"))
+        self.toolbar.AddSimpleTool(wx.ID_PREVIEW, "", parent.get_bitmap("print"),
+                                   _("Print Results"))
         self.toolbar.EnableTool(wx.ID_PREVIEW, False)
         self.toolbar.Bind(wx.EVT_MENU, self.OnPrint, id=wx.ID_PREVIEW)
         self.toolbar.Realize()

@@ -30,6 +30,7 @@ WizardSmallImageFile=berean-48.bmp
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
+Name: "armenian"; MessagesFile: "compiler:Languages\Armenian.islu"
 Name: "brazilianportuguese"; MessagesFile: "compiler:Languages\BrazilianPortuguese.isl"
 Name: "catalan"; MessagesFile: "compiler:Languages\Catalan.isl"
 Name: "corsican"; MessagesFile: "compiler:Languages\Corsican.isl"
