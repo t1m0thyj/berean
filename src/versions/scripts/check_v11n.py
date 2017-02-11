@@ -2,7 +2,7 @@ import cPickle
 import sys
 
 sys.path.insert(0, "..\\..")
-from config import BOOK_LENGTHS, CHAPTER_LENGTHS, VERSION_NAMES
+from settings import BOOK_LENGTHS, CHAPTER_LENGTHS, VERSION_NAMES
 
 fileobj = open("v11n.txt", 'w')
 for version in VERSION_NAMES:

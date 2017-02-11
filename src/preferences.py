@@ -8,7 +8,7 @@ import zipfile
 import wx
 from wx import combo
 
-from config import VERSION_NAMES, VERSION_DESCRIPTIONS, BOOK_NAMES, FONT_SIZES
+from settings import VERSION_NAMES, VERSION_DESCRIPTIONS, BOOK_NAMES, FONT_SIZES
 
 _ = wx.GetTranslation
 LANGUAGES = {"en_GB": "English (Great Britain)", "en_US": "English (United States)"}

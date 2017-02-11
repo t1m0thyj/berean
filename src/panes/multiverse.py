@@ -1,11 +1,12 @@
 """multiverse.py - multi-verse retrieval pane class"""
 
 import wx
-from wx import aui, html
+from wx import html
+from wx.lib.agw import aui
 
-from config import BOOK_NAMES
 from html import HtmlWindowBase
 from refalize import refalize2
+from settings import BOOK_NAMES
 
 _ = wx.GetTranslation
 
@@ -17,24 +18,24 @@ class MultiVersePane(wx.Panel):
         self.html = ""
         self.last_version = -1
 
-        self.toolbar = aui.AuiToolBar(self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize,
-                                      aui.AUI_TB_DEFAULT_STYLE | aui.AUI_TB_OVERFLOW |
-                                      aui.AUI_TB_HORZ_TEXT)
-        self.toolbar.AddLabel(-1, _("Version:"))
+        self.toolbar = aui.AuiToolBar(self, wx.ID_ANY, agwStyle=aui.AUI_TB_DEFAULT_STYLE |
+                                      aui.AUI_TB_OVERFLOW | aui.AUI_TB_HORZ_TEXT)
+        self.toolbar.AddLabel(-1, _("Version:"), width=self.toolbar.GetTextExtent(_("Version:"))[0])
         self.version = wx.Choice(self.toolbar, choices=parent.version_list)
         tab = parent.notebook.GetSelection()
         self.version.SetSelection(int(tab < len(parent.version_list)) and tab)
         self.toolbar.AddControl(self.version)
         self.toolbar.AddSeparator()
         ID_SEARCH = wx.NewId()
-        self.toolbar.AddTool(ID_SEARCH, _("Search"), parent.get_bitmap("search"),
-                             _("Search (Ctrl+Enter)"))
+        self.toolbar.AddSimpleTool(ID_SEARCH, _("Search"), parent.get_bitmap("search"),
+                                   _("Search (Ctrl+Enter)"))
         self.Bind(wx.EVT_MENU, self.OnSearch, id=ID_SEARCH)
-        self.toolbar.AddTool(wx.ID_PREVIEW, _("Print"), parent.get_bitmap("print"),
-                             _("Print Verses"))
+        self.toolbar.AddSimpleTool(wx.ID_PREVIEW, _("Print"), parent.get_bitmap("print"),
+                                   _("Print Verses"))
         self.toolbar.EnableTool(wx.ID_PREVIEW, False)
         self.Bind(wx.EVT_MENU, self.OnPrint, id=wx.ID_PREVIEW)
-        self.toolbar.AddTool(wx.ID_COPY, _("Copy"), parent.get_bitmap("copy"), _("Copy Verses"))
+        self.toolbar.AddSimpleTool(wx.ID_COPY, _("Copy"), parent.get_bitmap("copy"),
+                                   _("Copy Verses"))
         self.toolbar.EnableTool(wx.ID_COPY, False)
         self.Bind(wx.EVT_MENU, self.OnCopy, id=wx.ID_COPY)
         self.toolbar.Realize()

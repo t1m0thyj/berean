@@ -7,7 +7,7 @@ import shutil
 from distutils.core import setup
 import py2exe
 
-from config import VERSION
+from settings import VERSION
 
 MANIFEST = """<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <assembly manifestVersion="1.0" xmlns="urn:schemas-microsoft-com:asm.v1">

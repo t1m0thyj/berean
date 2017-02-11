@@ -4,8 +4,8 @@ import wx
 from wx import gizmos
 
 import html
-from config import VERSION
 from refalize import refalize, reference_str
+from settings import VERSION
 
 _ = wx.GetTranslation
 

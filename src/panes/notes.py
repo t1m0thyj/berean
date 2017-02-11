@@ -5,9 +5,10 @@ import os.path
 import sqlite3
 
 import wx
-from wx import aui, richtext
+from wx import richtext
+from wx.lib.agw import aui
 
-from config import FONT_SIZES
+from settings import FONT_SIZES
 
 _ = wx.GetTranslation
 
@@ -55,27 +56,32 @@ class NotesPage(wx.Panel):
                           "xml TEXT NOT NULL)")
         self.db_key = "%d.%d" % self._frame.reference[:2]
 
-        self.toolbar = aui.AuiToolBar(self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize,
-                                      aui.AUI_TB_DEFAULT_STYLE | aui.AUI_TB_OVERFLOW)
+        self.toolbar = aui.AuiToolBar(self, wx.ID_ANY,
+                                      agwStyle=aui.AUI_TB_DEFAULT_STYLE | aui.AUI_TB_OVERFLOW)
         self.ID_SHOW_TOPICS_PANE = wx.NewId()
-        self.toolbar.AddTool(self.ID_SHOW_TOPICS_PANE, "",
-                             self._frame.get_bitmap("show-topics-pane"), _("Show Topics Pane"),
-                             wx.ITEM_CHECK)
+        self.toolbar.AddCheckTool(self.ID_SHOW_TOPICS_PANE, "",
+                                  self._frame.get_bitmap("show-topics-pane"), wx.NullBitmap,
+                                  _("Show Topics Pane"))
         sash_pos = self._frame._app.config.ReadInt("Notes/SplitterPosition%d" % (tab + 1), 150)
         if sash_pos > 0:
             self.toolbar.ToggleTool(self.ID_SHOW_TOPICS_PANE, True)
         self.toolbar.Bind(wx.EVT_MENU, self.OnShowTopicsPane, id=self.ID_SHOW_TOPICS_PANE)
         self.toolbar.AddSeparator()
-        self.toolbar.AddTool(wx.ID_SAVE, "", self._frame.get_bitmap("save"), _("Save (Ctrl+S)"))
+        self.toolbar.AddSimpleTool(wx.ID_SAVE, "", self._frame.get_bitmap("save"),
+                                   _("Save (Ctrl+S)"))
         self.Bind(wx.EVT_MENU, self.OnSave, id=wx.ID_SAVE)
-        self.toolbar.AddTool(wx.ID_PRINT, "", self._frame.get_bitmap("print"), _("Print Notes"))
+        self.toolbar.AddSimpleTool(wx.ID_PRINT, "", self._frame.get_bitmap("print"),
+                                   _("Print Notes"))
         self.Bind(wx.EVT_MENU, self.OnPrint, id=wx.ID_PRINT)
         self.toolbar.AddSeparator()
-        self.toolbar.AddTool(wx.ID_CUT, "", self._frame.get_bitmap("cut"), _("Cut (Ctrl+X)"))
+        self.toolbar.AddSimpleTool(wx.ID_CUT, "", self._frame.get_bitmap("cut"),
+                                   _("Cut (Ctrl+X)"))
         self.toolbar.Bind(wx.EVT_MENU, self.OnCut, id=wx.ID_CUT)
-        self.toolbar.AddTool(wx.ID_COPY, "", self._frame.get_bitmap("copy"), _("Copy (Ctrl+C)"))
+        self.toolbar.AddSimpleTool(wx.ID_COPY, "", self._frame.get_bitmap("copy"),
+                                   _("Copy (Ctrl+C)"))
         self.toolbar.Bind(wx.EVT_MENU, self.OnCopy, id=wx.ID_COPY)
-        self.toolbar.AddTool(wx.ID_PASTE, "", self._frame.get_bitmap("paste"), _("Paste (Ctrl+V)"))
+        self.toolbar.AddSimpleTool(wx.ID_PASTE, "", self._frame.get_bitmap("paste"),
+                                   _("Paste (Ctrl+V)"))
         self.toolbar.Bind(wx.EVT_MENU, self.OnPaste, id=wx.ID_PASTE)
         self.toolbar.AddSeparator()
         self.font_name = wx.Choice(self.toolbar, choices=self._frame.facenames)
@@ -92,48 +98,49 @@ class NotesPage(wx.Panel):
         self.font_size.Bind(wx.EVT_TEXT_ENTER, self.OnFontSize)
         self.toolbar.AddControl(self.font_size)
         self.toolbar.AddSeparator()
-        self.toolbar.AddTool(wx.ID_BOLD, "", self._frame.get_bitmap("bold"), _("Bold (Ctrl+B)"),
-                             wx.ITEM_CHECK)
+        self.toolbar.AddCheckTool(wx.ID_BOLD, "", self._frame.get_bitmap("bold"), wx.NullBitmap,
+                                  _("Bold (Ctrl+B)"))
         self.Bind(wx.EVT_MENU, self.OnBold, id=wx.ID_BOLD)
-        self.toolbar.AddTool(wx.ID_ITALIC, "", self._frame.get_bitmap("italic"),
-                             _("Italic (Ctrl+I)"), wx.ITEM_CHECK)
+        self.toolbar.AddCheckTool(wx.ID_ITALIC, "", self._frame.get_bitmap("italic"), wx.NullBitmap,
+                                  _("Italic (Ctrl+I)"))
         self.Bind(wx.EVT_MENU, self.OnItalic, id=wx.ID_ITALIC)
-        self.toolbar.AddTool(wx.ID_UNDERLINE, "", self._frame.get_bitmap("underline"),
-                             _("Underline (Ctrl+U)"), wx.ITEM_CHECK)
+        self.toolbar.AddCheckTool(wx.ID_UNDERLINE, "", self._frame.get_bitmap("underline"),
+                                  wx.NullBitmap, _("Underline (Ctrl+U)"))
         self.Bind(wx.EVT_MENU, self.OnUnderline, id=wx.ID_UNDERLINE)
         self.toolbar.AddSeparator()
-        self.toolbar.AddTool(wx.ID_JUSTIFY_LEFT, "", self._frame.get_bitmap("align-left"),
-                             _("Align Left (Ctrl+L)"), wx.ITEM_RADIO)
+        self.toolbar.AddRadioTool(wx.ID_JUSTIFY_LEFT, "", self._frame.get_bitmap("align-left"),
+                                  wx.NullBitmap, _("Align Left (Ctrl+L)"))
         self.Bind(wx.EVT_MENU, self.OnAlignLeft, id=wx.ID_JUSTIFY_LEFT)
-        self.toolbar.AddTool(wx.ID_JUSTIFY_CENTER, "", self._frame.get_bitmap("align-center"),
-                             _("Align Center (Ctrl+E)"), wx.ITEM_RADIO)
+        self.toolbar.AddRadioTool(wx.ID_JUSTIFY_CENTER, "", self._frame.get_bitmap("align-center"),
+                                  wx.NullBitmap, _("Align Center (Ctrl+E)"))
         self.Bind(wx.EVT_MENU, self.OnAlignCenter, id=wx.ID_JUSTIFY_CENTER)
-        self.toolbar.AddTool(wx.ID_JUSTIFY_RIGHT, "", self._frame.get_bitmap("align-right"),
-                             _("Align Right (Ctrl+R)"), wx.ITEM_RADIO)
+        self.toolbar.AddRadioTool(wx.ID_JUSTIFY_RIGHT, "", self._frame.get_bitmap("align-right"),
+                                  wx.NullBitmap, _("Align Right (Ctrl+R)"))
         self.Bind(wx.EVT_MENU, self.OnAlignRight, id=wx.ID_JUSTIFY_RIGHT)
         self.toolbar.AddSeparator()
         ID_NUMBERING = wx.NewId()
-        self.toolbar.AddTool(ID_NUMBERING, "", self._frame.get_bitmap("numbering"), _("Numbering"))
+        self.toolbar.AddSimpleTool(ID_NUMBERING, "", self._frame.get_bitmap("numbering"),
+                                   _("Numbering"))
         self.Bind(wx.EVT_MENU, self.OnNumbering, id=ID_NUMBERING)
         ID_BULLETS = wx.NewId()
-        self.toolbar.AddTool(ID_BULLETS, "", self._frame.get_bitmap("bullets"), _("Bullets"))
+        self.toolbar.AddSimpleTool(ID_BULLETS, "", self._frame.get_bitmap("bullets"), _("Bullets"))
         self.Bind(wx.EVT_MENU, self.OnBullets, id=ID_BULLETS)
         ID_DECREASE_INDENT = wx.NewId()
-        self.toolbar.AddTool(ID_DECREASE_INDENT, "", self._frame.get_bitmap("decrease-indent"),
-                             _("Decrease Indent"))
+        self.toolbar.AddSimpleTool(ID_DECREASE_INDENT, "",
+                                   self._frame.get_bitmap("decrease-indent"), _("Decrease Indent"))
         self.Bind(wx.EVT_MENU, self.OnDecreaseIndent, id=ID_DECREASE_INDENT)
         ID_INCREASE_INDENT = wx.NewId()
-        self.toolbar.AddTool(ID_INCREASE_INDENT, "", self._frame.get_bitmap("increase-indent"),
-                             _("Increase Indent"))
+        self.toolbar.AddSimpleTool(ID_INCREASE_INDENT, "",
+                                   self._frame.get_bitmap("increase-indent"), _("Increase Indent"))
         self.Bind(wx.EVT_MENU, self.OnIncreaseIndent, id=ID_INCREASE_INDENT)
         self.toolbar.AddSeparator()
         ID_HIGHLIGHTING = wx.NewId()
-        self.toolbar.AddTool(ID_HIGHLIGHTING, "", self._frame.get_bitmap("highlighting"),
-                             _("Highlighting"))
+        self.toolbar.AddSimpleTool(ID_HIGHLIGHTING, "", self._frame.get_bitmap("highlighting"),
+                                   _("Highlighting"))
         self.Bind(wx.EVT_MENU, self.OnHighlighting, id=ID_HIGHLIGHTING)
         ID_FONT_COLOR = wx.NewId()
-        self.toolbar.AddTool(ID_FONT_COLOR, "", self._frame.get_bitmap("font-color"),
-                             _("Font Color"))
+        self.toolbar.AddSimpleTool(ID_FONT_COLOR, "", self._frame.get_bitmap("font-color"),
+                                   _("Font Color"))
         self.Bind(wx.EVT_MENU, self.OnFontColor, id=ID_FONT_COLOR)
         self.toolbar.Realize()
 
@@ -475,7 +482,7 @@ class NotesPane(aui.AuiNotebook):
     names = (_("Subject Notes"), _("Verse Notes"))
 
     def __init__(self, parent):
-        super(NotesPane, self).__init__(parent, style=wx.BORDER_NONE | aui.AUI_NB_TOP |
+        super(NotesPane, self).__init__(parent, agwStyle=wx.BORDER_NONE | aui.AUI_NB_TOP |
                                         aui.AUI_NB_SCROLL_BUTTONS)
         self._parent = parent
         richtext.RichTextBuffer.AddHandler(richtext.RichTextXMLHandler())

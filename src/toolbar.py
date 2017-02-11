@@ -1,19 +1,18 @@
 """toolbar.py - toolbar classes"""
 
 import wx
-from wx import aui
+from wx.lib.agw import aui
 
-from config import BOOK_NAMES, BOOK_LENGTHS, CHAPTER_LENGTHS
 from refalize import refalize, validate
+from settings import BOOK_NAMES, BOOK_LENGTHS, CHAPTER_LENGTHS
 
 _ = wx.GetTranslation
 
 
 class ToolBar(aui.AuiToolBar):
     def __init__(self, parent):
-        super(ToolBar, self).__init__(parent, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize,
-                                      aui.AUI_TB_DEFAULT_STYLE | aui.AUI_TB_OVERFLOW |
-                                      aui.AUI_TB_HORZ_TEXT)
+        super(ToolBar, self).__init__(parent, wx.ID_ANY, agwStyle=aui.AUI_TB_DEFAULT_STYLE |
+                                      aui.AUI_TB_OVERFLOW | aui.AUI_TB_HORZ_TEXT)
         self._parent = parent
         self.autocomp_books = parent._app.config.ReadBool("Main/AutocompBooks", True)
 
@@ -25,15 +24,15 @@ class ToolBar(aui.AuiToolBar):
             parent._app.config.Read("Main/LastVerse", "Genesis 1"))
         self.verse_entry.Bind(wx.EVT_KEY_DOWN, self.OnVerseEntryKeyDown)
         self.AddControl(self.verse_entry)
-        self.AddTool(parent.menubar.go_to_verse_item.GetId(), "", parent.get_bitmap("search"),
-                     _("Go to Verse"))
+        self.AddSimpleTool(parent.menubar.go_to_verse_item.GetId(), "", parent.get_bitmap("search"),
+                           _("Go to Verse"))
         self.AddSeparator()
-        self.AddTool(wx.ID_BACKWARD, _("Back"), parent.get_bitmap("go-back"),
-                     _("Go Back (Alt+Left)"))
+        self.AddSimpleTool(wx.ID_BACKWARD, _("Back"), parent.get_bitmap("go-back"),
+                           _("Go Back (Alt+Left)"))
         self.SetToolDropDown(wx.ID_BACKWARD, True)
         self.Bind(aui.EVT_AUITOOLBAR_TOOL_DROPDOWN, self.OnBack, id=wx.ID_BACKWARD)
-        self.AddTool(wx.ID_FORWARD, _("Forward"), parent.get_bitmap("go-forward"),
-                     _("Go Forward (Alt+Right)"))
+        self.AddSimpleTool(wx.ID_FORWARD, _("Forward"), parent.get_bitmap("go-forward"),
+                           _("Go Forward (Alt+Right)"))
         self.SetToolDropDown(wx.ID_FORWARD, True)
         self.Bind(aui.EVT_AUITOOLBAR_TOOL_DROPDOWN, self.OnForward, id=wx.ID_FORWARD)
         self.AddSeparator()
@@ -51,17 +50,18 @@ class ToolBar(aui.AuiToolBar):
         self.chapterctrl.Bind(wx.EVT_SPINCTRL, self.OnChapter)
         self.chapterctrl.Bind(wx.EVT_TEXT_ENTER, self.OnChapter)
         self.AddSeparator()
-        self.AddTool(wx.ID_PRINT, "", parent.get_bitmap("print"), _("Print (Ctrl+P)"))
-        self.AddTool(wx.ID_COPY, "", parent.get_bitmap("copy"), _("Copy (Ctrl+C)"))
+        self.AddSimpleTool(wx.ID_PRINT, "", parent.get_bitmap("print"), _("Print (Ctrl+P)"))
+        self.AddSimpleTool(wx.ID_COPY, "", parent.get_bitmap("copy"), _("Copy (Ctrl+C)"))
         self.ID_READER_VIEW = wx.NewId()
-        self.AddTool(self.ID_READER_VIEW, "", parent.get_bitmap("reader-view"),
-                     _("Reader View (Ctrl+R)"), wx.ITEM_CHECK)
+        self.AddCheckTool(self.ID_READER_VIEW, "", parent.get_bitmap("reader-view"), wx.NullBitmap,
+                          _("Reader View (Ctrl+R)"))
         self.Bind(wx.EVT_MENU, self.OnReaderView, id=self.ID_READER_VIEW)
         self.AddSeparator()
-        self.AddTool(parent.menubar.add_to_bookmarks_item.GetId(), "",
-                     parent.get_bitmap("add-to-bookmarks"), _("Add to Bookmarks (Ctrl+D)"))
-        self.AddTool(parent.menubar.manage_bookmarks_item.GetId(), "",
-                     parent.get_bitmap("manage-bookmarks"), _("Manage Bookmarks (Ctrl+Shift+B)"))
+        self.AddSimpleTool(parent.menubar.add_to_bookmarks_item.GetId(), "",
+                           parent.get_bitmap("add-to-bookmarks"), _("Add to Bookmarks (Ctrl+D)"))
+        self.AddSimpleTool(parent.menubar.manage_bookmarks_item.GetId(), "",
+                           parent.get_bitmap("manage-bookmarks"),
+                           _("Manage Bookmarks (Ctrl+Shift+B)"))
         self.Realize()
 
     def OnVerseEntryKeyDown(self, event):

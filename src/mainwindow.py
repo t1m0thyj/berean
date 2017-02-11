@@ -3,15 +3,15 @@
 import os
 
 import wx
-from wx import aui
+from wx.lib.agw import aui
 
 import html
 import menu
 import panes
 import parallel
 import toolbar
-from config import BOOK_NAMES, BOOK_LENGTHS, BOOK_RANGES, FLAG_NAMES
 from refalize import reference_str
+from settings import BOOK_NAMES, BOOK_LENGTHS, BOOK_RANGES, FLAG_NAMES
 
 _ = wx.GetTranslation
 
@@ -44,7 +44,7 @@ class MainWindow(wx.Frame):
                                  if not facename.startswith("@")])
         self.zoom_level = app.config.ReadInt("Main/ZoomLevel", 3)
         self.minimize_to_tray = app.config.ReadBool("Main/MinimizeToTray")
-        self.version_list = app.config.ReadList("VersionList", ["KJV"])
+        self.version_list = app.config.ReadList("VersionList", ["KJV", "WEB"])
         self.verse_history = app.config.ReadList("History")
         self.history_item = -1
         self.old_versions = []
@@ -62,8 +62,10 @@ class MainWindow(wx.Frame):
         self.statusbar.SetStatusWidths([-1, -1, self.zoombar.width -
                                         wx.SystemSettings.GetMetric(wx.SYS_VSCROLL_X) + 1])
 
-        self.notebook = aui.AuiNotebook(self, style=wx.BORDER_NONE | aui.AUI_NB_TOP |
-                                        aui.AUI_NB_SCROLL_BUTTONS | aui.AUI_NB_WINDOWLIST_BUTTON)
+        self.notebook = aui.AuiNotebook(self, agwStyle=wx.BORDER_NONE | aui.AUI_NB_TOP |
+                                        aui.AUI_NB_SCROLL_BUTTONS | aui.AUI_NB_WINDOWLIST_BUTTON |
+                                        aui.AUI_NB_HIDE_ON_SINGLE_TAB |
+                                        aui.AUI_NB_USE_IMAGES_DROPDOWN)
         if not app.portable:
             self.versiondir = os.path.join(wx.StandardPaths.Get().GetUserLocalDataDir(),
                                            "versions")
@@ -76,11 +78,9 @@ class MainWindow(wx.Frame):
         while i < len(self.version_list):
             window = html.ChapterWindow(self.notebook, self.version_list[i])
             if hasattr(window, "Bible"):
-                self.notebook.AddPage(window, self.version_list[i])
+                self.notebook.AddPage(window, self.version_list[i], tooltip=window.description)
                 self.notebook.SetPageBitmap(i, self.get_bitmap(
                     os.path.join("flags", FLAG_NAMES[self.version_list[i]])))
-                if wx.VERSION_STRING >= "2.9.4":
-                    self.notebook.SetPageToolTip(i, window.description)
                 i += 1
             else:
                 del self.version_list[i]
@@ -88,13 +88,9 @@ class MainWindow(wx.Frame):
                     tab -= 1
         if len(self.version_list) > 1:
             self.parallel = parallel.ParallelPanel(self.notebook)
-            self.notebook.AddPage(self.parallel, _("Parallel"))
-            if wx.VERSION_STRING >= "2.9.4":
-                self.notebook.SetPageToolTip(len(self.version_list),
-                                             self.parallel.htmlwindow.description)
+            self.notebook.AddPage(self.parallel, _("Parallel"),
+                                  tooltip=self.parallel.htmlwindow.description)
             self.notebook.SetSelection(min(tab, self.notebook.GetPageCount()))
-        else:
-            self.notebook.SetTabCtrlHeight(0)
         self.notebook.Bind(aui.EVT_AUINOTEBOOK_PAGE_CHANGED, self.OnAuiNotebookPageChanged)
         self.notebook.Bind(aui.EVT_AUINOTEBOOK_BG_DCLICK, self.OnAuiNotebookBgDclick)
         self.aui.AddPane(self.notebook, aui.AuiPaneInfo().Name("notebook").CenterPane().
@@ -112,7 +108,7 @@ class MainWindow(wx.Frame):
         self.multiverse = panes.MultiVersePane(self)
         self.aui.AddPane(self.multiverse, aui.AuiPaneInfo().Name("multiverse_pane").
                          Caption(_("Multi-Verse Retrieval")).BestSize((600, 440)).Right().
-                         Layer(1).Hide().PinButton(True))
+                         Layer(1).Hide().MaximizeButton(True))
 
         filename = os.path.join(app.userdatadir, "layout.dat")
         if os.path.isfile(filename):

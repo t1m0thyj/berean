@@ -38,7 +38,7 @@ import subprocess
 import sys
 
 sys.path.append("src")
-from config import VERSION
+from settings import VERSION
 
 _7ZIP_PATH = "C:\\Program Files\\7-Zip\\7z.exe"
 INNO_SETUP_PATH = "C:\\Program Files (x86)\\Inno Setup 5\\ISCC.exe"

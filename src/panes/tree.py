@@ -2,7 +2,7 @@
 
 import wx
 
-from config import BOOK_NAMES, BOOK_LENGTHS
+from settings import BOOK_NAMES, BOOK_LENGTHS
 
 
 class TreePane(wx.TreeCtrl):

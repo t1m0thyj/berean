@@ -2,8 +2,8 @@
 
 import wx
 
-from config import BOOK_NAMES, BOOK_LENGTHS, CHAPTER_LENGTHS
 from html import ChapterWindowBase
+from settings import BOOK_NAMES, BOOK_LENGTHS, CHAPTER_LENGTHS
 
 _ = wx.GetTranslation
 
@@ -70,7 +70,7 @@ class ParallelWindow(ChapterWindowBase):
         self.SetPage(self.get_html(book, chapter, verse))
         self._frame.statusbar.SetStatusText(self.description, 1)
         if wx.VERSION_STRING >= "2.9.4":
-            self._frame.notebook.SetPageToolTip(len(self._frame.version_list), self.description)
+            self._frame.notebook.SetPageTooltip(len(self._frame.version_list), self.description)
         if verse > 1:
             wx.CallAfter(self.ScrollToAnchor, str(verse))
             self.current_verse = -1
