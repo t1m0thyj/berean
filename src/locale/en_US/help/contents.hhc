@@ -31,6 +31,6 @@
 		</object>
 	<li><object type="text/sitemap">
 			<param name="Name" value="License">
-			<param name="Local" value="../../../license.txt">
+			<param name="Local" value="../../../../LICENSE">
 		</object>
 </ul>

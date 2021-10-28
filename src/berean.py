@@ -20,6 +20,7 @@ import os
 import sys
 
 import wx
+from wx import adv
 
 import bugreport
 import mainwindow
@@ -81,17 +82,6 @@ class FileConfig(wx.FileConfig):
         self.WriteBool("ShowOptions", frame.search.optionspane.IsExpanded())
         for option in frame.search.options:
             self.WriteBool(option, getattr(frame.search, option).GetValue())
-        self.SetPath("/Notes")
-        self.WriteInt("ActiveTab", frame.notes.GetSelection())
-        subject_notes = frame.notes.GetPage(0)
-        ##self.Write("CurrentSubjectTopic", subject_notes.db_key)
-        self.WriteInt("SplitterPosition1", subject_notes.splitter.GetSashPosition())
-        verse_notes = frame.notes.GetPage(1)
-        ##self.Write("CurrentVerseTopic", verse_notes.db_key)
-        self.WriteInt("SplitterPosition2", verse_notes.splitter.GetSashPosition())
-        self.SetPath("/MultiVerse")
-        self.Write("LastVerseList", frame.multiverse.verse_list.GetValue())
-        self.WriteInt("SplitterPosition", frame.multiverse.splitter.GetSashPosition())
         self.Flush()
 
     def WriteList(self, key, value):
@@ -109,13 +99,6 @@ class Berean(wx.App):
             self.cwd = os.path.dirname(__file__)
         else:
             self.cwd = os.path.dirname(sys.argv[0])
-        show_splash = not ("--nosplash" in optlist or "--systemtray" in optlist)
-        if show_splash:
-            splash = wx.SplashScreen(wx.Bitmap(os.path.join(self.cwd, "images", "splash.png"),
-                                               wx.BITMAP_TYPE_PNG),
-                                     wx.SPLASH_CENTRE_ON_SCREEN | wx.SPLASH_NO_TIMEOUT, 0, None,
-                                     style=wx.BORDER_SIMPLE)
-            self.Yield()
 
         self.portable = True
         if "--datadir" in optlist:
@@ -152,8 +135,6 @@ class Berean(wx.App):
             self.frame.Show()
         else:
             self.frame.taskbaricon = mainwindow.TaskBarIcon(self.frame)
-        if show_splash:
-            splash.Destroy()
         return True
 
     def SetSingleInstance(self, single_instance):

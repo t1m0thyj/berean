@@ -1,7 +1,7 @@
 """toolbar.py - toolbar classes"""
 
 import wx
-from wx.lib.agw import aui
+from wx import aui
 
 from refalize import refalize, validate
 from settings import BOOK_NAMES, BOOK_LENGTHS, CHAPTER_LENGTHS
@@ -11,7 +11,7 @@ _ = wx.GetTranslation
 
 class ToolBar(aui.AuiToolBar):
     def __init__(self, parent):
-        super(ToolBar, self).__init__(parent, wx.ID_ANY, agwStyle=aui.AUI_TB_DEFAULT_STYLE |
+        super(ToolBar, self).__init__(parent, wx.ID_ANY, style=aui.AUI_TB_DEFAULT_STYLE |
                                       aui.AUI_TB_OVERFLOW | aui.AUI_TB_HORZ_TEXT)
         self._parent = parent
         self.autocomp_books = parent._app.config.ReadBool("Main/AutocompBooks", True)
@@ -24,14 +24,14 @@ class ToolBar(aui.AuiToolBar):
             parent._app.config.Read("Main/LastVerse", "Genesis 1"))
         self.verse_entry.Bind(wx.EVT_KEY_DOWN, self.OnVerseEntryKeyDown)
         self.AddControl(self.verse_entry)
-        self.AddSimpleTool(parent.menubar.go_to_verse_item.GetId(), "", parent.get_bitmap("search"),
+        self.AddTool(parent.menubar.go_to_verse_item.GetId(), "", parent.get_bitmap("search"),
                            _("Go to Verse"))
         self.AddSeparator()
-        self.AddSimpleTool(wx.ID_BACKWARD, _("Back"), parent.get_bitmap("go-back"),
+        self.AddTool(wx.ID_BACKWARD, _("Back"), parent.get_bitmap("go-back"),
                            _("Go Back (Alt+Left)"))
         self.SetToolDropDown(wx.ID_BACKWARD, True)
         self.Bind(aui.EVT_AUITOOLBAR_TOOL_DROPDOWN, self.OnBack, id=wx.ID_BACKWARD)
-        self.AddSimpleTool(wx.ID_FORWARD, _("Forward"), parent.get_bitmap("go-forward"),
+        self.AddTool(wx.ID_FORWARD, _("Forward"), parent.get_bitmap("go-forward"),
                            _("Go Forward (Alt+Right)"))
         self.SetToolDropDown(wx.ID_FORWARD, True)
         self.Bind(aui.EVT_AUITOOLBAR_TOOL_DROPDOWN, self.OnForward, id=wx.ID_FORWARD)
@@ -50,16 +50,12 @@ class ToolBar(aui.AuiToolBar):
         self.chapterctrl.Bind(wx.EVT_SPINCTRL, self.OnChapter)
         self.chapterctrl.Bind(wx.EVT_TEXT_ENTER, self.OnChapter)
         self.AddSeparator()
-        self.AddSimpleTool(wx.ID_PRINT, "", parent.get_bitmap("print"), _("Print (Ctrl+P)"))
-        self.AddSimpleTool(wx.ID_COPY, "", parent.get_bitmap("copy"), _("Copy (Ctrl+C)"))
-        self.ID_READER_VIEW = wx.NewId()
-        self.AddCheckTool(self.ID_READER_VIEW, "", parent.get_bitmap("reader-view"), wx.NullBitmap,
-                          _("Reader View (Ctrl+R)"))
-        self.Bind(wx.EVT_MENU, self.OnReaderView, id=self.ID_READER_VIEW)
+        self.AddTool(wx.ID_PRINT, "", parent.get_bitmap("print"), _("Print (Ctrl+P)"))
+        self.AddTool(wx.ID_COPY, "", parent.get_bitmap("copy"), _("Copy (Ctrl+C)"))
         self.AddSeparator()
-        self.AddSimpleTool(parent.menubar.add_to_bookmarks_item.GetId(), "",
+        self.AddTool(parent.menubar.add_to_bookmarks_item.GetId(), "",
                            parent.get_bitmap("add-to-bookmarks"), _("Add to Bookmarks (Ctrl+D)"))
-        self.AddSimpleTool(parent.menubar.manage_bookmarks_item.GetId(), "",
+        self.AddTool(parent.menubar.manage_bookmarks_item.GetId(), "",
                            parent.get_bitmap("manage-bookmarks"),
                            _("Manage Bookmarks (Ctrl+Shift+B)"))
         self.Realize()
@@ -158,7 +154,7 @@ class ZoomBar(wx.ToolBar):
     def __init__(self, parent, frame):
         super(ZoomBar, self).__init__(parent, style=wx.TB_FLAT | wx.TB_NODIVIDER)
         self._frame = frame
-        self.AddLabelTool(wx.ID_ZOOM_OUT, "", frame.get_bitmap("zoom-out"),
+        self.AddTool(wx.ID_ZOOM_OUT, "", frame.get_bitmap("zoom-out"),
                           shortHelp=_("Zoom Out (Ctrl+-)"))
         self.EnableTool(wx.ID_ZOOM_OUT, frame.zoom_level > 1)
         if '__WXGTK__' not in wx.PlatformInfo:
@@ -168,7 +164,7 @@ class ZoomBar(wx.ToolBar):
                                     size=(100, -1))
         self.slider.Bind(wx.EVT_SLIDER, self.OnSlider)
         self.AddControl(self.slider)
-        self.AddLabelTool(wx.ID_ZOOM_IN, "", frame.get_bitmap("zoom-in"),
+        self.AddTool(wx.ID_ZOOM_IN, "", frame.get_bitmap("zoom-in"),
                           shortHelp=_("Zoom In (Ctrl++)"))
         self.EnableTool(wx.ID_ZOOM_IN, frame.zoom_level < 7)
         self.Realize()

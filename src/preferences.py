@@ -6,7 +6,7 @@ import shutil
 import zipfile
 
 import wx
-from wx import combo
+from wx import adv
 
 from settings import VERSION_NAMES, VERSION_DESCRIPTIONS, BOOK_NAMES, FONT_SIZES
 
@@ -22,8 +22,8 @@ class PreferencesDialog(wx.Dialog):
         self.notebook = wx.Notebook(self, style=wx.NB_MULTILINE)
 
         self.general = wx.Panel(self.notebook)
-        self.language = combo.BitmapComboBox(self.general, size=(200, -1),
-                                             style=wx.CB_READONLY | wx.CB_SORT)
+        self.language = adv.BitmapComboBox(self.general, size=(200, -1),
+                                           style=wx.CB_READONLY | wx.CB_SORT)
         for language in LANGUAGES:
             bitmap = parent.get_bitmap(os.path.join("flags", language[3:].lower()))
             self.language.Append(LANGUAGES[language], bitmap, language)
@@ -81,9 +81,9 @@ class PreferencesDialog(wx.Dialog):
         self.version_listbox = wx.CheckListBox(self.versions)
         self.LoadVersions(False)
         self.version_listbox.Bind(wx.EVT_LISTBOX, self.OnVersionListbox)
-        self.add_versions = wx.HyperlinkCtrl(self.versions, wx.ID_ANY, label=_("Add versions..."),
-                                             url="", style=wx.NO_BORDER | wx.HL_ALIGN_LEFT)
-        self.add_versions.Bind(wx.EVT_HYPERLINK, self.OnAddVersions)
+        self.add_versions = adv.HyperlinkCtrl(self.versions, wx.ID_ANY, label=_("Add versions..."),
+                                             url="", style=wx.NO_BORDER | adv.HL_ALIGN_LEFT)
+        self.add_versions.Bind(adv.EVT_HYPERLINK, self.OnAddVersions)
         self.remove_version = wx.Button(self.versions, label=_("Remove"))
         self.remove_version.Disable()
         self.remove_version.Bind(wx.EVT_BUTTON, self.OnRemoveVersion)
@@ -118,8 +118,8 @@ class PreferencesDialog(wx.Dialog):
             self.version_names.append(os.path.basename(version_files[i])[:-4])
             self.version_listbox.Append("%s - %s" %
                                         (self.version_names[i],
-                                         VERSION_DESCRIPTIONS[self.version_names[i]].
-                                         decode("latin_1")), version_files[i])
+                                         VERSION_DESCRIPTIONS[self.version_names[i]]),
+                                        version_files[i])
             if self.version_names[i] in self._parent.version_list:
                 self.version_listbox.Check(i)
 
@@ -127,14 +127,14 @@ class PreferencesDialog(wx.Dialog):
         self.abbrev_results2.Enable(event.IsChecked())
 
     def OnVersionListbox(self, event):
-        version_file = event.GetClientData()
+        version_file = event.GetClientObject()
         if version_file:
             self.remove_version.Enable(os.access(version_file, os.W_OK))
 
     def OnAddVersions(self, event):
         dialog = wx.FileDialog(self, _("Add versions"), self._parent.versiondir,
                                wildcard=_("Bible files (*.bbl;*.zip)|*.bbl;*.zip"),
-                               style=wx.OPEN | wx.MULTIPLE)
+                               style=wx.FD_OPEN | wx.FD_MULTIPLE)
         if dialog.ShowModal() == wx.ID_OK:
             for path in dialog.GetPaths():
                 if not path.endswith(".zip"):

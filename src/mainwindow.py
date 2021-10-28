@@ -3,13 +3,13 @@
 import os
 
 import wx
-from wx.lib.agw import aui
+from wx import adv, aui
 
-import html
+import html2
 import menu
-import panes
-import parallel
+import search
 import toolbar
+import tree
 from refalize import reference_str
 from settings import BOOK_NAMES, BOOK_LENGTHS, BOOK_RANGES, FLAG_NAMES
 
@@ -23,11 +23,11 @@ class MainWindow(wx.Frame):
         default_size = (int(display_size[0] * 0.8), int(display_size[1] * 0.8))
         size = [int(i) for i in app.config.Read("Main/WindowSize", "%d,%d" % default_size).
                 split(",")]
-        self.rect = wx.RectPS(pos, size)
+        self.rect = wx.Rect(pos, size)
         super(MainWindow, self).__init__(None, title="Berean", pos=pos, size=size)
         icons = wx.IconBundle()
-        icons.AddIconFromFile(os.path.join(app.cwd, "images", "berean-16.png"), wx.BITMAP_TYPE_PNG)
-        icons.AddIconFromFile(os.path.join(app.cwd, "images", "berean-32.png"), wx.BITMAP_TYPE_PNG)
+        icons.AddIcon(os.path.join(app.cwd, "images", "berean-16.png"), wx.BITMAP_TYPE_PNG)
+        icons.AddIcon(os.path.join(app.cwd, "images", "berean-32.png"), wx.BITMAP_TYPE_PNG)
         self.SetIcons(icons)
         if app.config.ReadBool("Main/IsMaximized"):
             self.Maximize()
@@ -44,12 +44,12 @@ class MainWindow(wx.Frame):
                                  if not facename.startswith("@")])
         self.zoom_level = app.config.ReadInt("Main/ZoomLevel", 3)
         self.minimize_to_tray = app.config.ReadBool("Main/MinimizeToTray")
-        self.version_list = app.config.ReadList("VersionList", ["KJV", "WEB"])
+        self.version_list = app.config.ReadList("VersionList", ["KJV"])
         self.verse_history = app.config.ReadList("History")
         self.history_item = -1
         self.old_versions = []
-        self.help = html.HelpSystem(self)
-        self.printing = html.PrintingSystem(self)
+        self.help = html2.HelpSystem(self)
+        self.printing = html2.PrintingSystem(self)
 
         self.aui = aui.AuiManager(self)
         self.menubar = menu.MenuBar(self)
@@ -62,10 +62,9 @@ class MainWindow(wx.Frame):
         self.statusbar.SetStatusWidths([-1, -1, self.zoombar.width -
                                         wx.SystemSettings.GetMetric(wx.SYS_VSCROLL_X) + 1])
 
-        self.notebook = aui.AuiNotebook(self, agwStyle=wx.BORDER_NONE | aui.AUI_NB_TOP |
-                                        aui.AUI_NB_SCROLL_BUTTONS | aui.AUI_NB_WINDOWLIST_BUTTON |
-                                        aui.AUI_NB_HIDE_ON_SINGLE_TAB |
-                                        aui.AUI_NB_USE_IMAGES_DROPDOWN)
+        self.notebook = aui.AuiNotebook(self, style=wx.BORDER_NONE | aui.AUI_NB_TOP |
+                                        aui.AUI_NB_SCROLL_BUTTONS | aui.AUI_NB_WINDOWLIST_BUTTON | aui.AUI_NB_TAB_SPLIT)
+        # TODO Hide single tab and load multiple tabs at once when split
         if not app.portable:
             self.versiondir = os.path.join(wx.StandardPaths.Get().GetUserLocalDataDir(),
                                            "versions")
@@ -76,49 +75,35 @@ class MainWindow(wx.Frame):
         i = 0
         tab = app.config.ReadInt("Main/ActiveVersionTab")
         while i < len(self.version_list):
-            window = html.ChapterWindow(self.notebook, self.version_list[i])
+            window = html2.ChapterWindow(self.notebook, self.version_list[i])
             if hasattr(window, "Bible"):
-                self.notebook.AddPage(window, self.version_list[i], tooltip=window.description)
+                self.notebook.AddPage(window, self.version_list[i])
                 self.notebook.SetPageBitmap(i, self.get_bitmap(
                     os.path.join("flags", FLAG_NAMES[self.version_list[i]])))
+                self.notebook.SetPageToolTip(i, window.description)
                 i += 1
             else:
                 del self.version_list[i]
                 if tab > i:
                     tab -= 1
-        if len(self.version_list) > 1:
-            self.parallel = parallel.ParallelPanel(self.notebook)
-            self.notebook.AddPage(self.parallel, _("Parallel"),
-                                  tooltip=self.parallel.htmlwindow.description)
-            self.notebook.SetSelection(min(tab, self.notebook.GetPageCount()))
         self.notebook.Bind(aui.EVT_AUINOTEBOOK_PAGE_CHANGED, self.OnAuiNotebookPageChanged)
         self.notebook.Bind(aui.EVT_AUINOTEBOOK_BG_DCLICK, self.OnAuiNotebookBgDclick)
         self.aui.AddPane(self.notebook, aui.AuiPaneInfo().Name("notebook").CenterPane().
                          PaneBorder(False))
 
-        self.tree = panes.TreePane(self)
+        self.tree = tree.TreePane(self)
         self.aui.AddPane(self.tree, aui.AuiPaneInfo().Name("tree_pane").Caption(_("Tree")).
                          BestSize((150, -1)).Left().Layer(1))
-        self.search = panes.SearchPane(self)
+        self.search = search.SearchPane(self)
         self.aui.AddPane(self.search, aui.AuiPaneInfo().Name("search_pane").Caption(_("Search")).
                          BestSize((300, -1)).Right().Layer(1).MaximizeButton(True))
-        self.notes = panes.NotesPane(self)
-        self.aui.AddPane(self.notes, aui.AuiPaneInfo().Name("notes_pane").Caption(_("Notes")).
-                         BestSize((-1, 270)).Bottom().MaximizeButton(True))
-        self.multiverse = panes.MultiVersePane(self)
-        self.aui.AddPane(self.multiverse, aui.AuiPaneInfo().Name("multiverse_pane").
-                         Caption(_("Multi-Verse Retrieval")).BestSize((600, 440)).Right().
-                         Layer(1).Hide().MaximizeButton(True))
 
         filename = os.path.join(app.userdatadir, "layout.dat")
         if os.path.isfile(filename):
             with open(filename, 'r') as fileobj:
                 self.aui.LoadPerspective(fileobj.read())
         self.aui.Update()
-        reader_view = self.aui.GetPane("notebook").IsMaximized()
-        self.menubar.Check(self.menubar.reader_view_item.GetId(), reader_view)
-        self.toolbar.ToggleTool(self.toolbar.ID_READER_VIEW, reader_view)
-        for pane in ("toolbar", "tree_pane", "search_pane", "notes_pane", "multiverse_pane"):
+        for pane in ("toolbar", "tree_pane", "search_pane"):
             self.menubar.Check(getattr(self.menubar, "%s_item" % pane).GetId(),
                                self.aui.GetPane(pane).IsShown())
         globals()["BOOK_NAMES"] = BOOK_NAMES[:18] + ("Psalm",) + BOOK_NAMES[19:]
@@ -168,10 +153,6 @@ class MainWindow(wx.Frame):
         if self.search.range_choice.GetSelection() == len(BOOK_RANGES):
             self.search.start.SetSelection(book - 1)
             self.search.stop.SetSelection(book - 1)
-        if self.notes.GetSelection() == 1:
-            page = self.notes.GetPage(1)
-            page.save_text()
-            page.load_text("%d.%d" % (book, chapter))
         self.statusbar.SetStatusText("%s %d" % (BOOK_NAMES[book - 1], chapter), 0)
         self.statusbar.SetStatusText(htmlwindow.description, 1)
         self.menubar.Enable(wx.ID_BACKWARD, self.history_item > 0)
@@ -210,11 +191,6 @@ class MainWindow(wx.Frame):
         self.aui.Update()
         self.menubar.Check(self.menubar.search_pane_item.GetId(), show)
 
-    def show_multiverse_pane(self, show=True):
-        self.aui.GetPane("multiverse_pane").Show(show)
-        self.aui.Update()
-        self.menubar.Check(self.menubar.multiverse_pane_item.GetId(), show)
-
     def OnAuiNotebookPageChanged(self, event):
         tab = event.GetSelection()
         htmlwindow = self.get_htmlwindow()
@@ -226,7 +202,6 @@ class MainWindow(wx.Frame):
         self.statusbar.SetStatusText(htmlwindow.description, 1)
         if tab < len(self.version_list):
             self.search.version.SetSelection(tab)
-            self.multiverse.version.SetSelection(tab)
 
     def OnAuiNotebookBgDclick(self, event):
         self.toggle_reader_view()
@@ -259,10 +234,6 @@ class MainWindow(wx.Frame):
             filename = os.path.join(self._app.userdatadir, "indexes", "%s.idx" % version)
             if os.path.isfile(filename):
                 wx.CallAfter(os.remove, filename)
-        for i in range(self.notes.GetPageCount()):
-            page = self.notes.GetPage(i)
-            page.OnSave(None)
-            page.conn.close()
         self._app.config.save()
         with open(os.path.join(self._app.userdatadir, "layout.dat"), 'w') as fileobj:
             fileobj.write(self.aui.SavePerspective())
@@ -274,13 +245,13 @@ class MainWindow(wx.Frame):
         self._app.ExitMainLoop()
 
 
-class TaskBarIcon(wx.TaskBarIcon):
+class TaskBarIcon(adv.TaskBarIcon):
     def __init__(self, frame):
         super(TaskBarIcon, self).__init__()
         self._frame = frame
         self.SetIcon(wx.Icon(os.path.join(frame._app.cwd, "images", "berean-16.png"),
                              wx.BITMAP_TYPE_PNG), frame.GetTitle())
-        self.Bind(wx.EVT_TASKBAR_LEFT_DOWN, self.OnRestore)
+        self.Bind(adv.EVT_TASKBAR_LEFT_DOWN, self.OnRestore)
 
     def CreatePopupMenu(self):
         menu = wx.Menu()

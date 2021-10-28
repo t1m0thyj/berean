@@ -15,7 +15,7 @@ _ = wx.GetTranslation
 
 def OnError(*exception):
     exc_info = "".join(traceback.format_exception(*exception))
-    print exc_info
+    print(exc_info)
     if not ErrorDialog.active:
         dialog = ErrorDialog(exc_info)
         dialog.ShowModal()
@@ -39,13 +39,11 @@ class ErrorDialog(wx.Dialog):
         mac_ver = ""
         if sys.platform == "darwin":
             mac_ver = "\nmac_ver: %s" % platform.mac_ver()[0]
-        self.textctrl = wx.TextCtrl(self, value=REPORT %
-                                    (wx.GetOsDescription(), mac_ver, platform.architecture()[0],
-                                     platform.machine(), sys.byteorder, sys.version,
-                                     sys.getdefaultencoding(), sys.getfilesystemencoding(),
-                                     wx.version(), wx.PlatformInfo, wx.GetDefaultPyEncoding(),
-                                     VERSION, hasattr(sys, "frozen"), exc_info.rstrip()),
-                                    style=wx.TE_MULTILINE | wx.TE_READONLY)
+        self.textctrl = wx.TextCtrl(self, value=REPORT % (wx.GetOsDescription(), mac_ver,
+            platform.architecture()[0], platform.machine(), sys.byteorder, sys.version,
+            sys.getdefaultencoding(), sys.getfilesystemencoding(), wx.version(), wx.PlatformInfo,
+            VERSION, hasattr(sys, "frozen"), exc_info.rstrip()), style=wx.TE_MULTILINE |
+            wx.TE_READONLY)
         self.textctrl.Hide()
         self.Bind(wx.EVT_BUTTON, self.OnSend, self.send)
         self.Bind(wx.EVT_BUTTON, self.OnShow, self.show)
@@ -115,7 +113,6 @@ defaultencoding: %s
 filesystemencoding: %s
 wxPython version: %s
 PlatformInfo: %s
-DefaultPyEncoding: %s
 Berean version: %s
 frozen: %s
 ------------------------------------------------------------------------------

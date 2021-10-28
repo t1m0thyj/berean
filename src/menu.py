@@ -1,9 +1,9 @@
 """menu.py - menubar and bookmarks dialog classes"""
 
 import wx
-from wx import gizmos
+from wx import adv
 
-import html
+import html2
 from refalize import refalize, reference_str
 from settings import VERSION
 
@@ -70,15 +70,6 @@ class MenuBar(wx.MenuBar):
                               _("Resets the text size to the default"))
         frame.Bind(wx.EVT_MENU, self.OnZoomDefault, id=wx.ID_ZOOM_100)
         self.menu_view.AppendSeparator()
-        self.reader_view_item = self.menu_view.AppendCheckItem(wx.ID_ANY,
-                                                               _("R&eader View\tCtrl+R"),
-                                                               _("Maximizes the Bible pane"))
-        frame.Bind(wx.EVT_MENU, self.OnReaderView, self.reader_view_item)
-        self.fullscreen_item = self.menu_view.AppendCheckItem(wx.ID_ANY, _("F&ull Screen\tF11"),
-                                                              _("Displays the window in full "
-                                                                "screen"))
-        frame.Bind(wx.EVT_MENU, self.OnFullScreen, self.fullscreen_item)
-        self.menu_view.AppendSeparator()
         self.toolbar_item = self.menu_view.AppendCheckItem(wx.ID_ANY, _("&Toolbar"))
         frame.Bind(wx.EVT_MENU, self.OnToolbar, self.toolbar_item)
         self.menu_view.AppendSeparator()
@@ -88,13 +79,6 @@ class MenuBar(wx.MenuBar):
         self.search_pane_item = self.menu_view.AppendCheckItem(wx.ID_ANY,
                                                                _("&Search Pane\tCtrl+Shift+S"))
         frame.Bind(wx.EVT_MENU, self.OnSearchPane, self.search_pane_item)
-        self.notes_pane_item = self.menu_view.AppendCheckItem(wx.ID_ANY,
-                                                              _("&Notes Pane\tCtrl+Shift+N"))
-        frame.Bind(wx.EVT_MENU, self.OnNotesPane, self.notes_pane_item)
-        self.multiverse_pane_item = self.menu_view.AppendCheckItem(wx.ID_ANY,
-                                                                   _("&Multi-Verse Retrieval\t"
-                                                                     "Ctrl+Shift+M"))
-        frame.Bind(wx.EVT_MENU, self.OnMultiVersePane, self.multiverse_pane_item)
         self.Append(self.menu_view, _("&View"))
 
         self.menu_bookmarks = wx.Menu()
@@ -140,13 +124,13 @@ class MenuBar(wx.MenuBar):
 
     def OnPrintPreview(self, event):
         self._frame.printing.preview_chapter()
-        
+
     def OnPrint(self, event):
         self._frame.printing.print_chapter()
 
     def OnCopy(self, event):
         window = self._frame.FindFocus()
-        if not isinstance(window, html.HtmlWindowBase):
+        if not isinstance(window, html2.HtmlWindowBase):
             return
         data = wx.TextDataObject(window.SelectionToText())
         if wx.TheClipboard.Open():
@@ -179,12 +163,6 @@ class MenuBar(wx.MenuBar):
     def OnZoomDefault(self, event):
         self._frame.set_zoom(3)
 
-    def OnReaderView(self, event):
-        self._frame.toggle_reader_view()
-
-    def OnFullScreen(self, event):
-        self._frame.ShowFullScreen(event.IsChecked())
-
     def OnToolbar(self, event):
         self._frame.aui.GetPane("toolbar").Show(event.IsChecked())
         self._frame.aui.Update()
@@ -195,13 +173,6 @@ class MenuBar(wx.MenuBar):
 
     def OnSearchPane(self, event):
         self._frame.show_search_pane(event.IsChecked())
-
-    def OnNotesPane(self, event):
-        self._frame.aui.GetPane("notes_pane").Show(event.IsChecked())
-        self._frame.aui.Update()
-
-    def OnMultiVersePane(self, event):
-        self._frame.show_multiverse_pane(event.IsChecked())
 
     def OnAddToBookmarks(self, event):
         bookmark = reference_str(*self._frame.reference)
@@ -234,14 +205,14 @@ class MenuBar(wx.MenuBar):
         self._frame.help.show_frame()
 
     def OnAbout(self, event):
-        info = wx.AboutDialogInfo()
+        info = adv.AboutDialogInfo()
         info.SetName("Berean")
         info.SetVersion(VERSION)
-        info.SetCopyright("Copyright (c) 2011-2015 Timothy Johnson")
+        info.SetCopyright("Copyright (c) 2011-2021 Timothy Johnson")
         info.SetDescription(_("An open source, cross-platform Bible study program"))
         ##info.SetWebSite("http://berean.bitbucket.org")
         info.SetLicense(LICENSE)
-        wx.AboutBox(info)
+        adv.AboutBox(info)
 
 
 class BookmarksDialog(wx.Dialog):
@@ -250,7 +221,7 @@ class BookmarksDialog(wx.Dialog):
               self).__init__(parent, title=_("Manage Bookmarks"),
                              style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER)
         self._parent = parent
-        self.listbox = gizmos.EditableListBox(self, label=_("Bookmarks"))
+        self.listbox = adv.EditableListBox(self, label=_("Bookmarks"))
         self.listbox.SetStrings(parent.menubar.bookmarks)
         self.listbox.Bind(wx.EVT_LIST_END_LABEL_EDIT, self.OnListEndLabelEdit)
         self.text = wx.StaticText(self,
@@ -295,15 +266,8 @@ class BookmarksDialog(wx.Dialog):
         self.Destroy()
 
 
-LICENSE = """This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <http://www.gnu.org/licenses/>."""
+LICENSE = """This Source Code Form is subject to the terms
+of the Mozilla Public License, v. 2.0.
+If a copy of the MPL was not distributed with this file,
+You can obtain one at https://mozilla.org/MPL/2.0/.
+"""
