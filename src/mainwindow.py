@@ -7,6 +7,7 @@ from wx import adv, aui
 
 import html2
 import menu
+import multiverse
 import search
 import toolbar
 import tree
@@ -92,10 +93,14 @@ class MainWindow(wx.Frame):
 
         self.tree = tree.TreePane(self)
         self.aui.AddPane(self.tree, aui.AuiPaneInfo().Name("tree_pane").Caption(_("Tree")).
-                         BestSize((150, -1)).Left().Layer(1))
+                         BestSize((150, 600)).Left().Layer(1).PinButton(True))
         self.search = search.SearchPane(self)
         self.aui.AddPane(self.search, aui.AuiPaneInfo().Name("search_pane").Caption(_("Search")).
-                         BestSize((300, -1)).Right().Layer(1).MaximizeButton(True))
+                         BestSize((300, 600)).Right().Layer(1).PinButton(True))
+        self.multiverse = multiverse.MultiVersePane(self)
+        self.aui.AddPane(self.multiverse, aui.AuiPaneInfo().Name("multiverse_pane").
+                         Caption(_("Multi-Verse Retrieval")).BestSize((600, 300)).Bottom().
+                         Hide().PinButton(True))
 
         filename = os.path.join(app.userdatadir, "layout.dat")
         if os.path.isfile(filename):
@@ -192,6 +197,11 @@ class MainWindow(wx.Frame):
         self.aui.Update()
         self.menubar.Check(self.menubar.search_pane_item.GetId(), show)
 
+    def show_multiverse_pane(self, show=True):
+        self.aui.GetPane("multiverse_pane").Show(show)
+        self.aui.Update()
+        self.menubar.Check(self.menubar.multiverse_pane_item.GetId(), show)
+
     def OnAuiNotebookPageChanged(self, event):
         tab = event.GetSelection()
         htmlwindow = self.get_htmlwindow()
@@ -201,8 +211,8 @@ class MainWindow(wx.Frame):
                       (BOOK_NAMES[self.reference[0] - 1], self.reference[1],
                        self.notebook.GetPageText(tab)))
         self.statusbar.SetStatusText(htmlwindow.description, 1)
-        if tab < len(self.version_list):
-            self.search.version.SetSelection(tab)
+        self.search.version.SetSelection(tab)
+        self.multiverse.version.SetSelection(tab)
 
     def OnAuiNotebookBgDclick(self, event):
         self.toggle_reader_view()

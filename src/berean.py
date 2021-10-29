@@ -82,6 +82,9 @@ class FileConfig(wx.FileConfig):
         self.WriteBool("ShowOptions", frame.search.optionspane.IsExpanded())
         for option in frame.search.options:
             self.WriteBool(option, getattr(frame.search, option).GetValue())
+        self.SetPath("/MultiVerse")
+        self.Write("LastVerseList", frame.multiverse.verse_list.GetValue())
+        self.WriteInt("SplitterPosition", frame.multiverse.GetSashPosition())
         self.Flush()
 
     def WriteList(self, key, value):

@@ -1,11 +1,9 @@
 .idea
 .vscode
 __pycache__
-dist
 src/versions
 *.mo
 Thumbs.db
-vcredist_x86.exe
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

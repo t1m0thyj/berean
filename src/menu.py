@@ -79,6 +79,10 @@ class MenuBar(wx.MenuBar):
         self.search_pane_item = self.menu_view.AppendCheckItem(wx.ID_ANY,
                                                                _("&Search Pane\tCtrl+Shift+S"))
         frame.Bind(wx.EVT_MENU, self.OnSearchPane, self.search_pane_item)
+        self.multiverse_pane_item = self.menu_view.AppendCheckItem(wx.ID_ANY,
+                                                                   _("&Multi-Verse Retrieval\t"
+                                                                     "Ctrl+Shift+M"))
+        frame.Bind(wx.EVT_MENU, self.OnMultiVersePane, self.multiverse_pane_item)
         self.Append(self.menu_view, _("&View"))
 
         self.menu_bookmarks = wx.Menu()
@@ -91,6 +95,9 @@ class MenuBar(wx.MenuBar):
                                                                              "Ctrl+Shift+B"))
         frame.Bind(wx.EVT_MENU, self.OnManageBookmarks, self.manage_bookmarks_item)
         self.menu_bookmarks.AppendSeparator()
+        self.menu_bookmarks.AppendSeparator()
+        self.view_all_item = self.menu_bookmarks.Append(wx.ID_ANY, _("View All"))
+        frame.Bind(wx.EVT_MENU, self.OnViewAll, self.view_all_item)
         self.update_bookmarks()
         self.Append(self.menu_bookmarks, _("&Bookmarks"))
 
@@ -170,6 +177,9 @@ class MenuBar(wx.MenuBar):
     def OnSearchPane(self, event):
         self._frame.show_search_pane(event.IsChecked())
 
+    def OnMultiVersePane(self, event):
+        self._frame.show_multiverse_pane(event.IsChecked())
+
     def OnAddToBookmarks(self, event):
         bookmark = reference_str(*self._frame.reference)
         if find_bookmark(self._frame.reference, self.bookmarks) == -1:
@@ -190,6 +200,12 @@ class MenuBar(wx.MenuBar):
         except StandardError:
             wx.MessageBox(_("'%s' is not a valid reference.") % reference, "Berean",
                           wx.ICON_EXCLAMATION | wx.OK)
+
+    def OnViewAll(self, event):
+        self._frame.show_multiverse_pane()
+        bookmarks = [bookmark.partition("=")[0] for bookmark in self.bookmarks]
+        self._frame.multiverse.verse_list.SetValue("\n".join(bookmarks))
+        self._frame.multiverse.OnSearch(None)
 
     def OnHelp(self, event):
         self._frame.help.show_frame()

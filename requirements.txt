@@ -1,2 +1,4 @@
 pysword
 wxPython
+
+pyinstaller
