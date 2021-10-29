@@ -91,9 +91,6 @@ class MenuBar(wx.MenuBar):
                                                                              "Ctrl+Shift+B"))
         frame.Bind(wx.EVT_MENU, self.OnManageBookmarks, self.manage_bookmarks_item)
         self.menu_bookmarks.AppendSeparator()
-        self.menu_bookmarks.AppendSeparator()
-        self.view_all_item = self.menu_bookmarks.Append(wx.ID_ANY, _("View All"))
-        frame.Bind(wx.EVT_MENU, self.OnViewAll, self.view_all_item)
         self.update_bookmarks()
         self.Append(self.menu_bookmarks, _("&Bookmarks"))
 
@@ -117,7 +114,6 @@ class MenuBar(wx.MenuBar):
         else:
             self.menu_bookmarks.Insert(3, wx.ID_HIGHEST + 1, _("(Empty)"))
             self.menu_bookmarks.Enable(wx.ID_HIGHEST + 1, False)
-        self.menu_bookmarks.Enable(self.view_all_item.GetId(), len(self.bookmarks))
 
     def OnPageSetup(self, event):
         self._frame.printing.PageSetup()
@@ -195,12 +191,6 @@ class MenuBar(wx.MenuBar):
             wx.MessageBox(_("'%s' is not a valid reference.") % reference, "Berean",
                           wx.ICON_EXCLAMATION | wx.OK)
 
-    def OnViewAll(self, event):
-        self._frame.show_multiverse_pane()
-        bookmarks = [bookmark.partition("=")[0] for bookmark in self.bookmarks]
-        self._frame.multiverse.verse_list.SetValue("\n".join(bookmarks))
-        self._frame.multiverse.OnSearch(None)
-
     def OnHelp(self, event):
         self._frame.help.show_frame()
 
@@ -210,7 +200,7 @@ class MenuBar(wx.MenuBar):
         info.SetVersion(VERSION)
         info.SetCopyright("Copyright (c) 2011-2021 Timothy Johnson")
         info.SetDescription(_("An open source, cross-platform Bible study program"))
-        ##info.SetWebSite("http://berean.bitbucket.org")
+        info.SetWebSite("https://github.com/t1m0thyj/berean")
         info.SetLicense(LICENSE)
         adv.AboutBox(info)
 

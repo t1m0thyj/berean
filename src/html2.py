@@ -8,7 +8,7 @@ import wx
 import wx.lib.dragscroller
 from wx import html
 
-from settings import VERSION_DESCRIPTIONS, BOOK_NAMES, BOOK_LENGTHS
+from settings import BOOK_NAMES, BOOK_LENGTHS
 
 _ = wx.GetTranslation
 
@@ -140,12 +140,15 @@ class ChapterWindow(ChapterWindowBase):
             filename = os.path.join(self._frame.versiondir, "%s.bbl" % version)
         try:
             with open(filename, 'rb') as fileobj:
+                metadata = pickle.load(fileobj)
                 self.Bible = pickle.load(fileobj)
+                self.Bible[0] = metadata
         except IOError as exc:
             wx.MessageBox(_("Could not load %s.\n\nError: %s") % (version, exc), _("Error"),
                           wx.ICON_WARNING | wx.OK)
         else:
-            self.description = VERSION_DESCRIPTIONS[version]
+            self.description = self.Bible[0]["description"]
+            self.flag_name = self.Bible[0]["lang"].split("-")[0]
 
     def get_html(self, book, chapter, verse=-1):
         if self.Bible[book]:

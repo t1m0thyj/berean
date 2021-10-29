@@ -11,7 +11,7 @@ import search
 import toolbar
 import tree
 from refalize import reference_str
-from settings import BOOK_NAMES, BOOK_LENGTHS, BOOK_RANGES, FLAG_NAMES
+from settings import BOOK_NAMES, BOOK_LENGTHS, BOOK_RANGES
 
 _ = wx.GetTranslation
 
@@ -78,8 +78,7 @@ class MainWindow(wx.Frame):
             window = html2.ChapterWindow(self.notebook, self.version_list[i])
             if hasattr(window, "Bible"):
                 self.notebook.AddPage(window, self.version_list[i])
-                self.notebook.SetPageBitmap(i, self.get_bitmap(
-                    os.path.join("flags", FLAG_NAMES[self.version_list[i]])))
+                self.notebook.SetPageBitmap(i, self.get_bitmap(os.path.join("flags", window.flag_name)))
                 self.notebook.SetPageToolTip(i, window.description)
                 i += 1
             else:
@@ -115,8 +114,10 @@ class MainWindow(wx.Frame):
         self.Bind(wx.EVT_CLOSE, self.OnClose)
 
     def get_bitmap(self, name):
-        return wx.Bitmap(os.path.join(self._app.cwd, "images", "%s.png" % name),
-                         wx.BITMAP_TYPE_PNG)
+        img_path = os.path.join(self._app.cwd, "images", "%s.png" % name)
+        if not os.path.isfile(img_path):
+            return wx.NullBitmap
+        return wx.Bitmap(img_path, wx.BITMAP_TYPE_PNG)
 
     def get_htmlwindow(self, tab=-1):
         if tab == -1:

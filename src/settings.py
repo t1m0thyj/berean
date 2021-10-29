@@ -2,23 +2,6 @@
 
 VERSION = "0.5.0"
 
-VERSION_NAMES = (
-    "ASV", "BBE", "Darby", "DutSVV", "FreSegond", "GerLut1545", "JPS", "KJV", "RV", "SpaRV",
-    "SpaSEV", "Tyndale", "WEB", "WEBBE", "WEBME", "Webster", "Weymouth", "Wycliffe", "YLT",
-    )
-
-VERSION_DESCRIPTIONS = dict(zip(VERSION_NAMES, (
-    "American Standard Version (1901)", "1949/1964 Bible in Basic English", "Darby Bible (1889)",
-    "Dutch Statenvertaling", "French Traduction de Louis Segond (1910)",
-    "German Luther \xdcbersetzung von 1545 (moderne Rechtschreibung)",
-    "Jewish Publication Society Old Testament", "King James Version (1769)",
-    "Revised Version (1895)", "La Santa Biblia Reina-Valera (1909)",
-    "Spanish Sagradas Escrituras Version Antigua (1569)", "William Tyndale Bible (1525/1530)",
-    "World English Bible", "World English Bible: British Edition",
-    "World English Bible: Messianic Edition", "Webster Bible", "Weymouth NT (1912)",
-    "John Wycliffe Bible (1395)", "Young's Literal Translation (1898)",
-    )))
-
 BOOK_NAMES = (
     "Genesis", "Exodus", "Leviticus", "Numbers", "Deuteronomy", "Joshua", "Judges", "Ruth",
     "1 Samuel", "2 Samuel", "1 Kings", "2 Kings", "1 Chronicles", "2 Chronicles", "Ezra",
@@ -133,11 +116,6 @@ CHAPTER_LENGTHS = (
     (25,),
     (20, 29, 22, 11, 14, 17, 17, 13, 21, 11, 19, 17, 18, 20, 8, 21, 18, 24, 21, 15, 27, 21),
     )
-
-FLAG_NAMES = dict(zip(VERSION_NAMES, (
-    "us", "gb", "gb", "nl", "fr", "de", "us", "gb", "gb", "es", "es", "gb", "us", "gb", "us", "us",
-    "gb", "gb", "scotland",
-    )))
 
 BOOK_RANGES = (
     (1, 66), (1, 39), (1, 5), (6, 17), (18, 22), (23, 27), (28, 39), (40, 66), (40, 44), (45, 58),

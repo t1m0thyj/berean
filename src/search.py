@@ -20,7 +20,7 @@ _ = wx.GetTranslation
 def index_version(version, Bible, indexdir):
     dialog = wx.ProgressDialog(_("Indexing %s") % version, "", 68)
     index = {}
-    for b in range(1, 67):
+    for b in range(1, len(Bible)):
         dialog.Update(b - 1, _("Processing %s...") % BOOK_NAMES[b - 1])
         for c in range(1, len(Bible[b])):
             for v in range(1, len(Bible[b][c])):

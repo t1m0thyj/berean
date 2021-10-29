@@ -2,16 +2,31 @@
 
 import glob
 import os
+import pickle
 import shutil
-import zipfile
 
 import wx
 from wx import adv
 
-from settings import VERSION_NAMES, VERSION_DESCRIPTIONS, BOOK_NAMES, FONT_SIZES
+import sword
+from settings import BOOK_NAMES, FONT_SIZES
 
 _ = wx.GetTranslation
 LANGUAGES = {"en_GB": "English (Great Britain)", "en_US": "English (United States)"}
+
+
+def import_version(infile, outdir):
+    dialog = wx.ProgressDialog(_("Importing %s") % os.path.splitext(os.path.basename(infile))[0], "", 70)
+    sword_bible = sword.Bible(infile)
+    ber_bible = sword.osis2bbl(sword_bible,
+        lambda idx, name: dialog.Update(idx + 1, _("Processing %s...") % BOOK_NAMES[idx - 1]))
+    dialog.Update(68, _("Saving Bible..."))
+    with open(os.path.join(outdir, os.path.splitext(infile)[0] + ".bbl"), 'wb') as fileobj:
+        pickle.dump(ber_bible[0], fileobj)
+        ber_bible[0] = None
+        pickle.dump(ber_bible, fileobj)
+    dialog.Update(70)
+    dialog.Destroy()
 
 
 class PreferencesDialog(wx.Dialog):
@@ -116,10 +131,9 @@ class PreferencesDialog(wx.Dialog):
         self.version_names = []
         for i in range(len(version_files)):
             self.version_names.append(os.path.basename(version_files[i])[:-4])
-            self.version_listbox.Append("%s - %s" %
-                                        (self.version_names[i],
-                                         VERSION_DESCRIPTIONS[self.version_names[i]]),
-                                        version_files[i])
+            with open(version_files[i], 'rb') as fileobj:
+                version_description = pickle.load(fileobj)["description"]
+            self.version_listbox.Append("%s - %s" % (self.version_names[i], version_description), version_files[i])
             if self.version_names[i] in self._parent.version_list:
                 self.version_listbox.Check(i)
 
@@ -140,9 +154,7 @@ class PreferencesDialog(wx.Dialog):
                 if not path.endswith(".zip"):
                     shutil.copy(path, self._parent.versiondir)
                 else:
-                    with zipfile.ZipFile(path) as zipobj:
-                        zipobj.extract("%s.bbl" % os.path.basename(path)[:-4],
-                                       self._parent.versiondir)
+                    import_version(path, self._parent.versiondir)
             self.LoadVersions()
         dialog.Destroy()
 
@@ -176,14 +188,11 @@ class PreferencesDialog(wx.Dialog):
         if default_font != self._parent.default_font:
             for i in range(self._parent.notebook.GetPageCount()):
                 self._parent.get_htmlwindow(i).SetStandardFonts(**default_font)
-            for htmlwindow in (self._parent.search.htmlwindow, self._parent.multiverse.htmlwindow,
-                               self._parent.printing):
+            for htmlwindow in (self._parent.search.htmlwindow, self._parent.printing):
                 htmlwindow.SetStandardFonts(**default_font)
-            for i in range(self._parent.notes.GetPageCount()):
-                self._parent.notes.GetPage(i).set_default_style(default_font)
             self._parent.default_font = default_font
         if version_list != self._parent.version_list:
-            for version in VERSION_NAMES:
+            for version in set(sorted(self._parent.version_list + version_list)):
                 if version in self._parent.version_list and version not in version_list:
                     self._parent.old_versions.append(version)
                 elif version in version_list and version in self._parent.old_versions:

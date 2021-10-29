@@ -8,6 +8,18 @@ from itertools import chain
 from pysword.modules import SwordModules
 
 
+def osis2bbl(osis_bible, progress_callback):
+    bbl_bible = [osis_bible[0]]
+    for b in range(1, len(osis_bible)):
+        progress_callback(b, osis_bible[b][0])
+        bbl_bible.append([osis_bible[b][0]])
+        for c in range(1, len(osis_bible[b])):
+            bbl_bible[b].append([str(osis_bible[b][c][0]) or None])
+            for v in range(1, len(osis_bible[b][c])):
+                bbl_bible[b][c].append(str(osis_bible[b][c][v]).strip())
+    return bbl_bible
+
+
 def get_books(bible):
     return list(chain(*bible.get_structure().get_books().values()))
 
@@ -25,11 +37,11 @@ class Bible(Sequence):
         modules = SwordModules(filename)
         found_modules = modules.parse_modules()
         self._bible = modules.get_bible_from_module(list(found_modules.keys())[0])
-        self._title = found_modules[list(found_modules.keys())[0]]["description"]
+        self._metadata = found_modules[list(found_modules.keys())[0]]
 
     def __getitem__(self, i):
         if i == 0:
-            return self._title
+            return self._metadata
         else:
             return Book(self._bible, i)
 
@@ -117,15 +129,9 @@ class VerseParser(HTMLParser):
 
 
 if __name__ == "__main__":
-    bible = Bible(sys.argv[1])
-    print(bible[0])
-    bible2 = [bible[0]]
-    for b in range(1, len(bible)):
-        print(bible[b][0])
-        bible2.append([bible[b][0]])
-        for c in range(1, len(bible[b])):
-            bible2[b].append([str(bible[b][c][0]) or None])
-            for v in range(1, len(bible[b][c])):
-                bible2[b][c].append(str(bible[b][c][v]).strip())
+    sword_bible = Bible(sys.argv[1])
+    ber_bible = osis2bbl(sword_bible, lambda idx, name: print(name))
     with open(os.path.splitext(sys.argv[1])[0] + ".bbl", 'wb') as fileobj:
-        pickle.dump(bible2, fileobj)
+        pickle.dump(ber_bible[0], fileobj)
+        ber_bible[0] = None
+        pickle.dump(ber_bible, fileobj)
