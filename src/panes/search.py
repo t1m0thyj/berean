@@ -64,8 +64,7 @@ class SearchPane(wx.Panel):
                                 style=wx.TE_PROCESS_ENTER)
         self.text.SetValue(parent._app.config.Read("Search/LastSearch"))
         self.text.Bind(wx.EVT_TEXT_ENTER, self.OnSearch)
-        self.toolbar = aui.AuiToolBar(self, wx.ID_ANY, style=aui.AUI_TB_DEFAULT_STYLE |
-                                      aui.AUI_TB_PLAIN_BACKGROUND)
+        self.toolbar = aui.AuiToolBar(self, wx.ID_ANY, style=aui.AUI_TB_DEFAULT_STYLE | aui.AUI_TB_PLAIN_BACKGROUND)
         ID_SEARCH = wx.NewId()
         self.toolbar.AddTool(ID_SEARCH, "", parent.get_bitmap("search"), _("Search"))
         self.toolbar.Bind(wx.EVT_MENU, self.OnSearch, id=ID_SEARCH)

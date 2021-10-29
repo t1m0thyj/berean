@@ -7,10 +7,9 @@ from wx import adv, aui
 
 import html2
 import menu
-import multiverse
-import search
+import parallel
+import panes
 import toolbar
-import tree
 from refalize import reference_str
 from settings import BOOK_NAMES, BOOK_LENGTHS, BOOK_RANGES
 
@@ -63,9 +62,8 @@ class MainWindow(wx.Frame):
         self.statusbar.SetStatusWidths([-1, -1, self.zoombar.width -
                                         wx.SystemSettings.GetMetric(wx.SYS_VSCROLL_X) + 1])
 
-        self.notebook = aui.AuiNotebook(self, style=wx.BORDER_NONE | aui.AUI_NB_TOP |
-                                        aui.AUI_NB_SCROLL_BUTTONS | aui.AUI_NB_WINDOWLIST_BUTTON | aui.AUI_NB_TAB_SPLIT)
-        # TODO Hide single tab and load multiple tabs at once when split
+        self.notebook = aui.AuiNotebook(self, style=aui.AUI_NB_TOP | aui.AUI_NB_SCROLL_BUTTONS |
+                                                    aui.AUI_NB_WINDOWLIST_BUTTON)
         if not app.portable:
             self.versiondir = os.path.join(wx.StandardPaths.Get().GetUserLocalDataDir(),
                                            "versions")
@@ -86,18 +84,25 @@ class MainWindow(wx.Frame):
                 del self.version_list[i]
                 if tab > i:
                     tab -= 1
+        if len(self.version_list) > 1:
+            self.parallel = parallel.ParallelPanel(self.notebook)
+            self.notebook.AddPage(self.parallel, _("Parallel"))
+            self.notebook.SetPageToolTip(len(self.version_list), self.parallel.htmlwindow.description)
+            self.notebook.SetSelection(min(tab, self.notebook.GetPageCount()))
+        else:
+            self.notebook.SetTabCtrlHeight(0)
         self.notebook.Bind(aui.EVT_AUINOTEBOOK_PAGE_CHANGED, self.OnAuiNotebookPageChanged)
         self.notebook.Bind(aui.EVT_AUINOTEBOOK_BG_DCLICK, self.OnAuiNotebookBgDclick)
         self.aui.AddPane(self.notebook, aui.AuiPaneInfo().Name("notebook").CenterPane().
                          PaneBorder(False))
 
-        self.tree = tree.TreePane(self)
+        self.tree = panes.TreePane(self)
         self.aui.AddPane(self.tree, aui.AuiPaneInfo().Name("tree_pane").Caption(_("Tree")).
                          BestSize((150, 600)).Left().Layer(1).PinButton(True))
-        self.search = search.SearchPane(self)
+        self.search = panes.SearchPane(self)
         self.aui.AddPane(self.search, aui.AuiPaneInfo().Name("search_pane").Caption(_("Search")).
                          BestSize((300, 600)).Right().Layer(1).PinButton(True))
-        self.multiverse = multiverse.MultiVersePane(self)
+        self.multiverse = panes.MultiVersePane(self)
         self.aui.AddPane(self.multiverse, aui.AuiPaneInfo().Name("multiverse_pane").
                          Caption(_("Multi-Verse Retrieval")).BestSize((600, 300)).Bottom().
                          Hide().PinButton(True))
@@ -107,7 +112,7 @@ class MainWindow(wx.Frame):
             with open(filename, 'r') as fileobj:
                 self.aui.LoadPerspective(fileobj.read())
         self.aui.Update()
-        for pane in ("toolbar", "tree_pane", "search_pane"):
+        for pane in ("toolbar", "tree_pane", "search_pane", "multiverse_pane"):
             self.menubar.Check(getattr(self.menubar, "%s_item" % pane).GetId(),
                                self.aui.GetPane(pane).IsShown())
         globals()["BOOK_NAMES"] = BOOK_NAMES[:18] + ("Psalm",) + BOOK_NAMES[19:]
@@ -211,8 +216,9 @@ class MainWindow(wx.Frame):
                       (BOOK_NAMES[self.reference[0] - 1], self.reference[1],
                        self.notebook.GetPageText(tab)))
         self.statusbar.SetStatusText(htmlwindow.description, 1)
-        self.search.version.SetSelection(tab)
-        self.multiverse.version.SetSelection(tab)
+        if tab < len(self.version_list):
+            self.search.version.SetSelection(tab)
+            self.multiverse.version.SetSelection(tab)
 
     def OnAuiNotebookBgDclick(self, event):
         self.toggle_reader_view()
@@ -232,7 +238,7 @@ class MainWindow(wx.Frame):
         self.zoombar.SetRect(wx.Rect(x, (y + height - 19) / 2 - self.zoombar.GetToolSeparation(),
                                      self.zoombar.width, -1))
         if self.HasCapture():
-            self.rect = wx.RectPS(self.GetPosition(), self.GetSize())
+            self.rect = wx.Rect(self.GetPosition(), self.GetSize())
 
     def OnIconize(self, event):
         if self.minimize_to_tray and event.Iconized() and not hasattr(self, "taskbaricon"):

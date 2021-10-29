@@ -11,8 +11,8 @@ _ = wx.GetTranslation
 
 class ToolBar(aui.AuiToolBar):
     def __init__(self, parent):
-        super(ToolBar, self).__init__(parent, wx.ID_ANY, style=aui.AUI_TB_DEFAULT_STYLE |
-                                      aui.AUI_TB_OVERFLOW | aui.AUI_TB_HORZ_TEXT)
+        super(ToolBar, self).__init__(parent, wx.ID_ANY, style=aui.AUI_TB_DEFAULT_STYLE | aui.AUI_TB_OVERFLOW |
+                                                               aui.AUI_TB_HORZ_TEXT)
         self._parent = parent
         self.autocomp_books = parent._app.config.ReadBool("Main/AutocompBooks", True)
 

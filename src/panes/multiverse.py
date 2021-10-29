@@ -19,7 +19,7 @@ class MultiVersePane(wx.SplitterWindow):
 
         left_panel = wx.Panel(self)
         self.toolbar = aui.AuiToolBar(left_panel, wx.ID_ANY, style=aui.AUI_TB_DEFAULT_STYLE |
-                                      aui.AUI_TB_PLAIN_BACKGROUND)
+                                                                   aui.AUI_TB_PLAIN_BACKGROUND)
         self.toolbar.AddLabel(-1, _("Version:"), width=self.toolbar.GetTextExtent(_("Version:"))[0])
         self.version = wx.Choice(self.toolbar, choices=parent.version_list)
         tab = parent.notebook.GetSelection()
