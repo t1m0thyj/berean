@@ -34,7 +34,7 @@ class ParallelWindow(ChapterWindowBase):
                 selection -= 1
             Bibles.append(self._frame.notebook.GetPage(selection).Bible)
             title = "<font size=\"+2\"><b>%s %d (%s)</b></font>" % \
-                (BOOK_NAMES[book - 1], chapter, self.version_list[-1])
+                    (BOOK_NAMES[book - 1], chapter, self.version_list[-1])
             if (not Bibles[-1][book]) or (not Bibles[-1][book][chapter][0]):
                 text.append("<td align=\"center\">%s</td>" % title)
             else:
@@ -63,14 +63,13 @@ class ParallelWindow(ChapterWindowBase):
                 text.append("</td>")
             text.append("</tr>")
         return "<html><body><font size=\"%d\"><table valign=\"top\" cellspacing=\"2\" " \
-            "cellpadding=\"0\"><tbody>%s</tbody></table></font></body></html>" % \
-            (self._frame.zoom_level, "".join(text))
+               "cellpadding=\"0\"><tbody>%s</tbody></table></font></body></html>" % \
+               (self._frame.zoom_level, "".join(text))
 
     def load_chapter(self, book, chapter, verse):
         self.SetPage(self.get_html(book, chapter, verse))
         self._frame.statusbar.SetStatusText(self.description, 1)
-        if wx.VERSION_STRING >= "2.9.4":
-            self._frame.notebook.SetPageToolTip(len(self._frame.version_list), self.description)
+        self._frame.notebook.SetPageToolTip(len(self._frame.version_list), self.description)
         if verse > 1:
             wx.CallAfter(self.ScrollToAnchor, str(verse))
             self.current_verse = -1

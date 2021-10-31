@@ -8,8 +8,8 @@ from settings import BOOK_NAMES, BOOK_LENGTHS
 class TreePane(wx.TreeCtrl):
     def __init__(self, parent):
         super(TreePane, self).__init__(parent, style=wx.TR_DEFAULT_STYLE | wx.BORDER_NONE |
-                                       wx.TR_TWIST_BUTTONS | wx.TR_NO_LINES |
-                                       wx.TR_FULL_ROW_HIGHLIGHT | wx.TR_HIDE_ROOT)
+                                                     wx.TR_TWIST_BUTTONS | wx.TR_NO_LINES |
+                                                     wx.TR_FULL_ROW_HIGHLIGHT | wx.TR_HIDE_ROOT)
         self._parent = parent
 
         root = self.AddRoot("")

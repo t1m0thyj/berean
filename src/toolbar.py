@@ -25,14 +25,14 @@ class ToolBar(aui.AuiToolBar):
         self.verse_entry.Bind(wx.EVT_KEY_DOWN, self.OnVerseEntryKeyDown)
         self.AddControl(self.verse_entry)
         self.AddTool(parent.menubar.go_to_verse_item.GetId(), "", parent.get_bitmap("search"),
-                           _("Go to Verse"))
+                     _("Go to Verse"))
         self.AddSeparator()
         self.AddTool(wx.ID_BACKWARD, _("Back"), parent.get_bitmap("go-back"),
-                           _("Go Back (Alt+Left)"))
+                     _("Go Back (Alt+Left)"))
         self.SetToolDropDown(wx.ID_BACKWARD, True)
         self.Bind(aui.EVT_AUITOOLBAR_TOOL_DROPDOWN, self.OnBack, id=wx.ID_BACKWARD)
         self.AddTool(wx.ID_FORWARD, _("Forward"), parent.get_bitmap("go-forward"),
-                           _("Go Forward (Alt+Right)"))
+                     _("Go Forward (Alt+Right)"))
         self.SetToolDropDown(wx.ID_FORWARD, True)
         self.Bind(aui.EVT_AUITOOLBAR_TOOL_DROPDOWN, self.OnForward, id=wx.ID_FORWARD)
         self.AddSeparator()
@@ -54,10 +54,10 @@ class ToolBar(aui.AuiToolBar):
         self.AddTool(wx.ID_COPY, "", parent.get_bitmap("copy"), _("Copy (Ctrl+C)"))
         self.AddSeparator()
         self.AddTool(parent.menubar.add_to_bookmarks_item.GetId(), "",
-                           parent.get_bitmap("add-to-bookmarks"), _("Add to Bookmarks (Ctrl+D)"))
+                     parent.get_bitmap("add-to-bookmarks"), _("Add to Bookmarks (Ctrl+D)"))
         self.AddTool(parent.menubar.manage_bookmarks_item.GetId(), "",
-                           parent.get_bitmap("manage-bookmarks"),
-                           _("Manage Bookmarks (Ctrl+Shift+B)"))
+                     parent.get_bitmap("manage-bookmarks"),
+                     _("Manage Bookmarks (Ctrl+Shift+B)"))
         self.Realize()
 
     def OnVerseEntryKeyDown(self, event):
@@ -155,7 +155,7 @@ class ZoomBar(wx.ToolBar):
         super(ZoomBar, self).__init__(parent, style=wx.TB_FLAT | wx.TB_NODIVIDER)
         self._frame = frame
         self.AddTool(wx.ID_ZOOM_OUT, "", frame.get_bitmap("zoom-out"),
-                          shortHelp=_("Zoom Out (Ctrl+-)"))
+                     shortHelp=_("Zoom Out (Ctrl+-)"))
         self.EnableTool(wx.ID_ZOOM_OUT, frame.zoom_level > 1)
         if '__WXGTK__' not in wx.PlatformInfo:
             self.slider = wx.Slider(self, value=frame.zoom_level, minValue=1, maxValue=7)
@@ -165,11 +165,11 @@ class ZoomBar(wx.ToolBar):
         self.slider.Bind(wx.EVT_SLIDER, self.OnSlider)
         self.AddControl(self.slider)
         self.AddTool(wx.ID_ZOOM_IN, "", frame.get_bitmap("zoom-in"),
-                          shortHelp=_("Zoom In (Ctrl++)"))
+                     shortHelp=_("Zoom In (Ctrl++)"))
         self.EnableTool(wx.ID_ZOOM_IN, frame.zoom_level < 7)
         self.Realize()
         self.width = (self.GetToolSize()[0] + self.GetToolSeparation()) * 2 + \
-            self.slider.GetSize()[0]
+                     self.slider.GetSize()[0]
         if 'gtk3' in wx.PlatformInfo:
             self.width += 60
 

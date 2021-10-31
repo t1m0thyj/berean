@@ -28,14 +28,14 @@ class MultiVersePane(wx.SplitterWindow):
         self.toolbar.AddSeparator()
         ID_SEARCH = wx.NewId()
         self.toolbar.AddTool(ID_SEARCH, "", parent.get_bitmap("search"),
-                                   _("Search (Ctrl+Enter)"))
+                             _("Search (Ctrl+Enter)"))
         self.Bind(wx.EVT_MENU, self.OnSearch, id=ID_SEARCH)
         self.toolbar.AddTool(wx.ID_PREVIEW, "", parent.get_bitmap("print"),
-                                   _("Print Verses"))
+                             _("Print Verses"))
         self.toolbar.EnableTool(wx.ID_PREVIEW, False)
         self.Bind(wx.EVT_MENU, self.OnPrint, id=wx.ID_PREVIEW)
         self.toolbar.AddTool(wx.ID_COPY, "", parent.get_bitmap("copy"),
-                                   _("Copy Verses"))
+                             _("Copy Verses"))
         self.toolbar.EnableTool(wx.ID_COPY, False)
         self.Bind(wx.EVT_MENU, self.OnCopy, id=wx.ID_COPY)
         self.toolbar.Realize()
@@ -94,9 +94,9 @@ class MultiVersePane(wx.SplitterWindow):
                 failed.append(reference)
         if failed:
             results.insert(0, "<font color=\"red\">The following references are not valid:<br>%s"
-                           "</font>" % "<br>".join(failed))
+                              "</font>" % "<br>".join(failed))
         self.html = "<html><body><font size=\"%d\">%s</font></body></html>" % \
-            (self._parent.zoom_level, "".join(results))
+                    (self._parent.zoom_level, "".join(results))
         self.htmlwindow.SetPage(self.html)
         self.toolbar.EnableTool(wx.ID_PREVIEW, True)
         self.toolbar.EnableTool(wx.ID_COPY, True)
@@ -105,8 +105,7 @@ class MultiVersePane(wx.SplitterWindow):
         self.htmlwindow.SetFocus()
 
     def OnPrint(self, event):
-        if wx.VERSION_STRING >= "2.9.1":
-            self._parent.printing.SetName(_("Multi-Verse Retrieval"))
+        self._parent.printing.SetName(_("Multi-Verse Retrieval"))
         if event.GetId() == wx.ID_PRINT:
             self._parent.printing.PrintText(self.html)
         else:

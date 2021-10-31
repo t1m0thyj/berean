@@ -69,7 +69,7 @@ class SearchPane(wx.Panel):
         self.toolbar.AddTool(ID_SEARCH, "", parent.get_bitmap("search"), _("Search"))
         self.toolbar.Bind(wx.EVT_MENU, self.OnSearch, id=ID_SEARCH)
         self.toolbar.AddTool(wx.ID_PREVIEW, "", parent.get_bitmap("print"),
-                                   _("Print Results"))
+                             _("Print Results"))
         self.toolbar.EnableTool(wx.ID_PREVIEW, False)
         self.toolbar.Bind(wx.EVT_MENU, self.OnPrint, id=wx.ID_PREVIEW)
         self.toolbar.Realize()
@@ -112,7 +112,7 @@ class SearchPane(wx.Panel):
         for item in (self.start, self.rangetext, self.stop):
             item.Disable()
         wx.CallAfter(self.optionspane.Collapse,
-                     not parent._app.config.ReadBool("Search/ShowOptions", True))
+                     not parent._app.config.ReadBool("Search/ShowOptions", True))  # TODO Bugged
         self.Bind(wx.EVT_COLLAPSIBLEPANE_CHANGED, self.OnCollapsiblePaneChanged)
 
         sizer = wx.BoxSizer(wx.VERTICAL)
@@ -174,7 +174,7 @@ class SearchPane(wx.Panel):
                                     for li in difflib.get_close_matches(text, words, 5)])
                     results.append("</ul></p>")
                 self.html = "<html><body><font size=\"%d\">%s</font></body></html>" % \
-                    (self._parent.zoom_level, "".join(results))
+                            (self._parent.zoom_level, "".join(results))
                 self.htmlwindow.SetPage(self.html)
         finally:
             self._parent.statusbar.PopStatusText(0)
@@ -278,13 +278,13 @@ class SearchPane(wx.Panel):
                     lower2 = word2.lower()
                     if lower in lower2 and lower2 != lower:
                         matches.extend(self.get_word_matches(word2, {"CaseSensitive":
-                                                                     options["CaseSensitive"]},
+                                                                         options["CaseSensitive"]},
                                                              True))
             else:
                 for word2 in index:
                     if word in word2 and word2 != word:
                         matches.extend(self.get_word_matches(word2, {"CaseSensitive":
-                                                                     options["CaseSensitive"]},
+                                                                         options["CaseSensitive"]},
                                                              True))
         return matches
 
@@ -299,8 +299,8 @@ class SearchPane(wx.Panel):
                     for match in pattern.finditer(verse):
                         start, end = match.span(0)
                         verse = "%s<b>%s</b>%s" % \
-                            (verse[:start + offset], verse[start + offset:end + offset],
-                             verse[end + offset:])
+                                (verse[:start + offset], verse[start + offset:end + offset],
+                                 verse[end + offset:])
                         offset += 7
                 else:
                     for match in pattern.finditer(verse.replace("[", "").replace("]", "")):
@@ -310,8 +310,8 @@ class SearchPane(wx.Panel):
                         offset2 = (offset + verse.count("[", start + offset, end + offset) +
                                    verse.count("]", start + offset, end + offset))
                         verse = "%s<b>%s</b>%s" % \
-                            (verse[:start + offset], verse[start + offset:end + offset2],
-                             verse[end + offset2:])
+                                (verse[:start + offset], verse[start + offset:end + offset2],
+                                 verse[end + offset2:])
                         offset += 7
                 results.append("<p><a href=\"%d.%d.%d\">%s %d:%d</a><br>%s</p>" %
                                (b, c, v, BOOK_NAMES[b - 1], c, v,
@@ -338,12 +338,11 @@ class SearchPane(wx.Panel):
     def OnPrint(self, event):
         header = _("<div align=\"center\"><font size=\"+1\"><b>Search Results for \"%s\" "
                    "(%d verses in the %s)</b></font></div>") % \
-                   (self.last_search[0], self.last_search[1],
-                    self.version.GetString(self.last_search[2]))
+                 (self.last_search[0], self.last_search[1],
+                  self.version.GetString(self.last_search[2]))
         text = (self.html[:self.html.index("<font color=\"gray\">")] + header +
                 self.html[self.html.index("</font>") + 7:])
-        if wx.VERSION_STRING >= "2.9.1":
-            self._parent.printing.SetName(_("Search Results"))
+        self._parent.printing.SetName(_("Search Results"))
         if event.GetId() == wx.ID_PRINT:
             self._parent.printing.PrintText(text)
         else:

@@ -5,136 +5,132 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2015-08-11 14:46+Eastern Daylight Time\n"
+"POT-Creation-Date: 2021-10-31 09:20-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=CHARSET\n"
-"Content-Transfer-Encoding: ENCODING\n"
+"Content-Type: text/plain; charset=cp1252\n"
+"Content-Transfer-Encoding: 8bit\n"
 "Generated-By: pygettext.py 1.5\n"
 
 
-#: src\berean.py:162
+#: src\berean.py:121
 msgid "Berean is already running."
 msgstr ""
 
-#: src\bugreport.py:30 src\html.py:158
+#: src\bugreport.py:30 src\html2.py:144
 msgid "Error"
 msgstr ""
 
-#: src\bugreport.py:35
+#: src\bugreport.py:33
 msgid "An error occurred in the application."
 msgstr ""
 
-#: src\bugreport.py:36
+#: src\bugreport.py:34
 msgid "send bug report"
 msgstr ""
 
-#: src\bugreport.py:37
+#: src\bugreport.py:35
 msgid "show bug report"
 msgstr ""
 
-#: src\bugreport.py:38
+#: src\bugreport.py:36
 msgid "continue application"
 msgstr ""
 
-#: src\bugreport.py:39
+#: src\bugreport.py:37
 msgid "restart application"
 msgstr ""
 
-#: src\bugreport.py:40
+#: src\bugreport.py:38
 msgid "close application"
 msgstr ""
 
-#: src\html.py:54
+#: src\html2.py:51
 msgid "<div align=\"center\"><font size=\"-1\">Page @PAGENUM@</font></div>"
 msgstr ""
 
-#: src\html.py:127 src\panes\multiverse.py:145 src\panes\search.py:419
+#: src\html2.py:113 src\panes\multiverse.py:133 src\panes\search.py:367
 msgid "&Copy"
 msgstr ""
 
-#: src\html.py:128 src\panes\multiverse.py:146 src\panes\search.py:420
+#: src\html2.py:114 src\panes\multiverse.py:134 src\panes\search.py:368
 msgid "Select &All"
 msgstr ""
 
-#: src\html.py:130
+#: src\html2.py:116
 msgid "&Search for Selected Text"
 msgstr ""
 
-#: src\html.py:134 src\panes\multiverse.py:148 src\panes\search.py:422
+#: src\html2.py:120 src\panes\multiverse.py:136 src\panes\search.py:370
 msgid "&Print..."
 msgstr ""
 
-#: src\html.py:135 src\panes\multiverse.py:150 src\panes\search.py:424
+#: src\html2.py:121 src\panes\multiverse.py:138 src\panes\search.py:372
 msgid "P&rint Preview"
 msgstr ""
 
-#: src\html.py:157
+#: src\html2.py:144
 msgid ""
 "Could not load %s.\n"
 "\n"
 "Error: %s"
 msgstr ""
 
-#: src\html.py:185
+#: src\html2.py:170
 msgid "<font color=\"gray\">%s %d is not in this version.</font>"
 msgstr ""
 
-#: src\mainwindow.py:103
+#: src\mainwindow.py:87
 msgid "Parallel"
 msgstr ""
 
-#: src\mainwindow.py:120
+#: src\mainwindow.py:98
 msgid "Tree"
 msgstr ""
 
-#: src\mainwindow.py:124 src\panes\multiverse.py:32 src\panes\search.py:82
+#: src\mainwindow.py:101 src\panes\search.py:69
 msgid "Search"
 msgstr ""
 
-#: src\mainwindow.py:128
-msgid "Notes"
-msgstr ""
-
-#: src\mainwindow.py:133 src\panes\multiverse.py:119
+#: src\mainwindow.py:105 src\panes\multiverse.py:108
 msgid "Multi-Verse Retrieval"
 msgstr ""
 
-#: src\mainwindow.py:325
+#: src\mainwindow.py:272
 msgid "Restore"
 msgstr ""
 
-#: src\mainwindow.py:327
+#: src\mainwindow.py:274
 msgid "Exit"
 msgstr ""
 
-#: src\menu.py:27
+#: src\menu.py:29
 msgid "Page Set&up..."
 msgstr ""
 
-#: src\menu.py:28
+#: src\menu.py:30
 msgid "Changes page layout settings"
 msgstr ""
 
-#: src\menu.py:30
+#: src\menu.py:32
 msgid "Print Pre&view"
 msgstr ""
 
-#: src\menu.py:31
+#: src\menu.py:33
 msgid "Previews the current chapter"
 msgstr ""
 
-#: src\menu.py:33
+#: src\menu.py:35
 msgid "&Print...\tCtrl+P"
 msgstr ""
 
-#: src\menu.py:34
+#: src\menu.py:35
 msgid "Prints the current chapter"
 msgstr ""
 
-#: src\menu.py:38
+#: src\menu.py:39
 msgid "E&xit"
 msgstr ""
 
@@ -166,391 +162,283 @@ msgstr ""
 msgid "&Edit"
 msgstr ""
 
-#: src\menu.py:56
+#: src\menu.py:55
 msgid "&Go to Verse"
 msgstr ""
 
-#: src\menu.py:57
+#: src\menu.py:56
 msgid "Goes to the specified verse"
 msgstr ""
 
-#: src\menu.py:59
+#: src\menu.py:58
 msgid "Go &Back\tAlt+Left"
 msgstr ""
 
-#: src\menu.py:60
+#: src\menu.py:59
 msgid "Goes to the previous chapter"
 msgstr ""
 
-#: src\menu.py:62
+#: src\menu.py:61
 msgid "Go &Forward\tAlt+Right"
 msgstr ""
 
-#: src\menu.py:63
+#: src\menu.py:62
 msgid "Goes to the next chapter"
 msgstr ""
 
-#: src\menu.py:66
-msgid "Zoom &In\tCtrl++"
-msgstr ""
-
-#: src\menu.py:67
+#: src\menu.py:65
 msgid "Increases the text size"
 msgstr ""
 
-#: src\menu.py:70
+#: src\menu.py:65
+msgid "Zoom &In\tCtrl++"
+msgstr ""
+
+#: src\menu.py:68
+msgid "Decreases the text size"
+msgstr ""
+
+#: src\menu.py:68
 msgid "Zoom &Out\tCtrl+-"
 msgstr ""
 
 #: src\menu.py:71
-msgid "Decreases the text size"
-msgstr ""
-
-#: src\menu.py:74
 msgid "&Reset Zoom\tCtrl+0"
 msgstr ""
 
-#: src\menu.py:75
+#: src\menu.py:72
 msgid "Resets the text size to the default"
 msgstr ""
 
-#: src\menu.py:80
-msgid "R&eader View\tCtrl+R"
-msgstr ""
-
-#: src\menu.py:81
-msgid "Maximizes the Bible pane"
-msgstr ""
-
-#: src\menu.py:85
-msgid "F&ull Screen\tF11"
-msgstr ""
-
-#: src\menu.py:86
-msgid "Displays the window in full screen"
-msgstr ""
-
-#: src\menu.py:91
+#: src\menu.py:75
 msgid "&Toolbar"
 msgstr ""
 
-#: src\menu.py:96
+#: src\menu.py:79
 msgid "Tr&ee Pane\tCtrl+Shift+T"
 msgstr ""
 
-#: src\menu.py:100
+#: src\menu.py:82
 msgid "&Search Pane\tCtrl+Shift+S"
 msgstr ""
 
-#: src\menu.py:104
-msgid "&Notes Pane\tCtrl+Shift+N"
-msgstr ""
-
-#: src\menu.py:108
+#: src\menu.py:85
 msgid "&Multi-Verse Retrieval\tCtrl+Shift+M"
 msgstr ""
 
-#: src\menu.py:112
+#: src\menu.py:88
 msgid "&View"
 msgstr ""
 
-#: src\menu.py:117
+#: src\menu.py:92
 msgid "&Add to Bookmarks\tCtrl+D"
 msgstr ""
 
-#: src\menu.py:118
+#: src\menu.py:93
 msgid "Adds the current chapter to your bookmarks"
 msgstr ""
 
-#: src\menu.py:124
+#: src\menu.py:96
 msgid "&Manage Bookmarks\tCtrl+Shift+B"
 msgstr ""
 
-#: src\menu.py:130
+#: src\menu.py:101
 msgid "View All"
 msgstr ""
 
-#: src\menu.py:133
+#: src\menu.py:104
 msgid "&Bookmarks"
 msgstr ""
 
-#: src\menu.py:136
-msgid "&Help Contents\tF1"
+#: src\menu.py:107
+msgid "Online &Help\tF1"
 msgstr ""
 
-#: src\menu.py:137
-msgid "Shows the contents of the help file"
+#: src\menu.py:108
+msgid "Launches Berean help in your web browser"
 msgstr ""
 
-#: src\menu.py:139
+#: src\menu.py:110
 msgid "&About Berean"
 msgstr ""
 
-#: src\menu.py:140
+#: src\menu.py:111
 msgid "Displays program information, version number, and copyright"
 msgstr ""
 
-#: src\menu.py:143
+#: src\menu.py:113
 msgid "&Help"
 msgstr ""
 
-#: src\menu.py:155
+#: src\menu.py:124
 msgid "(Empty)"
 msgstr ""
 
-#: src\menu.py:236 src\menu.py:309
+#: src\menu.py:191 src\menu.py:266
 msgid "A bookmark for %s already exists."
 msgstr ""
 
-#: src\menu.py:248 src\menu.py:303 src\toolbar.py:127
+#: src\menu.py:203 src\menu.py:260 src\toolbar.py:103
 msgid "'%s' is not a valid reference."
 msgstr ""
 
-#: src\menu.py:266
+#: src\menu.py:220
 msgid "An open source, cross-platform Bible study program"
 msgstr ""
 
-#: src\menu.py:275
+#: src\menu.py:233
 msgid "Manage Bookmarks"
 msgstr ""
 
-#: src\menu.py:278
+#: src\menu.py:236
 msgid "Bookmarks"
 msgstr ""
 
-#: src\menu.py:281
+#: src\menu.py:240
 msgid "Tip: You can add keywords separated by an equals sign"
 msgstr ""
 
-#: src\panes\multiverse.py:25
+#: src\panes\multiverse.py:23
 msgid "Version:"
 msgstr ""
 
-#: src\panes\multiverse.py:34
+#: src\panes\multiverse.py:31
 msgid "Search (Ctrl+Enter)"
 msgstr ""
 
-#: src\panes\multiverse.py:36
-msgid "Print"
-msgstr ""
-
-#: src\panes\multiverse.py:37
+#: src\panes\multiverse.py:34
 msgid "Print Verses"
 msgstr ""
 
-#: src\panes\multiverse.py:40
-msgid "Copy"
-msgstr ""
-
-#: src\panes\multiverse.py:41
+#: src\panes\multiverse.py:38
 msgid "Copy Verses"
 msgstr ""
 
-#: src\panes\multiverse.py:84
+#: src\panes\multiverse.py:77
 msgid "<p><font color=\"gray\">%s %d:%d is not in the %s.</font></p>"
-msgstr ""
-
-#: src\panes\notes.py:66
-msgid "Show Topics Pane"
-msgstr ""
-
-#: src\panes\notes.py:75
-msgid "Save (Ctrl+S)"
-msgstr ""
-
-#: src\panes\notes.py:78
-msgid "Print Notes"
-msgstr ""
-
-#: src\panes\notes.py:82
-msgid "Cut (Ctrl+X)"
-msgstr ""
-
-#: src\panes\notes.py:85 src\toolbar.py:72
-msgid "Copy (Ctrl+C)"
-msgstr ""
-
-#: src\panes\notes.py:88
-msgid "Paste (Ctrl+V)"
-msgstr ""
-
-#: src\panes\notes.py:107
-msgid "Bold (Ctrl+B)"
-msgstr ""
-
-#: src\panes\notes.py:111
-msgid "Italic (Ctrl+I)"
-msgstr ""
-
-#: src\panes\notes.py:115
-msgid "Underline (Ctrl+U)"
-msgstr ""
-
-#: src\panes\notes.py:120
-msgid "Align Left (Ctrl+L)"
-msgstr ""
-
-#: src\panes\notes.py:124
-msgid "Align Center (Ctrl+E)"
-msgstr ""
-
-#: src\panes\notes.py:128
-msgid "Align Right (Ctrl+R)"
-msgstr ""
-
-#: src\panes\notes.py:134
-msgid "Numbering"
-msgstr ""
-
-#: src\panes\notes.py:138
-msgid "Bullets"
-msgstr ""
-
-#: src\panes\notes.py:143
-msgid "Decrease Indent"
-msgstr ""
-
-#: src\panes\notes.py:148
-msgid "Increase Indent"
-msgstr ""
-
-#: src\panes\notes.py:154 src\panes\notes.py:450
-msgid "Highlighting"
-msgstr ""
-
-#: src\panes\notes.py:159 src\panes\notes.py:468
-msgid "Font Color"
-msgstr ""
-
-#: src\panes\notes.py:528
-msgid "Subject Notes"
-msgstr ""
-
-#: src\panes\notes.py:528
-msgid "Verse Notes"
 msgstr ""
 
 #: src\panes\search.py:21
 msgid "Indexing %s"
 msgstr ""
 
-#: src\panes\search.py:24
+#: src\panes\search.py:24 src\preferences.py:22
 msgid "Processing %s..."
 msgstr ""
 
-#: src\panes\search.py:33
+#: src\panes\search.py:31
 msgid "Saving index..."
 msgstr ""
 
-#: src\panes\search.py:85
+#: src\panes\search.py:72
 msgid "Print Results"
 msgstr ""
 
-#: src\panes\search.py:93
+#: src\panes\search.py:79
 msgid "Options"
 msgstr ""
 
-#: src\panes\search.py:97
+#: src\panes\search.py:82
 msgid "All Words in Verse"
 msgstr ""
 
-#: src\panes\search.py:97
+#: src\panes\search.py:82
 msgid "Case Sensitive"
 msgstr ""
 
-#: src\panes\search.py:98
+#: src\panes\search.py:83
 msgid "Exact Match Needed"
 msgstr ""
 
-#: src\panes\search.py:98
+#: src\panes\search.py:83
 msgid "Phrase in Order"
 msgstr ""
 
-#: src\panes\search.py:99
+#: src\panes\search.py:84
 msgid "Regular Expression"
 msgstr ""
 
-#: src\panes\search.py:113
+#: src\panes\search.py:96
 msgid "Entire Bible"
 msgstr ""
 
-#: src\panes\search.py:113
+#: src\panes\search.py:96
 msgid "Old Testament"
 msgstr ""
 
-#: src\panes\search.py:114
-msgid "History (Josh - Esth)"
-msgstr ""
-
-#: src\panes\search.py:114
+#: src\panes\search.py:96
 msgid "Pentateuch (Gen - Deut)"
 msgstr ""
 
-#: src\panes\search.py:115
-msgid "Major Prophets (Isa - Dan)"
+#: src\panes\search.py:97
+msgid "History (Josh - Esth)"
 msgstr ""
 
-#: src\panes\search.py:115
+#: src\panes\search.py:97
 msgid "Wisdom (Job - Song)"
 msgstr ""
 
-#: src\panes\search.py:116
+#: src\panes\search.py:98
+msgid "Major Prophets (Isa - Dan)"
+msgstr ""
+
+#: src\panes\search.py:98
 msgid "Minor Prophets (Hos - Mal)"
 msgstr ""
 
-#: src\panes\search.py:116
-msgid "New Testament"
-msgstr ""
-
-#: src\panes\search.py:117
+#: src\panes\search.py:99
 msgid "Gospels & Acts (Matt - Acts)"
 msgstr ""
 
-#: src\panes\search.py:118
-msgid "Paul's Letters (Rom - Heb)"
+#: src\panes\search.py:99
+msgid "New Testament"
 msgstr ""
 
-#: src\panes\search.py:119
-msgid "Apocalypse (Rev)"
-msgstr ""
-
-#: src\panes\search.py:119
+#: src\panes\search.py:100
 msgid "General Letters (Jas - Jude)"
 msgstr ""
 
-#: src\panes\search.py:120
+#: src\panes\search.py:100
+msgid "Paul's Letters (Rom - Heb)"
+msgstr ""
+
+#: src\panes\search.py:101
+msgid "Apocalypse (Rev)"
+msgstr ""
+
+#: src\panes\search.py:101
 msgid "Custom..."
 msgstr ""
 
-#: src\panes\search.py:120
+#: src\panes\search.py:101
 msgid "Just Current Book"
 msgstr ""
 
-#: src\panes\search.py:127
+#: src\panes\search.py:108
 msgid "to"
 msgstr ""
 
-#: src\panes\search.py:148
+#: src\panes\search.py:127
 msgid "Search in"
 msgstr ""
 
-#: src\panes\search.py:184
+#: src\panes\search.py:161
 msgid "Searching %s..."
 msgstr ""
 
-#: src\panes\search.py:189
+#: src\panes\search.py:165
 msgid "<font color=\"gray\">%d verses in the %s (%d&nbsp;msec)</font>"
 msgstr ""
 
-#: src\panes\search.py:194
+#: src\panes\search.py:169
 msgid "<p>No verses were found.</p><p>Did you mean:<ul>"
 msgstr ""
 
-#: src\panes\search.py:390
+#: src\panes\search.py:339
 msgid "<div align=\"center\"><font size=\"+1\"><b>Search Results for \"%s\" (%d verses in the %s)</b></font></div>"
 msgstr ""
 
-#: src\panes\search.py:397
+#: src\panes\search.py:345
 msgid "Search Results"
 msgstr ""
 
@@ -562,47 +450,55 @@ msgstr ""
 msgid "%s, and %s"
 msgstr ""
 
-#: src\parallel.py:126
+#: src\parallel.py:118
 msgid "(none)"
 msgstr ""
 
-#: src\preferences.py:20
+#: src\preferences.py:19
+msgid "Importing %s"
+msgstr ""
+
+#: src\preferences.py:23
+msgid "Saving Bible..."
+msgstr ""
+
+#: src\preferences.py:34
 msgid "Preferences"
 msgstr ""
 
-#: src\preferences.py:39
+#: src\preferences.py:50
 msgid "Allow single instance only"
 msgstr ""
 
-#: src\preferences.py:43
+#: src\preferences.py:52
 msgid "Minimize to system tray"
 msgstr ""
 
-#: src\preferences.py:46
+#: src\preferences.py:55
 msgid "Auto-complete book names in reference textbox"
 msgstr ""
 
-#: src\preferences.py:52
+#: src\preferences.py:57
 msgid "Abbreviate search results when there are more than"
 msgstr ""
 
-#: src\preferences.py:71
+#: src\preferences.py:74
 msgid "Language:"
 msgstr ""
 
-#: src\preferences.py:76
+#: src\preferences.py:78
 msgid "Default font:"
 msgstr ""
 
-#: src\preferences.py:79
+#: src\preferences.py:81
 msgid "Size:"
 msgstr ""
 
-#: src\preferences.py:91
+#: src\preferences.py:93
 msgid "General"
 msgstr ""
 
-#: src\preferences.py:98
+#: src\preferences.py:99
 msgid "Add versions..."
 msgstr ""
 
@@ -614,75 +510,75 @@ msgstr ""
 msgid "Versions"
 msgstr ""
 
-#: src\preferences.py:153
+#: src\preferences.py:149
 msgid "Add versions"
 msgstr ""
 
-#: src\preferences.py:155
+#: src\preferences.py:150
 msgid "Bible files (*.bbl;*.zip)|*.bbl;*.zip"
 msgstr ""
 
-#: src\preferences.py:170
+#: src\preferences.py:162
 msgid "Are you sure you want to permanently delete this version?"
 msgstr ""
 
-#: src\preferences.py:188
+#: src\preferences.py:178
 msgid "You must have at least one version selected."
 msgstr ""
 
-#: src\preferences.py:194
+#: src\preferences.py:183
 msgid "Changes to language and version settings will take effect after you restart Berean."
 msgstr ""
 
-#: src\toolbar.py:35
+#: src\toolbar.py:28
 msgid "Go to Verse"
 msgstr ""
 
-#: src\toolbar.py:37
+#: src\toolbar.py:30
 msgid "Back"
 msgstr ""
 
-#: src\toolbar.py:38
+#: src\toolbar.py:31
 msgid "Go Back (Alt+Left)"
 msgstr ""
 
-#: src\toolbar.py:42
+#: src\toolbar.py:34
 msgid "Forward"
 msgstr ""
 
-#: src\toolbar.py:44
+#: src\toolbar.py:35
 msgid "Go Forward (Alt+Right)"
 msgstr ""
 
-#: src\toolbar.py:70
+#: src\toolbar.py:53
 msgid "Print (Ctrl+P)"
 msgstr ""
 
-#: src\toolbar.py:76
-msgid "Reader View (Ctrl+R)"
+#: src\toolbar.py:54
+msgid "Copy (Ctrl+C)"
 msgstr ""
 
-#: src\toolbar.py:81
+#: src\toolbar.py:57
 msgid "Add to Bookmarks (Ctrl+D)"
 msgstr ""
 
-#: src\toolbar.py:84
+#: src\toolbar.py:60
 msgid "Manage Bookmarks (Ctrl+Shift+B)"
 msgstr ""
 
-#: src\toolbar.py:115
+#: src\toolbar.py:91
 msgid "The book of %s has only %d chapters."
 msgstr ""
 
-#: src\toolbar.py:120
+#: src\toolbar.py:96
 msgid "%s chapter %d has only %d verses."
 msgstr ""
 
-#: src\toolbar.py:189
+#: src\toolbar.py:158
 msgid "Zoom Out (Ctrl+-)"
 msgstr ""
 
-#: src\toolbar.py:200
+#: src\toolbar.py:168
 msgid "Zoom In (Ctrl++)"
 msgstr ""
 

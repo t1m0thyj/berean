@@ -1,4 +1,6 @@
 pysword
 wxPython
 
-pyinstaller
+poeditor[dev]
+pyinstaller[dev]
+python-dotenv[dev]

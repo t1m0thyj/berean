@@ -1,7 +1,8 @@
 .idea
 .vscode
 __pycache__
-src/versions
+src/versions/*
+!src/versions/KJV.bbl
 *.mo
 Thumbs.db
 

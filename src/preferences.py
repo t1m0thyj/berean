@@ -19,7 +19,7 @@ def import_version(infile, outdir):
     dialog = wx.ProgressDialog(_("Importing %s") % os.path.splitext(os.path.basename(infile))[0], "", 70)
     sword_bible = sword.Bible(infile)
     ber_bible = sword.osis2bbl(sword_bible,
-        lambda idx, name: dialog.Update(idx + 1, _("Processing %s...") % BOOK_NAMES[idx - 1]))
+                               lambda idx, name: dialog.Update(idx + 1, _("Processing %s...") % BOOK_NAMES[idx - 1]))
     dialog.Update(68, _("Saving Bible..."))
     with open(os.path.join(outdir, os.path.splitext(infile)[0] + ".bbl"), 'wb') as fileobj:
         pickle.dump(ber_bible[0], fileobj)
@@ -97,7 +97,7 @@ class PreferencesDialog(wx.Dialog):
         self.LoadVersions(False)
         self.version_listbox.Bind(wx.EVT_LISTBOX, self.OnVersionListbox)
         self.add_versions = adv.HyperlinkCtrl(self.versions, wx.ID_ANY, label=_("Add versions..."),
-                                             url="", style=wx.NO_BORDER | adv.HL_ALIGN_LEFT)
+                                              url="", style=wx.NO_BORDER | adv.HL_ALIGN_LEFT)
         self.add_versions.Bind(adv.EVT_HYPERLINK, self.OnAddVersions)
         self.remove_version = wx.Button(self.versions, label=_("Remove"))
         self.remove_version.Disable()

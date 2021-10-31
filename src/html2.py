@@ -20,8 +20,7 @@ class HelpSystem(html.HtmlHelpController):
         self.SetTempDir(os.path.join(frame._app.userdatadir, ""))
         self.SetTitleFormat("%s")
         self.UseConfig(frame._app.config, "Help")
-        filename = os.path.join(frame._app.cwd, "locale", frame._app.language, "help",
-                                "header.hhp")
+        filename = os.path.join(frame._app.cwd, "locale", frame._app.language, "help", "header.hhp")
         if not os.path.isfile(filename):
             filename = os.path.join(frame._app.cwd, "locale", "en_US", "help", "header.hhp")
         self.AddBook(filename)
@@ -61,13 +60,11 @@ class PrintingSystem(html.HtmlEasyPrinting):
         return text
 
     def print_chapter(self):
-        if wx.VERSION_STRING >= "2.9.1":
-            self.SetName(self._frame.GetTitle()[9:])
+        self.SetName(self._frame.GetTitle()[9:])
         self.PrintText(self.get_chapter_text())
 
     def preview_chapter(self):
-        if wx.VERSION_STRING >= "2.9.1":
-            self.SetName(self._frame.GetTitle()[9:])
+        self.SetName(self._frame.GetTitle()[9:])
         self.PreviewText(self.get_chapter_text())
 
 
@@ -103,7 +100,7 @@ class ChapterWindowBase(HtmlWindowBase):
 
     def load_chapter(self, book, chapter, verse):
         self.SetPage(self.get_html(book, chapter, verse))
-        if verse > 1:  #and self.HasAnchor(str(verse)):
+        if verse > 1:  # and self.HasAnchor(str(verse)):
             wx.CallAfter(self.ScrollToAnchor, str(verse))
             self.current_verse = -1
         self.reference = (book, chapter, verse)
@@ -161,16 +158,16 @@ class ChapterWindow(ChapterWindowBase):
                 if not verse_text:
                     continue
                 verse_text = "<font size=\"-1\">%d&nbsp;</font>%s" % \
-                    (i, verse_text.replace("[", "<i>").replace("]", "</i>"))
+                             (i, verse_text.replace("[", "<i>").replace("]", "</i>"))
                 if i == verse:
                     verse_text = "<b>%s</b>" % verse_text
                 verses.append("<a name=\"%d\">%s</a>" % (i, verse_text))
             if chapter == BOOK_LENGTHS[book - 1] and self.Bible[book][0]:
                 verses[-1] += "<hr><div align=\"center\"><i>%s</i></div>" % \
-                    self.Bible[book][0].replace("]", "<i>").replace("[", "</i>")
+                              self.Bible[book][0].replace("]", "<i>").replace("[", "</i>")
         else:
             header = ""
             verses = [_("<font color=\"gray\">%s %d is not in this version.</font>") %
                       (BOOK_NAMES[book - 1], chapter)]
         return "<html><body><font size=\"%d\"><div align=center>%s</div>%s</font></body>" \
-            "</html>" % (self._frame.zoom_level, header, "<br>".join(verses))
+               "</html>" % (self._frame.zoom_level, header, "<br>".join(verses))

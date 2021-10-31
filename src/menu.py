@@ -1,5 +1,7 @@
 """menu.py - menubar and bookmarks dialog classes"""
 
+import webbrowser
+
 import wx
 from wx import adv
 
@@ -102,8 +104,8 @@ class MenuBar(wx.MenuBar):
         self.Append(self.menu_bookmarks, _("&Bookmarks"))
 
         self.menu_help = wx.Menu()
-        self.menu_help.Append(wx.ID_HELP, _("&Help Contents\tF1"),
-                              _("Shows the contents of the help file"))
+        self.menu_help.Append(wx.ID_HELP, _("Online &Help\tF1"),
+                              _("Launches Berean help in your web browser"))
         frame.Bind(wx.EVT_MENU, self.OnHelp, id=wx.ID_HELP)
         self.menu_help.Append(wx.ID_ABOUT, _("&About Berean"),
                               _("Displays program information, version number, and copyright"))
@@ -208,7 +210,7 @@ class MenuBar(wx.MenuBar):
         self._frame.multiverse.OnSearch(None)
 
     def OnHelp(self, event):
-        self._frame.help.show_frame()
+        webbrowser.open("https://github.com/t1m0thyj/berean/blob/master/docs/README.md")
 
     def OnAbout(self, event):
         info = adv.AboutDialogInfo()
@@ -218,6 +220,10 @@ class MenuBar(wx.MenuBar):
         info.SetDescription(_("An open source, cross-platform Bible study program"))
         info.SetWebSite("https://github.com/t1m0thyj/berean")
         info.SetLicense(LICENSE)
+        info.SetArtists([
+            "FamFamFam Flag Icons (Copyright (c) Mark James)",
+            "Fugue Icons (Copyright (c) Yusuke Kamiyamane)"
+        ])
         adv.AboutBox(info)
 
 

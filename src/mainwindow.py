@@ -21,8 +21,7 @@ class MainWindow(wx.Frame):
         pos = [int(i) for i in app.config.Read("Main/WindowPosition", "-1,-1").split(",")]
         display_size = wx.GetDisplaySize()
         default_size = (int(display_size[0] * 0.8), int(display_size[1] * 0.8))
-        size = [int(i) for i in app.config.Read("Main/WindowSize", "%d,%d" % default_size).
-                split(",")]
+        size = [int(i) for i in app.config.Read("Main/WindowSize", "%d,%d" % default_size).split(",")]
         self.rect = wx.Rect(pos, size)
         super(MainWindow, self).__init__(None, title="Berean", pos=pos, size=size)
         icons = wx.IconBundle()
@@ -48,7 +47,6 @@ class MainWindow(wx.Frame):
         self.verse_history = app.config.ReadList("History")
         self.history_item = -1
         self.old_versions = []
-        self.help = html2.HelpSystem(self)
         self.printing = html2.PrintingSystem(self)
 
         self.aui = aui.AuiManager(self)
@@ -255,10 +253,9 @@ class MainWindow(wx.Frame):
         with open(os.path.join(self._app.userdatadir, "layout.dat"), 'w') as fileobj:
             fileobj.write(self.aui.SavePerspective())
         self.aui.UnInit()
-        del self.help
         self.Destroy()
         self._app.SetSingleInstance(False)
-        del self._app.locale
+        del self._app.locale  # TODO Why?
         self._app.ExitMainLoop()
 
 

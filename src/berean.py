@@ -112,8 +112,7 @@ class Berean(wx.App):
         self.locale = wx.Locale(locale.FindLanguageInfo(self.language).Language)
         localedir = os.path.join(self.cwd, "locale")
         self.locale.AddCatalogLookupPathPrefix(localedir)
-        if os.path.isfile(os.path.join(localedir, self.language, "LC_MESSAGES", "berean.mo")):
-            self.locale.AddCatalog("berean")
+        self.locale.AddCatalog("berean")
 
         self.single_instance = self.config.ReadBool("Main/SingleInstance", True)
         if self.single_instance:
