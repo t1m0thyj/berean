@@ -24,7 +24,7 @@ jobs:
       run: pip install -r requirements.txt
 
     - name: Build App
-      run: pyinstaller berean.spec
+      run: pyinstaller -y berean.spec
 
     - name: Upload Artifacts
       uses: actions/upload-artifact@v2

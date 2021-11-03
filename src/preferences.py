@@ -12,7 +12,6 @@ import sword
 from settings import BOOK_NAMES, FONT_SIZES
 
 _ = wx.GetTranslation
-LANGUAGES = {"en_GB": "English (Great Britain)", "en_US": "English (United States)"}
 
 
 def import_version(infile, outdir):
@@ -37,12 +36,11 @@ class PreferencesDialog(wx.Dialog):
         self.notebook = wx.Notebook(self, style=wx.NB_MULTILINE)
 
         self.general = wx.Panel(self.notebook)
-        self.language = adv.BitmapComboBox(self.general, size=(200, -1),
-                                           style=wx.CB_READONLY | wx.CB_SORT)
-        for language in LANGUAGES:
-            bitmap = parent.get_bitmap(os.path.join("flags", language[3:].lower()))
-            self.language.Append(LANGUAGES[language], bitmap, language)
-        self.language.SetStringSelection(LANGUAGES[parent._app.language])
+        self.language = wx.ComboBox(self.general, size=(200, -1), style=wx.CB_READONLY | wx.CB_SORT)
+        languages = {"en_US", *wx.Translations.Get().GetAvailableTranslations("berean")}
+        for language in languages:
+            self.language.Append(parent._app.locale.FindLanguageInfo(language).Description, language)
+        self.language.SetStringSelection(parent._app.locale.FindLanguageInfo(parent._app.language).Description)
         self.font_face = wx.Choice(self.general, choices=parent.facenames)
         self.font_face.SetStringSelection(parent.default_font["normal_face"])
         self.font_size = wx.ComboBox(self.general, choices=FONT_SIZES)
