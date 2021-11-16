@@ -15,12 +15,13 @@ _ = wx.GetTranslation
 
 
 def import_version(infile, outdir):
-    dialog = wx.ProgressDialog(_("Importing %s") % os.path.splitext(os.path.basename(infile))[0], "", 70)
+    version_name = os.path.splitext(os.path.basename(infile))[0]
+    dialog = wx.ProgressDialog(_("Importing %s") % version_name, "", 70)
     sword_bible = sword.Bible(infile)
     ber_bible = sword.osis2bbl(sword_bible,
                                lambda idx, name: dialog.Update(idx + 1, _("Processing %s...") % BOOK_NAMES[idx - 1]))
     dialog.Update(68, _("Saving Bible..."))
-    with open(os.path.join(outdir, os.path.splitext(infile)[0] + ".bbl"), 'wb') as fileobj:
+    with open(os.path.join(outdir, version_name + ".bbl"), 'wb') as fileobj:
         pickle.dump(ber_bible[0], fileobj)
         ber_bible[0] = None
         pickle.dump(ber_bible, fileobj)

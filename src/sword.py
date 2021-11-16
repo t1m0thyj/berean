@@ -90,7 +90,7 @@ class Title(str):
 
 class Verse(str):
     def __new__(cls, data):
-        return str.__new__(cls, VerseParser(data, exclude_tags=["note", "title:psalm"]))
+        return str.__new__(cls, VerseParser(data, exclude_tags=["note", "title"]))
 
 
 class VerseParser(HTMLParser):

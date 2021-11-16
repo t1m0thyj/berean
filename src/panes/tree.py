@@ -68,8 +68,8 @@ class TreePane(wx.TreeCtrl):
                 child, cookie = self.GetNextChild(item, cookie)
                 i += 1
             self.SelectItem(child)
-            self.ScrollTo(child)
+            self.EnsureVisible(child)
         else:
             self.SelectItem(self.top_level_items[book - 1])
-            self.ScrollTo(self.top_level_items[book - 1])
+            self.EnsureVisible(self.top_level_items[book - 1])
         self.Thaw()
