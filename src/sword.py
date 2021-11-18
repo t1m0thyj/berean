@@ -1,6 +1,12 @@
+import configparser
 import os
 import pickle
+import posixpath
+import shutil
 import sys
+import tarfile
+import tempfile
+import urllib.request
 from collections.abc import Sequence
 from html.parser import HTMLParser
 from itertools import chain
@@ -126,6 +132,34 @@ class VerseParser(HTMLParser):
         if "transchange:added" in self._tags:
             data = f"[{data}]"
         self._output = (self._output or "") + data
+
+
+class BibleRepository:
+    def __init__(self, repo_url):
+        self.repo_url = repo_url
+        with tempfile.NamedTemporaryFile(delete=False) as outfile:
+            with urllib.request.urlopen(repo_url + "/mods.d.tar.gz") as infile:
+                shutil.copyfileobj(infile, outfile)
+            self._tgz = tarfile.open(outfile.name, "r:gz")
+
+    def get_version_data(self):
+        version_data = []
+        for member in self._tgz.getmembers():
+            if not member.isfile() or not member.name.endswith(".conf"):
+                continue
+            config = configparser.ConfigParser(strict=False)
+            try:
+                config.read_string(self._tgz.extractfile(member).read().decode())
+            except configparser.ParsingError:
+                pass
+            root_section = config.sections()[0]
+            if config[root_section]["ModDrv"].lower() == "ztext":
+                version_data.append({
+                    "abbreviation": config[root_section].get("Abbreviation", root_section),
+                    "description": config[root_section]["Description"],
+                    "downloadUrl": posixpath.join(self.repo_url, config[root_section]["DataPath"])
+                })
+        return sorted(version_data, key=lambda data: data["abbreviation"])
 
 
 if __name__ == "__main__":

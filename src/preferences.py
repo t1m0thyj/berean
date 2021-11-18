@@ -91,14 +91,14 @@ class PreferencesDialog(wx.Dialog):
         self.general.SetSizer(sizer)
         self.notebook.AddPage(self.general, _("General"))
 
-        self.versions = wx.Panel(self.notebook)
-        self.version_listbox = wx.CheckListBox(self.versions)
-        self.LoadVersions(False)
+        self.installed = wx.Panel(self.notebook)
+        self.version_listbox = wx.CheckListBox(self.installed)
+        self.LoadInstalledVersions(False)
         self.version_listbox.Bind(wx.EVT_LISTBOX, self.OnVersionListbox)
-        self.add_versions = adv.HyperlinkCtrl(self.versions, wx.ID_ANY, label=_("Add versions..."),
+        self.add_versions = adv.HyperlinkCtrl(self.installed, wx.ID_ANY, label=_("Add versions..."),
                                               url="", style=wx.NO_BORDER | adv.HL_ALIGN_LEFT)
         self.add_versions.Bind(adv.EVT_HYPERLINK, self.OnAddVersions)
-        self.remove_version = wx.Button(self.versions, label=_("Remove"))
+        self.remove_version = wx.Button(self.installed, label=_("Remove"))
         self.remove_version.Disable()
         self.remove_version.Bind(wx.EVT_BUTTON, self.OnRemoveVersion)
         sizer = wx.BoxSizer(wx.VERTICAL)
@@ -107,8 +107,35 @@ class PreferencesDialog(wx.Dialog):
         sizer2.Add(self.add_versions, 1, wx.LEFT | wx.ALIGN_CENTER_VERTICAL, 3)
         sizer2.Add(self.remove_version, 0, wx.RIGHT | wx.EXPAND, 3)
         sizer.Add(sizer2, 0, wx.ALL | wx.EXPAND, 2)
-        self.versions.SetSizer(sizer)
-        self.notebook.AddPage(self.versions, _("Versions"))
+        self.installed.SetSizer(sizer)
+        self.notebook.AddPage(self.installed, _("Installed"))
+
+        self.available = wx.Panel(self.notebook)
+        self.version_repo = wx.ComboBox(self.available, style=wx.CB_READONLY)
+        self.refresh_button = wx.BitmapButton(self.available, wx.ID_ANY,
+                                              wx.Bitmap(os.path.join(parent._app.cwd, "images", "refresh.png")))
+        self.edit_button = wx.BitmapButton(self.available, wx.ID_ANY,
+                                              wx.Bitmap(os.path.join(parent._app.cwd, "images", "edit.png")))
+        self.version2_listbox = wx.CheckListBox(self.available)
+        self.LoadAvailableVersions(False)
+        self.version2_listbox.Bind(wx.EVT_LISTBOX, self.OnVersionListbox)
+        self.version_search = wx.SearchCtrl(self.available)
+        self.download_version = wx.Button(self.available, label=_("Download"))
+        self.download_version.Disable()
+        #self.download_version.Bind(wx.EVT_BUTTON, self.OnDownloadVersion)
+        sizer = wx.BoxSizer(wx.VERTICAL)
+        sizer2 = wx.BoxSizer(wx.HORIZONTAL)
+        sizer2.Add(self.version_repo, 1, wx.LEFT | wx.EXPAND, 3)
+        sizer2.Add(self.refresh_button, 0, wx.RIGHT, 3)
+        sizer2.Add(self.edit_button, 0, wx.RIGHT, 3)
+        sizer.Add(sizer2, 0, wx.ALL | wx.EXPAND, 2)
+        sizer.Add(self.version2_listbox, 1, wx.EXPAND)
+        sizer3 = wx.BoxSizer(wx.HORIZONTAL)
+        sizer3.Add(self.version_search, 1, wx.LEFT | wx.ALIGN_CENTER_VERTICAL, 3)
+        sizer3.Add(self.download_version, 0, wx.RIGHT | wx.EXPAND, 3)
+        sizer.Add(sizer3, 0, wx.ALL | wx.EXPAND, 2)
+        self.available.SetSizer(sizer)
+        self.notebook.AddPage(self.available, _("Available"))
 
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add(self.notebook, 1, wx.ALL | wx.EXPAND, 5)
@@ -120,7 +147,7 @@ class PreferencesDialog(wx.Dialog):
         self.Fit()
         self.Center()
 
-    def LoadVersions(self, clear=True):
+    def LoadInstalledVersions(self, clear=True):
         if clear:
             self.version_listbox.Clear()
         version_files = glob.glob(os.path.join(self._parent._app.cwd, "versions", "*.bbl"))
@@ -135,6 +162,17 @@ class PreferencesDialog(wx.Dialog):
             self.version_listbox.Append("%s - %s" % (self.version_names[i], version_description), version_files[i])
             if self.version_names[i] in self._parent.version_list:
                 self.version_listbox.Check(i)
+
+    def LoadAvailableVersions(self, clear=True):
+        if clear:
+            self.version2_listbox.Clear()
+        version_repos = [
+            "https://crosswire.org/ftpmirror/pub/sword/raw"
+        ]
+        for repo_url in version_repos:
+            version_data = sword.BibleRepository(repo_url).get_version_data()
+            for data in version_data:
+                self.version2_listbox.Append("%s - %s" % (data["abbreviation"], data["description"]), data["downloadUrl"])
 
     def OnAbbrevResults(self, event):
         self.abbrev_results2.Enable(event.IsChecked())
@@ -154,7 +192,7 @@ class PreferencesDialog(wx.Dialog):
                     shutil.copy(path, self._parent.versiondir)
                 else:
                     import_version(path, self._parent.versiondir)
-            self.LoadVersions()
+            self.LoadInstalledVersions()
         dialog.Destroy()
 
     def OnRemoveVersion(self, event):
