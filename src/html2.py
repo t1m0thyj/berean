@@ -134,7 +134,7 @@ class ChapterWindow(ChapterWindowBase):
         super(ChapterWindow, self).__init__(parent, parent.GetParent())
         filename = os.path.join(self._frame._app.cwd, "versions", "%s.bbl" % version)
         if not os.path.isfile(filename):
-            filename = os.path.join(self._frame.versiondir, "%s.bbl" % version)
+            filename = os.path.join(self._frame._app.version_dir, "%s.bbl" % version)
         try:
             with open(filename, 'rb') as fileobj:
                 metadata = pickle.load(fileobj)

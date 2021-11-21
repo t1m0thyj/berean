@@ -118,7 +118,7 @@ class MenuBar(wx.MenuBar):
         if self.bookmarks:
             for i in range(len(self.bookmarks)):
                 self.menu_bookmarks.Insert(i + 3, wx.ID_HIGHEST + i + 1,
-                                           *self.bookmarks[i].split("="))
+                                           *self.bookmarks[i].split("|"))
                 self._frame.Bind(wx.EVT_MENU, self.OnBookmark, id=wx.ID_HIGHEST + i + 1)
         else:
             self.menu_bookmarks.Insert(3, wx.ID_HIGHEST + 1, _("(Empty)"))
@@ -236,8 +236,7 @@ class BookmarksDialog(wx.Dialog):
         self.listbox = adv.EditableListBox(self, label=_("Bookmarks"))
         self.listbox.SetStrings(parent.menubar.bookmarks)
         self.listbox.Bind(wx.EVT_LIST_END_LABEL_EDIT, self.OnListEndLabelEdit)
-        self.text = wx.StaticText(self,
-                                  label=_("Tip: You can add keywords separated by an equals sign"))
+        self.text = wx.StaticText(self, label=_("Tip: You can add keywords separated by a \"|\" character"))
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add(self.listbox, 1, wx.ALL | wx.EXPAND, 5)
         sizer.Add(self.text, 0, wx.ALL ^ wx.TOP | wx.ALIGN_CENTER_HORIZONTAL, 5)

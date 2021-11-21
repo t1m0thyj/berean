@@ -4,6 +4,7 @@ import glob
 import os
 import pickle
 import shutil
+import textwrap
 
 import wx
 from wx import adv
@@ -35,6 +36,9 @@ class PreferencesDialog(wx.Dialog):
                                                 style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER)
         self._parent = parent
         self.notebook = wx.Notebook(self, style=wx.NB_MULTILINE)
+        self.active_module_repo = None
+        if len(self._parent.module_repos) == 0:
+            self._parent.module_repos = sword.get_master_repo_list()
 
         self.general = wx.Panel(self.notebook)
         self.language = wx.ComboBox(self.general, size=(200, -1), style=wx.CB_READONLY | wx.CB_SORT)
@@ -112,17 +116,23 @@ class PreferencesDialog(wx.Dialog):
 
         self.available = wx.Panel(self.notebook)
         self.version_repo = wx.ComboBox(self.available, style=wx.CB_READONLY)
+        for repo in self._parent.module_repos:
+            repo_name, ftp_host, ftp_path = repo.split("|")
+            self.version_repo.Append(f"{repo_name} - {ftp_host}{ftp_path}", repo)
+        self.version_repo.SetSelection(0)
+        self.version_repo.Bind(wx.EVT_COMBOBOX, self.OnVersionRepoSelect)
         self.refresh_button = wx.BitmapButton(self.available, wx.ID_ANY,
                                               wx.Bitmap(os.path.join(parent._app.cwd, "images", "refresh.png")))
         self.edit_button = wx.BitmapButton(self.available, wx.ID_ANY,
                                               wx.Bitmap(os.path.join(parent._app.cwd, "images", "edit.png")))
         self.version2_listbox = wx.CheckListBox(self.available)
-        self.LoadAvailableVersions(False)
         self.version2_listbox.Bind(wx.EVT_LISTBOX, self.OnVersionListbox)
         self.version_search = wx.SearchCtrl(self.available)
+        self.version_search.Bind(wx.EVT_TEXT, self.OnVersionSearchText)
         self.download_version = wx.Button(self.available, label=_("Download"))
         self.download_version.Disable()
         #self.download_version.Bind(wx.EVT_BUTTON, self.OnDownloadVersion)
+        self.LoadAvailableVersions(False)
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer2 = wx.BoxSizer(wx.HORIZONTAL)
         sizer2.Add(self.version_repo, 1, wx.LEFT | wx.EXPAND, 3)
@@ -152,27 +162,31 @@ class PreferencesDialog(wx.Dialog):
             self.version_listbox.Clear()
         version_files = glob.glob(os.path.join(self._parent._app.cwd, "versions", "*.bbl"))
         if self._parent._app.userdatadir != self._parent._app.cwd:
-            version_files.extend(glob.glob("%s\\*.bbl" % self._parent.versiondir))
+            version_files.extend(glob.glob("%s\\*.bbl" % self._parent._app.version_dir))
         version_files.sort(key=os.path.basename)
         self.version_names = []
         for i in range(len(version_files)):
             self.version_names.append(os.path.basename(version_files[i])[:-4])
             with open(version_files[i], 'rb') as fileobj:
                 version_description = pickle.load(fileobj)["description"]
-            self.version_listbox.Append("%s - %s" % (self.version_names[i], version_description), version_files[i])
+            item_text = "%s - %s" % (self.version_names[i], version_description)
+            self.version_listbox.Append(textwrap.shorten(item_text, 100), version_files[i])
             if self.version_names[i] in self._parent.version_list:
                 self.version_listbox.Check(i)
 
     def LoadAvailableVersions(self, clear=True):
         if clear:
             self.version2_listbox.Clear()
-        version_repos = [
-            "https://crosswire.org/ftpmirror/pub/sword/raw"
-        ]
-        for repo_url in version_repos:
-            version_data = sword.BibleRepository(repo_url).get_version_data()
-            for data in version_data:
-                self.version2_listbox.Append("%s - %s" % (data["abbreviation"], data["description"]), data["downloadUrl"])
+        repo = self.version_repo.GetClientData(self.version_repo.GetSelection())
+        if repo != self.active_module_repo:
+            self.version_data = sword.BibleRepository(*repo.split("|"), cache_dir=self._parent._app.repo_dir). \
+                get_version_data(busy_callback=lambda: wx.BusyInfo(_("Downloading module list...")))
+            self.active_module_repo = repo
+        version_filter = self.version_search.GetValue().lower()
+        for data in self.version_data:
+            item_text = "%s - %s" % (data["abbreviation"], data["description"])
+            if not version_filter or version_filter in item_text.lower():
+                self.version2_listbox.Append(textwrap.shorten(item_text, 100), data["ftpUrl"])
 
     def OnAbbrevResults(self, event):
         self.abbrev_results2.Enable(event.IsChecked())
@@ -183,15 +197,15 @@ class PreferencesDialog(wx.Dialog):
             self.remove_version.Enable(os.access(version_file, os.W_OK))
 
     def OnAddVersions(self, event):
-        dialog = wx.FileDialog(self, _("Add versions"), self._parent.versiondir,
+        dialog = wx.FileDialog(self, _("Add versions"), self._parent._app.version_dir,
                                wildcard=_("Bible files (*.bbl;*.zip)|*.bbl;*.zip"),
                                style=wx.FD_OPEN | wx.FD_MULTIPLE)
         if dialog.ShowModal() == wx.ID_OK:
             for path in dialog.GetPaths():
                 if not path.endswith(".zip"):
-                    shutil.copy(path, self._parent.versiondir)
+                    shutil.copy(path, self._parent._app.version_dir)
                 else:
-                    import_version(path, self._parent.versiondir)
+                    import_version(path, self._parent._app.version_dir)
             self.LoadInstalledVersions()
         dialog.Destroy()
 
@@ -207,6 +221,13 @@ class PreferencesDialog(wx.Dialog):
                 self._parent.version_list.remove(version_name)
             if version_name not in self._parent.old_versions:
                 self._parent.old_versions.append(version_name)
+
+    def OnVersionRepoSelect(self, event):
+        self.LoadAvailableVersions()
+
+    def OnVersionSearchText(self, event):
+        self.version_search.ShowCancelButton(not self.version_search.IsEmpty())
+        self.LoadAvailableVersions()
 
     def OnOk(self, event):
         version_list = [version for i, version in enumerate(self.version_names)

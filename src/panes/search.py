@@ -17,7 +17,7 @@ from settings import BOOK_NAMES, BOOK_RANGES
 _ = wx.GetTranslation
 
 
-def index_version(version, Bible, indexdir):
+def index_version(version, Bible, index_dir):
     dialog = wx.ProgressDialog(_("Indexing %s") % version, "", 68)
     index = {}
     for b in range(1, len(Bible)):
@@ -31,7 +31,7 @@ def index_version(version, Bible, indexdir):
     dialog.Update(66, _("Saving index..."))
     for word in index:
         index[word] = "".join(index[word])
-    with open(os.path.join(indexdir, "%s.idx" % version), 'wb') as fileobj:
+    with open(os.path.join(index_dir, "%s.idx" % version), 'wb') as fileobj:
         pickle.dump(index, fileobj, -1)
     dialog.Update(68)
     dialog.Destroy()
@@ -48,13 +48,10 @@ class SearchPane(wx.Panel):
         self.last_search = (None, -1, -1)  # Text, Number of Verses, Version
         self.options = ("AllWords", "CaseSensitive", "ExactMatch", "Phrase", "RegularExpression")
 
-        indexdir = os.path.join(parent._app.userdatadir, "indexes")
-        if not os.path.isdir(indexdir):
-            os.mkdir(indexdir)
         for i in range(len(parent.version_list)):
-            if not os.path.isfile(os.path.join(indexdir, "%s.idx" % parent.version_list[i])):
+            if not os.path.isfile(os.path.join(parent._app.index_dir, "%s.idx" % parent.version_list[i])):
                 self.indexes[parent.version_list[i]] = \
-                    index_version(parent.version_list[i], parent.get_htmlwindow(i).Bible, indexdir)
+                    index_version(parent.version_list[i], parent.get_htmlwindow(i).Bible, parent._app.index_dir)
         if len(self.indexes) < len(parent.version_list):  # If not all loaded
             thread = threading.Thread(target=self.load_indexes)
             thread.start()
@@ -141,10 +138,9 @@ class SearchPane(wx.Panel):
         self.SetSizer(sizer)
 
     def load_indexes(self):
-        indexdir = os.path.join(self._parent._app.userdatadir, "indexes")
         for version in self._parent.version_list:
             if version not in self.indexes:
-                with open(os.path.join(indexdir, "%s.idx" % version), 'rb') as fileobj:
+                with open(os.path.join(self._parent._app.index_dir, "%s.idx" % version), 'rb') as fileobj:
                     self.indexes[version] = pickle.load(fileobj)
 
     def OnSearch(self, event):

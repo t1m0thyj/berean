@@ -1,11 +1,11 @@
+import base64
 import configparser
+import hashlib
 import os
 import pickle
 import posixpath
-import shutil
 import sys
 import tarfile
-import tempfile
 import urllib.request
 from collections.abc import Sequence
 from html.parser import HTMLParser
@@ -134,22 +134,38 @@ class VerseParser(HTMLParser):
         self._output = (self._output or "") + data
 
 
-class BibleRepository:
-    def __init__(self, repo_url):
-        self.repo_url = repo_url
-        with tempfile.NamedTemporaryFile(delete=False) as outfile:
-            with urllib.request.urlopen(repo_url + "/mods.d.tar.gz") as infile:
-                shutil.copyfileobj(infile, outfile)
-            self._tgz = tarfile.open(outfile.name, "r:gz")
+def get_master_repo_list():
+    config = configparser.ConfigParser(strict=False)
+    with urllib.request.urlopen("https://crosswire.org/ftpmirror/pub/sword/masterRepoList.conf") as fileobj:
+        config.read_string(fileobj.read().decode())
+    return [v.removeprefix("FTPSource=") for k, v in config.items("Repos")]
 
-    def get_version_data(self):
+
+class BibleRepository:
+    def __init__(self, repo_name, ftp_host, ftp_path, cache_dir):
+        self.repo_name = repo_name
+        self.ftp_host = ftp_host
+        self.ftp_path = ftp_path
+        self.cache_dir = cache_dir
+
+    def get_version_data(self, busy_callback=None, use_cache=True):
+        repo_id = hashlib.md5(f"{self.ftp_host}{self.ftp_path}".encode()).hexdigest()
+        cache_path = os.path.join(self.cache_dir, f"{repo_id}.tgz")
+        if not use_cache or not os.path.isfile(cache_path):
+            if busy_callback:
+                wait = busy_callback()
+            urllib.request.urlretrieve(f"ftp://{self.ftp_host}{self.ftp_path}/mods.d.tar.gz", cache_path)
+            if busy_callback:
+                del wait
+
+        tgz = tarfile.open(cache_path, "r:gz")
         version_data = []
-        for member in self._tgz.getmembers():
+        for member in tgz.getmembers():
             if not member.isfile() or not member.name.endswith(".conf"):
                 continue
             config = configparser.ConfigParser(strict=False)
             try:
-                config.read_string(self._tgz.extractfile(member).read().decode())
+                config.read_string(tgz.extractfile(member).read().decode())
             except configparser.ParsingError:
                 pass
             root_section = config.sections()[0]
@@ -157,7 +173,7 @@ class BibleRepository:
                 version_data.append({
                     "abbreviation": config[root_section].get("Abbreviation", root_section),
                     "description": config[root_section]["Description"],
-                    "downloadUrl": posixpath.join(self.repo_url, config[root_section]["DataPath"])
+                    "ftpUrl": posixpath.join(self.ftp_host, self.ftp_path, config[root_section]["DataPath"])
                 })
         return sorted(version_data, key=lambda data: data["abbreviation"])
 

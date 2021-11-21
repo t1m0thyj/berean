@@ -43,6 +43,7 @@ class MainWindow(wx.Frame):
                                  if not facename.startswith("@")])
         self.zoom_level = app.config.ReadInt("Main/ZoomLevel", 3)
         self.minimize_to_tray = app.config.ReadBool("Main/MinimizeToTray")
+        self.module_repos = app.config.ReadList("ModuleRepos")
         self.version_list = app.config.ReadList("VersionList", ["KJV"])
         self.verse_history = app.config.ReadList("History")
         self.history_item = -1
@@ -62,13 +63,6 @@ class MainWindow(wx.Frame):
 
         self.notebook = aui.AuiNotebook(self, style=aui.AUI_NB_TOP | aui.AUI_NB_SCROLL_BUTTONS |
                                                     aui.AUI_NB_WINDOWLIST_BUTTON)
-        if not app.portable:
-            self.versiondir = os.path.join(wx.StandardPaths.Get().GetUserLocalDataDir(),
-                                           "versions")
-        else:
-            self.versiondir = os.path.join(app.userdatadir, "versions")
-        if not os.path.isdir(self.versiondir):
-            os.makedirs(self.versiondir)
         i = 0
         tab = app.config.ReadInt("Main/ActiveVersionTab")
         while i < len(self.version_list):

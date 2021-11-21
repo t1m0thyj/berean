@@ -11,7 +11,6 @@ import os
 import sys
 
 import wx
-from wx import adv
 
 import bugreport
 import mainwindow
@@ -25,9 +24,9 @@ class FileConfig(wx.FileConfig):
         self._app = app
         self.SetRecordDefaults(True)
 
-    def ReadList(self, key, defaultVal=[]):
+    def ReadList(self, key, defaultVal=None):
         if not self.HasGroup(key):
-            return defaultVal
+            return defaultVal or []
         i = 1
         value = []
         while self.HasEntry("%s/Item%d" % (key, i)):
@@ -66,6 +65,7 @@ class FileConfig(wx.FileConfig):
                 if version in frame.version_list:
                     parallel_versions.append(version)
         self.WriteList("../ParallelVersions", parallel_versions)
+        self.WriteList("../ModuleRepos", frame.module_repos)
         self.SetPath("/Search")
         self.Write("LastSearch", frame.search.text.GetValue())
         self.WriteList("SearchHistory", frame.search.text.GetStrings())
@@ -106,6 +106,14 @@ class Berean(wx.App):
             self.portable = False
         if not os.path.isdir(self.userdatadir):
             os.mkdir(self.userdatadir)
+
+        self.index_dir = os.path.join(self.userdatadir, "indexes")
+        self.repo_dir = os.path.join(self.userdatadir, "repos")
+        self.version_dir = os.path.join(self.userdatadir, "versions")
+        for dirname in (self.index_dir, self.repo_dir, self.version_dir):
+            if not os.path.isdir(dirname):
+                os.makedirs(dirname)
+
         self.config = FileConfig(self)
         locale = wx.Locale(wx.LANGUAGE_DEFAULT)
         self.language = self.config.Read("Main/Language", locale.GetCanonicalName())
