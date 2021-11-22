@@ -1,4 +1,3 @@
-import base64
 import configparser
 import hashlib
 import os
@@ -13,12 +12,14 @@ from itertools import chain
 
 from pysword.modules import SwordModules
 
+from settings import BOOK_NAMES
+
 
 def osis2bbl(osis_bible, progress_callback):
     bbl_bible = [osis_bible[0]]
     for b in range(1, len(osis_bible)):
-        progress_callback(b, osis_bible[b][0])
-        bbl_bible.append([osis_bible[b][0]])
+        progress_callback(b)
+        bbl_bible.append([str(osis_bible[b][0]) or None])
         for c in range(1, len(osis_bible[b])):
             bbl_bible[b].append([str(osis_bible[b][c][0]) or None])
             for v in range(1, len(osis_bible[b][c])):
@@ -63,7 +64,7 @@ class Book(Sequence):
 
     def __getitem__(self, i):
         if i == 0:
-            return get_books(self._bible)[self._book - 1].name
+            return str(ColophonParser(self._bible, get_books(self._bible)[self._book - 1]))
         else:
             return Chapter(self._bible, self._book, i)
 
@@ -81,7 +82,7 @@ class Chapter(Sequence):
 
     def __getitem__(self, i):
         if i == 0:
-            return Title(self._bible.get(get_books(self._bible)[self._book - 1].name, self._chapter, 1, False))
+            return Subtitle(self._bible.get(get_books(self._bible)[self._book - 1].name, self._chapter, 1, False))
         else:
             return Verse(self._bible.get(get_books(self._bible)[self._book - 1].name, self._chapter, i, False))
 
@@ -89,7 +90,7 @@ class Chapter(Sequence):
         return get_books(self._bible)[self._book - 1].chapter_lengths[self._chapter - 1] + 1
 
 
-class Title(str):
+class Subtitle(str):
     def __new__(cls, data):
         return str.__new__(cls, VerseParser(data, include_tags=["title:psalm"]))
 
@@ -132,6 +133,22 @@ class VerseParser(HTMLParser):
         if "transchange:added" in self._tags:
             data = f"[{data}]"
         self._output = (self._output or "") + data
+
+
+class ColophonParser(VerseParser):
+    def __init__(self, bible, book_info):
+        super().__init__(bible.get(book_info.name, book_info.num_chapters,
+                                   book_info.chapter_lengths[book_info.num_chapters - 1], False))
+        self._read = False
+
+    def handle_starttag(self, tag, attrs):
+        VerseParser.handle_starttag(self, tag, attrs)
+        if tag == "div" and dict(attrs).get("type") == "colophon":
+            self._read = not self._read
+
+    def handle_data(self, data):
+        if self._read:
+            VerseParser.handle_data(self, data)
 
 
 def get_master_repo_list():
@@ -180,7 +197,7 @@ class BibleRepository:
 
 if __name__ == "__main__":
     sword_bible = Bible(sys.argv[1])
-    ber_bible = osis2bbl(sword_bible, lambda idx, name: print(name))
+    ber_bible = osis2bbl(sword_bible, lambda idx: print(BOOK_NAMES[idx - 1]))
     with open(os.path.splitext(sys.argv[1])[0] + ".bbl", 'wb') as fileobj:
         pickle.dump(ber_bible[0], fileobj)
         ber_bible[0] = None

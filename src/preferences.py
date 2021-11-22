@@ -20,7 +20,7 @@ def import_version(infile, outdir):
     dialog = wx.ProgressDialog(_("Importing %s") % version_name, "", 70)
     sword_bible = sword.Bible(infile)
     ber_bible = sword.osis2bbl(sword_bible,
-                               lambda idx, name: dialog.Update(idx + 1, _("Processing %s...") % BOOK_NAMES[idx - 1]))
+                               lambda idx: dialog.Update(idx + 1, _("Processing %s...") % BOOK_NAMES[idx - 1]))
     dialog.Update(68, _("Saving Bible..."))
     with open(os.path.join(outdir, version_name + ".bbl"), 'wb') as fileobj:
         pickle.dump(ber_bible[0], fileobj)
@@ -49,7 +49,7 @@ class PreferencesDialog(wx.Dialog):
         self.font_face = wx.Choice(self.general, choices=parent.facenames)
         self.font_face.SetStringSelection(parent.default_font["normal_face"])
         self.font_size = wx.ComboBox(self.general, choices=FONT_SIZES)
-        self.font_size.SetStringSelection(str(parent.default_font["size"]))
+        self.font_size.SetValue(str(parent.default_font["size"]))
         self.single_instance = wx.CheckBox(self.general, label=_("Allow single instance only"))
         self.single_instance.SetValue(parent._app.single_instance)
         self.minimize_to_tray = wx.CheckBox(self.general, label=_("Minimize to system tray"))
@@ -123,8 +123,10 @@ class PreferencesDialog(wx.Dialog):
         self.version_repo.Bind(wx.EVT_COMBOBOX, self.OnVersionRepoSelect)
         self.refresh_button = wx.BitmapButton(self.available, wx.ID_ANY,
                                               wx.Bitmap(os.path.join(parent._app.cwd, "images", "refresh.png")))
+        self.refresh_button.SetToolTip(_("Refresh List"))
         self.edit_button = wx.BitmapButton(self.available, wx.ID_ANY,
                                               wx.Bitmap(os.path.join(parent._app.cwd, "images", "edit.png")))
+        self.edit_button.SetToolTip(_("Manage Repositories"))
         self.version2_listbox = wx.CheckListBox(self.available)
         self.version2_listbox.Bind(wx.EVT_LISTBOX, self.OnVersionListbox)
         self.version_search = wx.SearchCtrl(self.available)

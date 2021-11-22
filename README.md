@@ -38,7 +38,7 @@ A metadata object is pickled separately and stored at the top of the file for qu
 
 The first-level array contains Bible books. The 0th-index item is None as a placeholder for the metadata object.
 
-The second-level array contains Bible chapters. The 0th-index item contains the localized Bible book name.
+The second-level array contains Bible chapters. The 0th-index item is None, or contains the book colophon if there is one.
 
 The third-level array contains Bible verses. The 0th-index item is None, or contains the chapter subtitle if there is one.
 
