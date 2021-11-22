@@ -1,4 +1,4 @@
-"""config.py - global variables used throughout Berean"""
+"""constants.py - global variables used throughout Berean"""
 
 VERSION = "0.5.0"
 
@@ -123,3 +123,8 @@ BOOK_RANGES = (
 )
 
 FONT_SIZES = [str(i) for i in (8, 9, 10, 11, 12, 14, 16, 18, 20, 22, 24, 26, 28, 36, 48, 72)]
+
+LICENSE_TEXT = """This Source Code Form is subject to the terms of the Mozilla Public
+License, v. 2.0. If a copy of the MPL was not distributed with this
+file, You can obtain one at http://mozilla.org/MPL/2.0/.
+"""

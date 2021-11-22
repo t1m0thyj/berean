@@ -10,9 +10,9 @@ import time
 import wx
 from wx import aui, html
 
+from constants import BOOK_NAMES, BOOK_RANGES
 from html2 import HtmlWindowBase
 from refalize import validate
-from settings import BOOK_NAMES, BOOK_RANGES
 
 _ = wx.GetTranslation
 

@@ -8,7 +8,7 @@ import webbrowser
 
 import wx
 
-from settings import VERSION
+from constants import VERSION
 
 _ = wx.GetTranslation
 

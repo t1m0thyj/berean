@@ -2,7 +2,7 @@
 
 import re
 
-from settings import BOOK_NAMES, BOOK_LENGTHS, CHAPTER_LENGTHS
+from constants import BOOK_NAMES, BOOK_LENGTHS, CHAPTER_LENGTHS
 
 ABBREVS = (
     ("1 c", 46), ("1 chronicles", 13), ("1 corinthians", 46), ("1 jn", 62), ("1 john", 62),

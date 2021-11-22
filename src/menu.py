@@ -7,7 +7,7 @@ from wx import adv
 
 import html2
 from refalize import refalize, reference_str
-from settings import VERSION
+from constants import LICENSE_TEXT, VERSION
 
 _ = wx.GetTranslation
 
@@ -219,7 +219,7 @@ class MenuBar(wx.MenuBar):
         info.SetCopyright("Copyright (c) 2011-2021 Timothy Johnson")
         info.SetDescription(_("An open source, cross-platform Bible study program"))
         info.SetWebSite("https://github.com/t1m0thyj/berean")
-        info.SetLicense(LICENSE)
+        info.SetLicense(LICENSE_TEXT)
         info.SetArtists([
             "FamFamFam Flag Icons (Copyright (c) Mark James)",
             "Fugue Icons (Copyright (c) Yusuke Kamiyamane)"
@@ -275,9 +275,3 @@ class BookmarksDialog(wx.Dialog):
 
     def OnCancel(self, event):
         self.Destroy()
-
-
-LICENSE = """This Source Code Form is subject to the terms of the Mozilla Public
-License, v. 2.0. If a copy of the MPL was not distributed with this
-file, You can obtain one at http://mozilla.org/MPL/2.0/.
-"""

@@ -3,9 +3,9 @@
 import wx
 from wx import aui, html
 
+from constants import BOOK_NAMES
 from html2 import HtmlWindowBase
 from refalize import refalize2
-from settings import BOOK_NAMES
 
 _ = wx.GetTranslation
 

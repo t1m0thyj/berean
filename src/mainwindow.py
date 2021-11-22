@@ -11,7 +11,7 @@ import parallel
 import panes
 import toolbar
 from refalize import reference_str
-from settings import BOOK_NAMES, BOOK_LENGTHS, BOOK_RANGES
+from constants import BOOK_NAMES, BOOK_LENGTHS, BOOK_RANGES
 
 _ = wx.GetTranslation
 

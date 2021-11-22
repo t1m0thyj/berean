@@ -1,10 +1,11 @@
 import configparser
+import ftplib
 import hashlib
 import os
 import pickle
-import posixpath
 import sys
 import tarfile
+import tempfile
 import urllib.request
 from collections.abc import Sequence
 from html.parser import HTMLParser
@@ -12,7 +13,7 @@ from itertools import chain
 
 from pysword.modules import SwordModules
 
-from settings import BOOK_NAMES
+from constants import BOOK_NAMES
 
 
 def osis2bbl(osis_bible, progress_callback):
@@ -159,15 +160,20 @@ def get_master_repo_list():
 
 
 class BibleRepository:
-    def __init__(self, repo_name, ftp_host, ftp_path, cache_dir):
+    def __init__(self, repo_info, cache_dir):
+        self.repo_info = repo_info
+        self.cache_dir = cache_dir
+        repo_name, ftp_host, ftp_path = repo_info.split("|")
         self.repo_name = repo_name
         self.ftp_host = ftp_host
         self.ftp_path = ftp_path
-        self.cache_dir = cache_dir
+
+    @property
+    def repo_id(self):
+        return hashlib.md5(f"{self.ftp_host}{self.ftp_path}".encode()).hexdigest()
 
     def get_version_data(self, busy_callback=None, use_cache=True):
-        repo_id = hashlib.md5(f"{self.ftp_host}{self.ftp_path}".encode()).hexdigest()
-        cache_path = os.path.join(self.cache_dir, f"{repo_id}.tgz")
+        cache_path = os.path.join(self.cache_dir, f"{self.repo_id}.tgz")
         if not use_cache or not os.path.isfile(cache_path):
             if busy_callback:
                 wait = busy_callback()
@@ -190,9 +196,29 @@ class BibleRepository:
                 version_data.append({
                     "abbreviation": config[root_section].get("Abbreviation", root_section),
                     "description": config[root_section]["Description"],
-                    "ftpUrl": posixpath.join(self.ftp_host, self.ftp_path, config[root_section]["DataPath"])
+                    "ftpPath": config[root_section]["DataPath"].removeprefix("./"),
+                    "ftpUrl": self.ftp_host + self.ftp_path,
+                    "tgzPath": member.name
                 })
         return sorted(version_data, key=lambda data: data["abbreviation"])
+
+    def download_module(self, version_data, progress_callback):
+        ftp_host, ftp_base_path = version_data["ftpUrl"].split("/", 1)
+        with ftplib.FTP() as ftp:
+            ftp.connect(ftp_host)
+            ftp.login()
+            ftp_paths = ftp.nlst(ftp_base_path + "/" + version_data["ftpPath"])
+
+        temp_dir = tempfile.mkdtemp()
+        os.makedirs(os.path.join(temp_dir, version_data["ftpPath"]))
+        for i, ftp_path in enumerate(ftp_paths):
+            progress_callback((i + 1) / (len(ftp_paths) + 1))
+            urllib.request.urlretrieve(f"ftp://{ftp_host}/{ftp_path}",
+                                       os.path.join(temp_dir, version_data["ftpPath"], os.path.basename(ftp_path)))
+
+        tgz = tarfile.open(os.path.join(self.cache_dir, f"{self.repo_id}.tgz"), "r:gz")
+        tgz.extract(version_data["tgzPath"], temp_dir)
+        return temp_dir
 
 
 if __name__ == "__main__":

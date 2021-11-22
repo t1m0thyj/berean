@@ -10,22 +10,43 @@ import wx
 from wx import adv
 
 import sword
-from settings import BOOK_NAMES, FONT_SIZES
+from constants import BOOK_NAMES, FONT_SIZES
 
 _ = wx.GetTranslation
 
 
-def import_version(infile, outdir):
-    version_name = os.path.splitext(os.path.basename(infile))[0]
-    dialog = wx.ProgressDialog(_("Importing %s") % version_name, "", 70)
-    sword_bible = sword.Bible(infile)
+def download_version(version_data, repo, out_dir):
+    # TODO Handle conflict if version was already imported
+    version_name = version_data["abbreviation"]
+    dialog = wx.ProgressDialog(_("Importing %s") % version_name, _("Downloading..."), 100)
+    temp_dir = repo.download_module(version_data, lambda percent: dialog.Update(percent * 30))
+    dialog.Update(30)
+    sword_bible = sword.Bible(temp_dir)
     ber_bible = sword.osis2bbl(sword_bible,
-                               lambda idx: dialog.Update(idx + 1, _("Processing %s...") % BOOK_NAMES[idx - 1]))
-    dialog.Update(68, _("Saving Bible..."))
-    with open(os.path.join(outdir, version_name + ".bbl"), 'wb') as fileobj:
+                               lambda idx: dialog.Update(idx + 31, _("Processing %s...") % BOOK_NAMES[idx - 1]))
+    dialog.Update(98, _("Saving Bible..."))
+    with open(os.path.join(out_dir, version_name + ".bbl"), 'wb') as fileobj:
         pickle.dump(ber_bible[0], fileobj)
         ber_bible[0] = None
         pickle.dump(ber_bible, fileobj)
+    del sword_bible
+    shutil.rmtree(temp_dir)
+    dialog.Update(100)
+    dialog.Destroy()
+
+
+def import_version(in_file, out_dir):
+    version_name = os.path.splitext(os.path.basename(in_file))[0]
+    dialog = wx.ProgressDialog(_("Importing %s") % version_name, "", 70)
+    sword_bible = sword.Bible(in_file)
+    ber_bible = sword.osis2bbl(sword_bible,
+                               lambda idx: dialog.Update(idx + 1, _("Processing %s...") % BOOK_NAMES[idx - 1]))
+    dialog.Update(68, _("Saving Bible..."))
+    with open(os.path.join(out_dir, version_name + ".bbl"), 'wb') as fileobj:
+        pickle.dump(ber_bible[0], fileobj)
+        ber_bible[0] = None
+        pickle.dump(ber_bible, fileobj)
+    del sword_bible
     dialog.Update(70)
     dialog.Destroy()
 
@@ -128,12 +149,12 @@ class PreferencesDialog(wx.Dialog):
                                               wx.Bitmap(os.path.join(parent._app.cwd, "images", "edit.png")))
         self.edit_button.SetToolTip(_("Manage Repositories"))
         self.version2_listbox = wx.CheckListBox(self.available)
-        self.version2_listbox.Bind(wx.EVT_LISTBOX, self.OnVersionListbox)
+        self.version2_listbox.Bind(wx.EVT_CHECKLISTBOX, self.OnVersion2Listbox)
         self.version_search = wx.SearchCtrl(self.available)
         self.version_search.Bind(wx.EVT_TEXT, self.OnVersionSearchText)
         self.download_version = wx.Button(self.available, label=_("Download"))
         self.download_version.Disable()
-        #self.download_version.Bind(wx.EVT_BUTTON, self.OnDownloadVersion)
+        self.download_version.Bind(wx.EVT_BUTTON, self.OnDownloadVersion)
         self.LoadAvailableVersions(False)
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer2 = wx.BoxSizer(wx.HORIZONTAL)
@@ -179,16 +200,16 @@ class PreferencesDialog(wx.Dialog):
     def LoadAvailableVersions(self, clear=True):
         if clear:
             self.version2_listbox.Clear()
-        repo = self.version_repo.GetClientData(self.version_repo.GetSelection())
-        if repo != self.active_module_repo:
-            self.version_data = sword.BibleRepository(*repo.split("|"), cache_dir=self._parent._app.repo_dir). \
-                get_version_data(busy_callback=lambda: wx.BusyInfo(_("Downloading module list...")))
-            self.active_module_repo = repo
+        repo_info = self.version_repo.GetClientData(self.version_repo.GetSelection())
+        if not self.active_module_repo or repo_info != self.active_module_repo.repo_info:
+            self.active_module_repo = sword.BibleRepository(repo_info, self._parent._app.repo_dir)
+            self.version_data = self.active_module_repo.get_version_data(
+                busy_callback=lambda: wx.BusyInfo(_("Downloading module list...")))
         version_filter = self.version_search.GetValue().lower()
         for data in self.version_data:
             item_text = "%s - %s" % (data["abbreviation"], data["description"])
             if not version_filter or version_filter in item_text.lower():
-                self.version2_listbox.Append(textwrap.shorten(item_text, 100), data["ftpUrl"])
+                self.version2_listbox.Append(textwrap.shorten(item_text, 100), data)
 
     def OnAbbrevResults(self, event):
         self.abbrev_results2.Enable(event.IsChecked())
@@ -227,9 +248,18 @@ class PreferencesDialog(wx.Dialog):
     def OnVersionRepoSelect(self, event):
         self.LoadAvailableVersions()
 
+    def OnVersion2Listbox(self, event):
+        self.download_version.Enable(len(self.version2_listbox.GetCheckedItems()) > 0)
+
     def OnVersionSearchText(self, event):
         self.version_search.ShowCancelButton(not self.version_search.IsEmpty())
         self.LoadAvailableVersions()
+
+    def OnDownloadVersion(self, event):
+        for i in self.version2_listbox.GetCheckedItems():
+            download_version(self.version2_listbox.GetClientData(i), self.active_module_repo,
+                             self._parent._app.version_dir)
+        self.LoadInstalledVersions()
 
     def OnOk(self, event):
         version_list = [version for i, version in enumerate(self.version_names)

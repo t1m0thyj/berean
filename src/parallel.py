@@ -3,7 +3,7 @@
 import wx
 
 from html2 import ChapterWindowBase
-from settings import BOOK_NAMES, BOOK_LENGTHS, CHAPTER_LENGTHS
+from constants import BOOK_NAMES, BOOK_LENGTHS, CHAPTER_LENGTHS
 
 _ = wx.GetTranslation
 

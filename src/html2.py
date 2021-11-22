@@ -8,7 +8,7 @@ import wx
 import wx.lib.dragscroller
 from wx import html
 
-from settings import BOOK_NAMES, BOOK_LENGTHS
+from constants import BOOK_NAMES, BOOK_LENGTHS
 
 _ = wx.GetTranslation
 
