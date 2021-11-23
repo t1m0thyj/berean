@@ -118,7 +118,7 @@ class PreferencesDialog(wx.Dialog):
 
         self.installed = wx.Panel(self.notebook)
         self.version_listbox = wx.CheckListBox(self.installed)
-        self.LoadInstalledVersions(False)
+        self.LoadInstalledVersions()
         self.version_listbox.Bind(wx.EVT_LISTBOX, self.OnVersionListbox)
         self.add_versions = adv.HyperlinkCtrl(self.installed, wx.ID_ANY, label=_("Add versions..."),
                                               url="", style=wx.NO_BORDER | adv.HL_ALIGN_LEFT)
@@ -145,9 +145,11 @@ class PreferencesDialog(wx.Dialog):
         self.refresh_button = wx.BitmapButton(self.available, wx.ID_ANY,
                                               wx.Bitmap(os.path.join(parent._app.cwd, "images", "refresh.png")))
         self.refresh_button.SetToolTip(_("Refresh List"))
+        self.refresh_button.Bind(wx.EVT_BUTTON, self.OnRefreshList)
         self.edit_button = wx.BitmapButton(self.available, wx.ID_ANY,
                                               wx.Bitmap(os.path.join(parent._app.cwd, "images", "edit.png")))
         self.edit_button.SetToolTip(_("Manage Repositories"))
+        self.edit_button.Bind(wx.EVT_BUTTON, self.OnManageRepositories)
         self.version2_listbox = wx.CheckListBox(self.available)
         self.version2_listbox.Bind(wx.EVT_CHECKLISTBOX, self.OnVersion2Listbox)
         self.version_search = wx.SearchCtrl(self.available)
@@ -155,7 +157,7 @@ class PreferencesDialog(wx.Dialog):
         self.download_version = wx.Button(self.available, label=_("Download"))
         self.download_version.Disable()
         self.download_version.Bind(wx.EVT_BUTTON, self.OnDownloadVersion)
-        self.LoadAvailableVersions(False)
+        self.LoadAvailableVersions(True)
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer2 = wx.BoxSizer(wx.HORIZONTAL)
         sizer2.Add(self.version_repo, 1, wx.LEFT | wx.EXPAND, 3)
@@ -180,8 +182,8 @@ class PreferencesDialog(wx.Dialog):
         self.Fit()
         self.Center()
 
-    def LoadInstalledVersions(self, clear=True):
-        if clear:
+    def LoadInstalledVersions(self):
+        if not self.version_listbox.IsEmpty():
             self.version_listbox.Clear()
         version_files = glob.glob(os.path.join(self._parent._app.cwd, "versions", "*.bbl"))
         if self._parent._app.userdatadir != self._parent._app.cwd:
@@ -197,14 +199,14 @@ class PreferencesDialog(wx.Dialog):
             if self.version_names[i] in self._parent.version_list:
                 self.version_listbox.Check(i)
 
-    def LoadAvailableVersions(self, clear=True):
-        if clear:
+    def LoadAvailableVersions(self, use_cache):
+        if not self.version2_listbox.IsEmpty():
             self.version2_listbox.Clear()
         repo_info = self.version_repo.GetClientData(self.version_repo.GetSelection())
         if not self.active_module_repo or repo_info != self.active_module_repo.repo_info:
             self.active_module_repo = sword.BibleRepository(repo_info, self._parent._app.repo_dir)
             self.version_data = self.active_module_repo.get_version_data(
-                busy_callback=lambda: wx.BusyInfo(_("Downloading module list...")))
+                busy_callback=lambda: wx.BusyInfo(_("Downloading module list...")), use_cache=use_cache)
         version_filter = self.version_search.GetValue().lower()
         for data in self.version_data:
             item_text = "%s - %s" % (data["abbreviation"], data["description"])
@@ -246,14 +248,21 @@ class PreferencesDialog(wx.Dialog):
                 self._parent.old_versions.append(version_name)
 
     def OnVersionRepoSelect(self, event):
-        self.LoadAvailableVersions()
+        self.LoadAvailableVersions(True)
+
+    def OnRefreshList(self, event):
+        self.LoadAvailableVersions(False)
+
+    def OnManageRepositories(self, event):
+        dialog = RepositoriesDialog(self._parent, self.LoadAvailableVersions)
+        dialog.ShowModal()
 
     def OnVersion2Listbox(self, event):
         self.download_version.Enable(len(self.version2_listbox.GetCheckedItems()) > 0)
 
     def OnVersionSearchText(self, event):
         self.version_search.ShowCancelButton(not self.version_search.IsEmpty())
-        self.LoadAvailableVersions()
+        self.LoadAvailableVersions(True)
 
     def OnDownloadVersion(self, event):
         for i in self.version2_listbox.GetCheckedItems():
@@ -299,6 +308,36 @@ class PreferencesDialog(wx.Dialog):
             self._parent.search.abbrev_results = self.abbrev_results2.GetValue()
         else:
             self._parent.search.abbrev_results = -1
+        self.Destroy()
+
+    def OnCancel(self, event):
+        self.Destroy()
+
+
+class RepositoriesDialog(wx.Dialog):
+    def __init__(self, parent, version_loader):
+        super(RepositoriesDialog,
+              self).__init__(parent, title=_("Manage Repositories"),
+                             style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER)
+        self._parent = parent
+        self.version_loader = version_loader
+        self.listbox = adv.EditableListBox(self, label=_("Repositories"))
+        self.listbox.SetStrings(parent.module_repos)
+        self.text = wx.StaticText(self, label=_("Format: \"moduleName|ftpHost|ftpPath\""))
+        sizer = wx.BoxSizer(wx.VERTICAL)
+        sizer.Add(self.listbox, 1, wx.ALL | wx.EXPAND, 5)
+        sizer.Add(self.text, 0, wx.ALL ^ wx.TOP | wx.ALIGN_CENTER_HORIZONTAL, 5)
+        button_sizer = self.CreateStdDialogButtonSizer(wx.OK | wx.CANCEL)
+        self.Bind(wx.EVT_BUTTON, self.OnOk, id=wx.ID_OK)
+        self.Bind(wx.EVT_BUTTON, self.OnCancel, id=wx.ID_CANCEL)
+        sizer.Add(button_sizer, 0, wx.ALL | wx.EXPAND, 5)
+        self.SetSizer(sizer)
+        self.Fit()
+        self.Center()
+
+    def OnOk(self, event):
+        self._parent.module_repos = self.listbox.GetStrings()
+        self.version_loader()
         self.Destroy()
 
     def OnCancel(self, event):
