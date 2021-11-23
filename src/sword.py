@@ -156,7 +156,7 @@ def get_master_repo_list():
     config = configparser.ConfigParser(strict=False)
     with urllib.request.urlopen("https://crosswire.org/ftpmirror/pub/sword/masterRepoList.conf") as fileobj:
         config.read_string(fileobj.read().decode())
-    return [v.removeprefix("FTPSource=") for k, v in config.items("Repos")]
+    return [v.split("=")[-1] for k, v in config.items("Repos")]
 
 
 class BibleRepository:
@@ -196,7 +196,7 @@ class BibleRepository:
                 version_data.append({
                     "abbreviation": config[root_section].get("Abbreviation", root_section),
                     "description": config[root_section]["Description"],
-                    "ftpPath": config[root_section]["DataPath"].removeprefix("./"),
+                    "ftpPath": config[root_section]["DataPath"].lstrip("./"),
                     "ftpUrl": self.ftp_host + self.ftp_path,
                     "tgzPath": member.name
                 })

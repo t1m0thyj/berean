@@ -2,7 +2,7 @@
 
 import sys
 sys.path.append('src')
-from settings import VERSION
+from constants import VERSION
 
 file_version_info = """# UTF-8
 #
