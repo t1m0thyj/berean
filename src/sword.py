@@ -8,6 +8,7 @@ import tarfile
 import tempfile
 import urllib.request
 from collections.abc import Sequence
+from contextlib import closing
 from html.parser import HTMLParser
 from itertools import chain
 
@@ -181,25 +182,25 @@ class BibleRepository:
             if busy_callback:
                 del wait
 
-        tgz = tarfile.open(cache_path, "r:gz")
         version_data = []
-        for member in tgz.getmembers():
-            if not member.isfile() or not member.name.endswith(".conf"):
-                continue
-            config = configparser.ConfigParser(strict=False)
-            try:
-                config.read_string(tgz.extractfile(member).read().decode())
-            except configparser.ParsingError:
-                pass
-            root_section = config.sections()[0]
-            if config[root_section]["ModDrv"].lower() == "ztext":
-                version_data.append({
-                    "abbreviation": config[root_section].get("Abbreviation", root_section),
-                    "description": config[root_section]["Description"],
-                    "ftpPath": config[root_section]["DataPath"].lstrip("./"),
-                    "ftpUrl": self.ftp_host + self.ftp_path,
-                    "tgzPath": member.name
-                })
+        with closing(tarfile.open(cache_path, "r:gz")) as tgz:
+            for member in tgz.getmembers():
+                if not member.isfile() or not member.name.endswith(".conf"):
+                    continue
+                config = configparser.ConfigParser(strict=False)
+                try:
+                    config.read_string(tgz.extractfile(member).read().decode())
+                except configparser.ParsingError:
+                    pass
+                root_section = config.sections()[0]
+                if config[root_section]["ModDrv"].lower() == "ztext":
+                    version_data.append({
+                        "abbreviation": config[root_section].get("Abbreviation", root_section),
+                        "description": config[root_section]["Description"],
+                        "ftpPath": config[root_section]["DataPath"].lstrip("./"),
+                        "ftpUrl": self.ftp_host + self.ftp_path,
+                        "tgzPath": member.name
+                    })
         return sorted(version_data, key=lambda data: data["abbreviation"])
 
     def download_module(self, version_data, progress_callback):
@@ -216,8 +217,8 @@ class BibleRepository:
             urllib.request.urlretrieve(f"ftp://{ftp_host}/{ftp_path}",
                                        os.path.join(temp_dir, version_data["ftpPath"], os.path.basename(ftp_path)))
 
-        tgz = tarfile.open(os.path.join(self.cache_dir, f"{self.repo_id}.tgz"), "r:gz")
-        tgz.extract(version_data["tgzPath"], temp_dir)
+        with closing(tarfile.open(os.path.join(self.cache_dir, f"{self.repo_id}.tgz"), "r:gz")) as tgz:
+            tgz.extract(version_data["tgzPath"], temp_dir)
         return temp_dir
 
 

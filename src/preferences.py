@@ -199,14 +199,14 @@ class PreferencesDialog(wx.Dialog):
             if self.version_names[i] in self._parent.version_list:
                 self.version_listbox.Check(i)
 
-    def LoadAvailableVersions(self, use_cache):
+    def LoadAvailableVersions(self, use_cache=True):
         if not self.version2_listbox.IsEmpty():
             self.version2_listbox.Clear()
         repo_info = self.version_repo.GetClientData(self.version_repo.GetSelection())
-        if not self.active_module_repo or repo_info != self.active_module_repo.repo_info:
+        if not self.active_module_repo or not use_cache or repo_info != self.active_module_repo.repo_info:
             self.active_module_repo = sword.BibleRepository(repo_info, self._parent._app.repo_dir)
             self.version_data = self.active_module_repo.get_version_data(
-                busy_callback=lambda: wx.BusyInfo(_("Downloading module list...")), use_cache=use_cache)
+                lambda: wx.BusyInfo(_("Downloading module list...")), use_cache)
         version_filter = self.version_search.GetValue().lower()
         for data in self.version_data:
             item_text = "%s - %s" % (data["abbreviation"], data["description"])
@@ -248,13 +248,13 @@ class PreferencesDialog(wx.Dialog):
                 self._parent.old_versions.append(version_name)
 
     def OnVersionRepoSelect(self, event):
-        self.LoadAvailableVersions(True)
+        self.LoadAvailableVersions()
 
     def OnRefreshList(self, event):
         self.LoadAvailableVersions(False)
 
     def OnManageRepositories(self, event):
-        dialog = RepositoriesDialog(self._parent, self.LoadAvailableVersions)
+        dialog = RepositoriesDialog(self)
         dialog.ShowModal()
 
     def OnVersion2Listbox(self, event):
@@ -262,7 +262,7 @@ class PreferencesDialog(wx.Dialog):
 
     def OnVersionSearchText(self, event):
         self.version_search.ShowCancelButton(not self.version_search.IsEmpty())
-        self.LoadAvailableVersions(True)
+        self.LoadAvailableVersions()
 
     def OnDownloadVersion(self, event):
         for i in self.version2_listbox.GetCheckedItems():
@@ -315,14 +315,14 @@ class PreferencesDialog(wx.Dialog):
 
 
 class RepositoriesDialog(wx.Dialog):
-    def __init__(self, parent, version_loader):
+    def __init__(self, parent):
         super(RepositoriesDialog,
               self).__init__(parent, title=_("Manage Repositories"),
                              style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER)
         self._parent = parent
-        self.version_loader = version_loader
+        self._frame = parent._parent
         self.listbox = adv.EditableListBox(self, label=_("Repositories"))
-        self.listbox.SetStrings(parent.module_repos)
+        self.listbox.SetStrings(self._frame.module_repos)
         self.text = wx.StaticText(self, label=_("Format: \"moduleName|ftpHost|ftpPath\""))
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add(self.listbox, 1, wx.ALL | wx.EXPAND, 5)
@@ -336,8 +336,14 @@ class RepositoriesDialog(wx.Dialog):
         self.Center()
 
     def OnOk(self, event):
-        self._parent.module_repos = self.listbox.GetStrings()
-        self.version_loader()
+        self._frame.module_repos = self.listbox.GetStrings()
+        repo_index = self._parent.version_repo.GetSelection()
+        self._parent.version_repo.Clear()
+        for repo in self._frame.module_repos:
+            repo_name, ftp_host, ftp_path = repo.split("|")
+            self._parent.version_repo.Append(f"{repo_name} - {ftp_host}{ftp_path}", repo)
+        self._parent.version_repo.SetSelection(min(repo_index, len(self._frame.module_repos) - 1))
+        self._parent.LoadAvailableVersions()
         self.Destroy()
 
     def OnCancel(self, event):
