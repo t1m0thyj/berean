@@ -1,6 +1,7 @@
 import configparser
 import ftplib
 import hashlib
+import multiprocessing
 import os
 import pickle
 import sys
@@ -17,27 +18,40 @@ from pysword.modules import SwordModules
 from constants import BOOK_NAMES
 
 
-def osis2bbl(osis_bible, progress_callback):
-    bbl_bible = [osis_bible[0]]
-    for b in range(1, len(osis_bible)):
-        progress_callback(b)
-        bbl_bible.append([str(osis_bible[b][0]) or None])
-        for c in range(1, len(osis_bible[b])):
-            bbl_bible[b].append([str(osis_bible[b][c][0]) or None])
-            for v in range(1, len(osis_bible[b][c])):
-                bbl_bible[b][c].append(str(osis_bible[b][c][v]).strip())
-    return bbl_bible
+def convert_bible(import_path, out_file, progress_callback):
+    sword_bible = Bible(import_path)
+    ber_bible = [sword_bible[0]]
+    for b in range(1, len(sword_bible)):
+        ber_bible.append([str(sword_bible[b][0]) or None])
+    with multiprocessing.Pool() as pool:
+        for i, results in enumerate(pool.imap(_convert_book, [(import_path, b) for b in range(1, len(sword_bible))])):
+            progress_callback(i + 1)
+            ber_bible[i + 1].extend(results)
+    del sword_bible
+    progress_callback(len(BOOK_NAMES) + 1)
+    with open(out_file, 'wb') as fileobj:
+        pickle.dump(ber_bible[0], fileobj)
+        ber_bible[0] = None
+        pickle.dump(ber_bible, fileobj)
 
 
-def get_books(bible):
-    return list(chain(*bible.get_structure().get_books().values()))
+def get_master_repo_list():
+    config = configparser.ConfigParser(strict=False)
+    with urllib.request.urlopen("https://crosswire.org/ftpmirror/pub/sword/masterRepoList.conf") as fileobj:
+        config.read_string(fileobj.read().decode())
+    return [v.split("=")[-1] for k, v in config.items("Repos")]
 
 
-def tag_matches(subset, superset):
-    for tag_sub in subset:
-        if tag_sub in superset or any(tag_super.startswith(f"{tag_sub}:") for tag_super in superset):
-            return True
-    return False
+def _convert_book(args):
+    import_path, book_num = args
+    sword_bible = Bible(import_path)
+    book_obj = []
+    for c in range(1, len(sword_bible[book_num])):
+        book_obj.append([str(sword_bible[book_num][c][0]) or None])
+        for v in range(1, len(sword_bible[book_num][c])):
+            book_obj[-1].append(str(sword_bible[book_num][c][v]).strip())
+    del sword_bible
+    return book_obj
 
 
 class Bible(Sequence):
@@ -48,6 +62,10 @@ class Bible(Sequence):
         self._bible = modules.get_bible_from_module(list(found_modules.keys())[0])
         self._metadata = found_modules[list(found_modules.keys())[0]]
 
+    @staticmethod
+    def get_books(self, bible):
+        return list(chain(*bible.get_structure().get_books().values()))
+
     def __getitem__(self, i):
         if i == 0:
             return self._metadata
@@ -55,7 +73,7 @@ class Bible(Sequence):
             return Book(self._bible, i)
 
     def __len__(self):
-        return len(get_books(self._bible)) + 1
+        return len(Bible.get_books(self._bible)) + 1
 
 
 class Book(Sequence):
@@ -66,12 +84,12 @@ class Book(Sequence):
 
     def __getitem__(self, i):
         if i == 0:
-            return str(ColophonParser(self._bible, get_books(self._bible)[self._book - 1]))
+            return str(ColophonParser(self._bible, Bible.get_books(self._bible)[self._book - 1]))
         else:
             return Chapter(self._bible, self._book, i)
 
     def __len__(self):
-        return get_books(self._bible)[self._book - 1].num_chapters + 1
+        return Bible.get_books(self._bible)[self._book - 1].num_chapters + 1
 
 
 class Chapter(Sequence):
@@ -84,12 +102,12 @@ class Chapter(Sequence):
 
     def __getitem__(self, i):
         if i == 0:
-            return Subtitle(self._bible.get(get_books(self._bible)[self._book - 1].name, self._chapter, 1, False))
+            return Subtitle(self._bible.get(Bible.get_books(self._bible)[self._book - 1].name, self._chapter, 1, False))
         else:
-            return Verse(self._bible.get(get_books(self._bible)[self._book - 1].name, self._chapter, i, False))
+            return Verse(self._bible.get(Bible.get_books(self._bible)[self._book - 1].name, self._chapter, i, False))
 
     def __len__(self):
-        return get_books(self._bible)[self._book - 1].chapter_lengths[self._chapter - 1] + 1
+        return Bible.get_books(self._bible)[self._book - 1].chapter_lengths[self._chapter - 1] + 1
 
 
 class Subtitle(str):
@@ -111,6 +129,12 @@ class VerseParser(HTMLParser):
         self._output = None
         self._tags = []
 
+    def _tag_matches(self, tags):
+        for tag_sub in tags:
+            if tag_sub in self._tags or any(tag_super.startswith(f"{tag_sub}:") for tag_super in self._tags):
+                return True
+        return False
+
     def __str__(self):
         if self._output is None:
             self.feed(self._data)
@@ -126,9 +150,9 @@ class VerseParser(HTMLParser):
         self._tags = [t for t in self._tags if t != tag and not t.startswith(f"{tag}:")]
 
     def handle_data(self, data):
-        if self._include_tags and not tag_matches(self._include_tags, self._tags):
+        if self._include_tags and not self._tag_matches(self._include_tags):
             return
-        elif self._exclude_tags and not self._include_tags and tag_matches(self._exclude_tags, self._tags):
+        elif self._exclude_tags and not self._include_tags and self._tag_matches(self._exclude_tags):
             return
         if "divinename" in self._tags:
             data = data.upper()
@@ -151,13 +175,6 @@ class ColophonParser(VerseParser):
     def handle_data(self, data):
         if self._read:
             VerseParser.handle_data(self, data)
-
-
-def get_master_repo_list():
-    config = configparser.ConfigParser(strict=False)
-    with urllib.request.urlopen("https://crosswire.org/ftpmirror/pub/sword/masterRepoList.conf") as fileobj:
-        config.read_string(fileobj.read().decode())
-    return [v.split("=")[-1] for k, v in config.items("Repos")]
 
 
 class BibleRepository:
@@ -223,9 +240,5 @@ class BibleRepository:
 
 
 if __name__ == "__main__":
-    sword_bible = Bible(sys.argv[1])
-    ber_bible = osis2bbl(sword_bible, lambda idx: print(BOOK_NAMES[idx - 1]))
-    with open(os.path.splitext(sys.argv[1])[0] + ".bbl", 'wb') as fileobj:
-        pickle.dump(ber_bible[0], fileobj)
-        ber_bible[0] = None
-        pickle.dump(ber_bible, fileobj)
+    convert_bible(sys.argv[1], os.path.splitext(sys.argv[1])[0] + ".bbl",
+                  lambda idx: print(BOOK_NAMES[idx - 1] if idx <= len(BOOK_NAMES) else ""))

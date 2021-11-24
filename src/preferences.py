@@ -11,44 +11,9 @@ from wx import adv
 
 import sword
 from constants import BOOK_NAMES, FONT_SIZES
+from utils import download_version, import_version
 
 _ = wx.GetTranslation
-
-
-def download_version(version_data, repo, out_dir):
-    # TODO Handle conflict if version was already imported
-    version_name = version_data["abbreviation"]
-    dialog = wx.ProgressDialog(_("Importing %s") % version_name, _("Downloading..."), 100)
-    temp_dir = repo.download_module(version_data, lambda percent: dialog.Update(percent * 30))
-    dialog.Update(30)
-    sword_bible = sword.Bible(temp_dir)
-    ber_bible = sword.osis2bbl(sword_bible,
-                               lambda idx: dialog.Update(idx + 31, _("Processing %s...") % BOOK_NAMES[idx - 1]))
-    dialog.Update(98, _("Saving Bible..."))
-    with open(os.path.join(out_dir, version_name + ".bbl"), 'wb') as fileobj:
-        pickle.dump(ber_bible[0], fileobj)
-        ber_bible[0] = None
-        pickle.dump(ber_bible, fileobj)
-    del sword_bible
-    shutil.rmtree(temp_dir)
-    dialog.Update(100)
-    dialog.Destroy()
-
-
-def import_version(in_file, out_dir):
-    version_name = os.path.splitext(os.path.basename(in_file))[0]
-    dialog = wx.ProgressDialog(_("Importing %s") % version_name, "", 70)
-    sword_bible = sword.Bible(in_file)
-    ber_bible = sword.osis2bbl(sword_bible,
-                               lambda idx: dialog.Update(idx + 1, _("Processing %s...") % BOOK_NAMES[idx - 1]))
-    dialog.Update(68, _("Saving Bible..."))
-    with open(os.path.join(out_dir, version_name + ".bbl"), 'wb') as fileobj:
-        pickle.dump(ber_bible[0], fileobj)
-        ber_bible[0] = None
-        pickle.dump(ber_bible, fileobj)
-    del sword_bible
-    dialog.Update(70)
-    dialog.Destroy()
 
 
 class PreferencesDialog(wx.Dialog):
@@ -59,7 +24,10 @@ class PreferencesDialog(wx.Dialog):
         self.notebook = wx.Notebook(self, style=wx.NB_MULTILINE)
         self.active_module_repo = None
         if len(self._parent.module_repos) == 0:
-            self._parent.module_repos = sword.get_master_repo_list()
+            try:
+                self._parent.module_repos = sword.get_master_repo_list()
+            except:
+                pass
 
         self.general = wx.Panel(self.notebook)
         self.language = wx.ComboBox(self.general, size=(200, -1), style=wx.CB_READONLY | wx.CB_SORT)
@@ -135,42 +103,44 @@ class PreferencesDialog(wx.Dialog):
         self.installed.SetSizer(sizer)
         self.notebook.AddPage(self.installed, _("Installed"))
 
-        self.available = wx.Panel(self.notebook)
-        self.version_repo = wx.ComboBox(self.available, style=wx.CB_READONLY)
-        for repo in self._parent.module_repos:
-            repo_name, ftp_host, ftp_path = repo.split("|")
-            self.version_repo.Append(f"{repo_name} - {ftp_host}{ftp_path}", repo)
-        self.version_repo.SetSelection(0)
-        self.version_repo.Bind(wx.EVT_COMBOBOX, self.OnVersionRepoSelect)
-        self.refresh_button = wx.BitmapButton(self.available, wx.ID_ANY,
-                                              wx.Bitmap(os.path.join(parent._app.cwd, "images", "refresh.png")))
-        self.refresh_button.SetToolTip(_("Refresh List"))
-        self.refresh_button.Bind(wx.EVT_BUTTON, self.OnRefreshList)
-        self.edit_button = wx.BitmapButton(self.available, wx.ID_ANY,
-                                              wx.Bitmap(os.path.join(parent._app.cwd, "images", "edit.png")))
-        self.edit_button.SetToolTip(_("Manage Repositories"))
-        self.edit_button.Bind(wx.EVT_BUTTON, self.OnManageRepositories)
-        self.version2_listbox = wx.CheckListBox(self.available)
-        self.version2_listbox.Bind(wx.EVT_CHECKLISTBOX, self.OnVersion2Listbox)
-        self.version_search = wx.SearchCtrl(self.available)
-        self.version_search.Bind(wx.EVT_TEXT, self.OnVersionSearchText)
-        self.download_version = wx.Button(self.available, label=_("Download"))
-        self.download_version.Disable()
-        self.download_version.Bind(wx.EVT_BUTTON, self.OnDownloadVersion)
-        self.LoadAvailableVersions(True)
-        sizer = wx.BoxSizer(wx.VERTICAL)
-        sizer2 = wx.BoxSizer(wx.HORIZONTAL)
-        sizer2.Add(self.version_repo, 1, wx.LEFT | wx.EXPAND, 3)
-        sizer2.Add(self.refresh_button, 0, wx.RIGHT, 3)
-        sizer2.Add(self.edit_button, 0, wx.RIGHT, 3)
-        sizer.Add(sizer2, 0, wx.ALL | wx.EXPAND, 2)
-        sizer.Add(self.version2_listbox, 1, wx.EXPAND)
-        sizer3 = wx.BoxSizer(wx.HORIZONTAL)
-        sizer3.Add(self.version_search, 1, wx.LEFT | wx.ALIGN_CENTER_VERTICAL, 3)
-        sizer3.Add(self.download_version, 0, wx.RIGHT | wx.EXPAND, 3)
-        sizer.Add(sizer3, 0, wx.ALL | wx.EXPAND, 2)
-        self.available.SetSizer(sizer)
-        self.notebook.AddPage(self.available, _("Available"))
+        if len(self._parent.module_repos) > 0:
+            self.available = wx.Panel(self.notebook)
+            self.version_repo = wx.ComboBox(self.available, style=wx.CB_READONLY)
+            for repo in self._parent.module_repos:
+                repo_name, ftp_host, ftp_path = repo.split("|")
+                self.version_repo.Append(f"{repo_name} - {ftp_host}{ftp_path}", repo)
+            self.version_repo.SetSelection(0)
+            self.version_repo.Bind(wx.EVT_COMBOBOX, self.OnVersionRepoSelect)
+            self.refresh_button = wx.BitmapButton(self.available, wx.ID_ANY,
+                                                  wx.Bitmap(os.path.join(parent._app.cwd, "images", "refresh.png")))
+            self.refresh_button.SetToolTip(_("Refresh List"))
+            self.refresh_button.Bind(wx.EVT_BUTTON, self.OnRefreshList)
+            self.edit_button = wx.BitmapButton(self.available, wx.ID_ANY,
+                                                  wx.Bitmap(os.path.join(parent._app.cwd, "images", "edit.png")))
+            self.edit_button.SetToolTip(_("Manage Repositories"))
+            self.edit_button.Bind(wx.EVT_BUTTON, self.OnManageRepositories)
+            self.version2_listbox = wx.CheckListBox(self.available)
+            self.version2_listbox.Bind(wx.EVT_CHECKLISTBOX, self.OnVersion2Listbox)
+            self.version_search = wx.SearchCtrl(self.available, size=(220, -1))
+            self.version_search.Bind(wx.EVT_TEXT, self.OnVersionSearchText)
+            self.download_version = wx.Button(self.available, label=_("Download"))
+            self.download_version.Disable()
+            self.download_version.Bind(wx.EVT_BUTTON, self.OnDownloadVersion)
+            self.LoadAvailableVersions(True)
+            sizer = wx.BoxSizer(wx.VERTICAL)
+            sizer2 = wx.BoxSizer(wx.HORIZONTAL)
+            sizer2.Add(self.version_repo, 1, wx.RIGHT | wx.EXPAND, 3)
+            sizer2.Add(self.refresh_button, 0, wx.RIGHT, 3)
+            sizer2.Add(self.edit_button, 0, wx.RIGHT, 3)
+            sizer.Add(sizer2, 0, wx.ALL | wx.EXPAND, 2)
+            sizer.Add(self.version2_listbox, 1, wx.EXPAND)
+            sizer3 = wx.BoxSizer(wx.HORIZONTAL)
+            sizer3.Add(self.version_search, 0, wx.RIGHT | wx.ALIGN_CENTER_VERTICAL, 3)
+            sizer3.AddStretchSpacer()
+            sizer3.Add(self.download_version, 0, wx.RIGHT | wx.EXPAND, 3)
+            sizer.Add(sizer3, 0, wx.ALL | wx.EXPAND, 2)
+            self.available.SetSizer(sizer)
+            self.notebook.AddPage(self.available, _("Available"))
 
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add(self.notebook, 1, wx.ALL | wx.EXPAND, 5)
@@ -265,9 +235,17 @@ class PreferencesDialog(wx.Dialog):
         self.LoadAvailableVersions()
 
     def OnDownloadVersion(self, event):
-        for i in self.version2_listbox.GetCheckedItems():
-            download_version(self.version2_listbox.GetClientData(i), self.active_module_repo,
-                             self._parent._app.version_dir)
+        version_data = [self.version2_listbox.GetClientData(i) for i in self.version2_listbox.GetCheckedItems()]
+        installed_version_names = [data["abbreviation"] for data in version_data if data["abbreviation"] in self.version_names]
+        if len(installed_version_names) > 0:
+            overwrite = wx.MessageBox(_("The following versions are already installed:\n\t%s\n\nDo you want to "
+                "overwrite them?") % "\n\t".join(installed_version_names), "Berean", wx.ICON_QUESTION | wx.YES_NO)
+            if overwrite != wx.YES:
+                version_data = [data for data in version_data if data["abbreviation"] not in installed_version_names]
+                if len(version_data) == 0:
+                    return
+        for data in version_data:
+            download_version(data, self.active_module_repo, self._parent._app.version_dir)
         self.LoadInstalledVersions()
 
     def OnOk(self, event):

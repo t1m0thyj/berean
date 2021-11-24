@@ -7,6 +7,7 @@ file, You can obtain one at http://mozilla.org/MPL/2.0/.
 """
 
 import getopt
+import multiprocessing
 import os
 import sys
 
@@ -149,6 +150,7 @@ class Berean(wx.App):
 
 
 def main():
+    multiprocessing.freeze_support()
     sys.excepthook = bugreport.OnError
     app = Berean(False)
     app.MainLoop()

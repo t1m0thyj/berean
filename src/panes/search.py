@@ -13,29 +13,9 @@ from wx import aui, html
 from constants import BOOK_NAMES, BOOK_RANGES
 from html2 import HtmlWindowBase
 from refalize import validate
+from utils import index_version
 
 _ = wx.GetTranslation
-
-
-def index_version(version, Bible, index_dir):
-    dialog = wx.ProgressDialog(_("Indexing %s") % version, "", 68)
-    index = {}
-    for b in range(1, len(Bible)):
-        dialog.Update(b - 1, _("Processing %s...") % BOOK_NAMES[b - 1])
-        for c in range(1, len(Bible[b])):
-            for v in range(1, len(Bible[b][c])):
-                verse = re.sub(r"[^\w\s'\-]", r"", Bible[b][c][v].replace("--", " "),
-                               flags=re.UNICODE)
-                for word in set(verse.split()):  # Remove duplicates
-                    index.setdefault(word, []).extend([chr(i) for i in (b, c, v)])
-    dialog.Update(66, _("Saving index..."))
-    for word in index:
-        index[word] = "".join(index[word])
-    with open(os.path.join(index_dir, "%s.idx" % version), 'wb') as fileobj:
-        pickle.dump(index, fileobj, -1)
-    dialog.Update(68)
-    dialog.Destroy()
-    return index
 
 
 class SearchPane(wx.Panel):
