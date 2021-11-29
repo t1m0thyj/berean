@@ -2,7 +2,7 @@
 
 Berean has its own format for storing Bibles as detailed below, but can import Bibles provided by the Sword project at [Crosswire.org](https://www.crosswire.org/sword/modules/ModDisp.jsp?modType=Bibles).
 
-It can also automatically download and import Bible modules from the FTP repositories listed on the [the Crosswire wiki](https://wiki.crosswire.org/Official_and_Affiliated_Module_Repositories). 
+It can also automatically download and import Bible modules from the FTP repositories listed on [the Crosswire wiki](https://wiki.crosswire.org/Official_and_Affiliated_Module_Repositories).
 
 ## Bible File Structure
 

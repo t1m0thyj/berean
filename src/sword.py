@@ -63,7 +63,7 @@ class Bible(Sequence):
         self._metadata = found_modules[list(found_modules.keys())[0]]
 
     @staticmethod
-    def get_books(self, bible):
+    def get_books(bible):
         return list(chain(*bible.get_structure().get_books().values()))
 
     def __getitem__(self, i):

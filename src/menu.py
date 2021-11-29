@@ -210,7 +210,7 @@ class MenuBar(wx.MenuBar):
         self._frame.multiverse.OnSearch(None)
 
     def OnHelp(self, event):
-        webbrowser.open("https://github.com/t1m0thyj/berean/blob/master/docs/README.md")
+        webbrowser.open("https://github.com/t1m0thyj/berean/wiki")
 
     def OnAbout(self, event):
         info = adv.AboutDialogInfo()
