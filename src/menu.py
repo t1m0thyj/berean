@@ -152,10 +152,14 @@ class MenuBar(wx.MenuBar):
         self._frame.toolbar.OnGoToVerse(None)
 
     def OnBack(self, event):
+        if self._frame.history_item <= 0:
+            return
         book, chapter, verse = refalize(self._frame.verse_history[self._frame.history_item - 1])
         self._frame.load_chapter(book, chapter, verse, False)
 
     def OnForward(self, event):
+        if self._frame.history_item >= len(self._frame.verse_history) - 1:
+            return
         book, chapter, verse = refalize(self._frame.verse_history[self._frame.history_item + 1])
         self._frame.load_chapter(book, chapter, verse, False)
 

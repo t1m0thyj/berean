@@ -85,8 +85,8 @@ class MainWindow(wx.Frame):
             self.notebook.SetTabCtrlHeight(0)
         self.notebook.Bind(aui.EVT_AUINOTEBOOK_PAGE_CHANGED, self.OnAuiNotebookPageChanged)
         self.notebook.Bind(aui.EVT_AUINOTEBOOK_BG_DCLICK, self.OnAuiNotebookBgDclick)
-        self.aui.AddPane(self.notebook, aui.AuiPaneInfo().Name("notebook").CenterPane().
-                         PaneBorder(False))
+        self.register_mouse_events(self.notebook)
+        self.aui.AddPane(self.notebook, aui.AuiPaneInfo().Name("notebook").CenterPane().PaneBorder(False))
 
         self.tree = panes.TreePane(self)
         self.aui.AddPane(self.tree, aui.AuiPaneInfo().Name("tree_pane").Caption(_("Tree")).
@@ -198,6 +198,12 @@ class MainWindow(wx.Frame):
         self.aui.GetPane("multiverse_pane").Show(show)
         self.aui.Update()
         self.menubar.Check(self.menubar.multiverse_pane_item.GetId(), show)
+
+    def register_mouse_events(self, ctrl):
+        ctrl.Bind(wx.EVT_MOUSE_AUX1_UP, self.menubar.OnBack)
+        ctrl.Bind(wx.EVT_MOUSE_AUX2_UP, self.menubar.OnForward)
+        for child in ctrl.GetChildren():
+            self.register_mouse_events(child)
 
     def OnAuiNotebookPageChanged(self, event):
         tab = event.GetSelection()
