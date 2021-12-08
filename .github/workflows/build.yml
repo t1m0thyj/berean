@@ -24,7 +24,15 @@ jobs:
       run: pip install -r requirements.txt
 
     - name: Build App
+      if: ${{ matrix.os != 'ubuntu-latest' }}
       run: pyinstaller -y berean.spec
+
+    - name: Package App
+      if: ${{ matrix.os == 'ubuntu-latest' }}
+      run: |
+        mkdir -p dist/berean
+        cp -r src/* dist/berean/
+        pip install pysword -t dist/berean
 
     - name: Upload Artifacts
       uses: actions/upload-artifact@v2
