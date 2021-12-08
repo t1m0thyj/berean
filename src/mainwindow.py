@@ -254,9 +254,12 @@ class MainWindow(wx.Frame):
             fileobj.write(self.aui.SavePerspective())
         self.aui.UnInit()
         self.Destroy()
-        self._app.SetSingleInstance(False)
-        del self._app.locale  # TODO Why?
-        self._app.ExitMainLoop()
+        if self._app.restart:
+            self._app.CreateFrame()
+        else:
+            self._app.SetSingleInstance(False)
+            del self._app.locale  # TODO Why?
+            self._app.ExitMainLoop()
 
 
 class TaskBarIcon(adv.TaskBarIcon):

@@ -77,6 +77,7 @@ class FileConfig(wx.FileConfig):
         self.SetPath("/MultiVerse")
         self.Write("LastVerseList", frame.multiverse.verse_list.GetValue())
         self.WriteInt("SplitterPosition", frame.multiverse.GetSashPosition())
+        self.SetPath("/")
         self.Flush()
 
     def WriteList(self, key, value):
@@ -89,7 +90,7 @@ class FileConfig(wx.FileConfig):
 class Berean(wx.App):
     def OnInit(self):
         self.SetAppName("Berean")
-        optlist = dict(getopt.getopt(sys.argv[1:], "", ["datadir=", "nosplash", "systemtray"])[0])
+        optlist = dict(getopt.getopt(sys.argv[1:], "", ["datadir=", "systemtray"])[0])
         if not hasattr(sys, "frozen"):
             self.cwd = os.path.dirname(__file__)
         else:
@@ -129,15 +130,21 @@ class Berean(wx.App):
             if self.checker.IsAnotherRunning():
                 wx.MessageBox(_("Berean is already running."), "Berean", wx.ICON_ERROR)
                 wx.Exit()
+        self.CreateFrame("--systemtray" not in optlist)
+        return True
+
+    def CreateFrame(self, show=True):
+        if hasattr(self, "frame"):
+            del self.frame
         self.frame = mainwindow.MainWindow(self)
+        self.restart = False
         self.SetTopWindow(self.frame)
         self.Bind(wx.EVT_QUERY_END_SESSION, self.OnQueryEndSession)
         self.Bind(wx.EVT_END_SESSION, self.frame.OnClose)
-        if "--systemtray" not in optlist:
+        if show:
             self.frame.Show()
         else:
             self.frame.taskbaricon = mainwindow.TaskBarIcon(self.frame)
-        return True
 
     def SetSingleInstance(self, single_instance):
         if single_instance:

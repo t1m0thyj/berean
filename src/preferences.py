@@ -256,9 +256,7 @@ class PreferencesDialog(wx.Dialog):
                           wx.ICON_EXCLAMATION | wx.OK)
             return
         language = self.language.GetClientData(self.language.GetSelection())
-        if language != self._parent._app.language or version_list != self._parent.version_list:
-            wx.MessageBox(_("Changes to language and version settings will take effect after you "
-                            "restart Berean."), "Berean", wx.ICON_INFORMATION | wx.OK)
+        needs_restart = language != self._parent._app.language or version_list != self._parent.version_list
         self._parent._app.language = language
         default_font = {"size": int(self.font_size.GetValue()),
                         "normal_face": self.font_face.GetStringSelection()}
@@ -286,6 +284,12 @@ class PreferencesDialog(wx.Dialog):
             self._parent.search.abbrev_results = self.abbrev_results2.GetValue()
         else:
             self._parent.search.abbrev_results = -1
+        if needs_restart:
+            response = wx.MessageBox(_("Changes to language and version settings will take effect after you restart "
+                "Berean.\n\nDo you want to restart the app now?"), "Question", wx.ICON_QUESTION | wx.YES_NO)
+            if response == wx.YES:
+                self._parent._app.restart = True
+                self._parent.Close()
         self.Destroy()
 
     def OnCancel(self, event):
