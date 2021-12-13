@@ -15,18 +15,17 @@ from itertools import chain
 
 from pysword.modules import SwordModules
 
-from constants import BOOK_NAMES
+from constants import BOOK_LENGTHS, BOOK_NAMES, CHAPTER_LENGTHS
 
 
 def convert_bible(import_path, out_file, progress_callback):
     sword_bible = Bible(import_path)
-    ber_bible = [sword_bible[0]]
-    for b in range(1, len(sword_bible)):
-        ber_bible.append([str(sword_bible[b][0]) or None])
+    ber_bible = [sword_bible[0]] + [None for b in range(len(BOOK_NAMES))]
     with multiprocessing.Pool() as pool:
         for i, results in enumerate(pool.imap(_convert_book, [(import_path, b) for b in range(1, len(sword_bible))])):
-            progress_callback(i + 1)
-            ber_bible[i + 1].extend(results)
+            if results is not None:
+                progress_callback(i + 1)
+                ber_bible[results[0]] = results[1]
     del sword_bible
     progress_callback(len(BOOK_NAMES) + 1)
     with open(out_file, 'wb') as fileobj:
@@ -45,13 +44,31 @@ def get_master_repo_list():
 def _convert_book(args):
     import_path, book_num = args
     sword_bible = Bible(import_path)
-    book_obj = []
-    for c in range(1, len(sword_bible[book_num])):
-        book_obj.append([str(sword_bible[book_num][c][0]) or None])
-        for v in range(1, len(sword_bible[book_num][c])):
-            book_obj[-1].append(str(sword_bible[book_num][c][v]).strip())
+    book_obj = [str(sword_bible[book_num][0]) or None]
+    for c in range(1, len(BOOK_LENGTHS) + 1):
+        if c >= len(sword_bible[book_num]):
+            book_obj.append(None)
+        else:
+            book_obj.append([str(sword_bible[book_num][c][0]) or None])
+            form_feed = False
+            for v in range(1, len(CHAPTER_LENGTHS[book_num - 1]) + 1):
+                if v >= len(sword_bible[book_num][c][v]):
+                    book_obj[-1].append(None)
+                else:
+                    verse_text = str(sword_bible[book_num][c][v])
+                    if form_feed:
+                        verse_text = "\xb6 " + verse_text
+                        form_feed = False
+                    if verse_text.endswith(form_feed):
+                        verse_text = verse_text[:-1]
+                        form_feed = True
+                    book_obj[-1].append(verse_text.strip())
+    try:
+        book_num = BOOK_NAMES.index(sword_bible[book_num].name)
+    except ValueError:
+        return
     del sword_bible
-    return book_obj
+    return book_num, book_obj
 
 
 class Bible(Sequence):
@@ -81,6 +98,11 @@ class Book(Sequence):
         super().__init__()
         self._bible = bible
         self._book = book
+    
+    @property
+    def name(self):
+        return Bible.get_books(self._bible)[self._book - 1].name \
+            .replace("III ", "3 ").replace("II ", "2 ").replace("I ", "1 ")
 
     def __getitem__(self, i):
         if i == 0:
@@ -108,6 +130,9 @@ class Chapter(Sequence):
 
     def __len__(self):
         return Bible.get_books(self._bible)[self._book - 1].chapter_lengths[self._chapter - 1] + 1
+    
+    def __repr__(self):
+        return self._bible.get(Bible.get_books(self._bible)[self._book - 1].name, self._chapter, None, False)
 
 
 class Subtitle(str):
@@ -145,6 +170,8 @@ class VerseParser(HTMLParser):
         self._tags.append(tag if attrs.get("type") is None else f"{tag}:{attrs['type']}")
         if tag == "milestone" and "marker" in attrs:
             self._output = ("" if self._output is None else f"{self._output} ") + attrs["marker"] + " "
+        elif tag == "milestone" and attrs.get("type") == "line":
+            self._output += "\x0c"
 
     def handle_endtag(self, tag):
         self._tags = [t for t in self._tags if t != tag and not t.startswith(f"{tag}:")]
