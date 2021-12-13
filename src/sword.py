@@ -102,7 +102,7 @@ class Book(Sequence):
     @property
     def name(self):
         return Bible.get_books(self._bible)[self._book - 1].name \
-            .replace("III ", "3 ").replace("II ", "2 ").replace("I ", "1 ")
+            .replace("III ", "3 ").replace("II ", "2 ").replace("I ", "1 ").replace(" of John", "")
 
     def __getitem__(self, i):
         if i == 0:
