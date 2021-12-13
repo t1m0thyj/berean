@@ -108,7 +108,7 @@ class MainWindow(wx.Frame):
             self.menubar.Check(getattr(self.menubar, "%s_item" % pane).GetId(),
                                self.aui.GetPane(pane).IsShown())
         globals()["BOOK_NAMES"] = BOOK_NAMES[:18] + ("Psalm",) + BOOK_NAMES[19:]
-        self.load_chapter(self.reference[0], self.reference[1], self.reference[2], False)
+        self.load_chapter(*self.reference, edit_history=False)
         self.Bind(aui.EVT_AUI_PANE_CLOSE, self.OnAuiPaneClose)
         self.Bind(wx.EVT_MOVE, self.OnMove)
         self.Bind(wx.EVT_SIZE, self.OnSize)

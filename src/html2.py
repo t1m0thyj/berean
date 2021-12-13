@@ -148,7 +148,7 @@ class ChapterWindow(ChapterWindowBase):
             self.flag_name = self.Bible[0]["lang"].split("-")[0]
 
     def get_html(self, book, chapter, verse=-1):
-        if self.Bible[book]:
+        if self.Bible[book] and self.Bible[book][chapter]:
             header = "<font size=\"+2\"><b>%s %d</b></font>" % (BOOK_NAMES[book - 1], chapter)
             if self.Bible[book][chapter][0]:
                 header += "<br><i>%s</i>" % self.Bible[book][chapter][0].replace("]", "<i>").replace("[", "</i>")
@@ -161,7 +161,13 @@ class ChapterWindow(ChapterWindowBase):
                              (i, verse_text.replace("[", "<i>").replace("]", "</i>"))
                 if i == verse:
                     verse_text = "<b>%s</b>" % verse_text
-                verses.append("<a name=\"%d\">%s</a>" % (i, verse_text))
+                if not self._frame.menubar.paragraph_breaks:
+                    verses.append("<a name=\"%d\">%s</a>" % (i, verse_text))
+                elif "\xb6" in verse_text or len(verses) == 0:
+                    verses.append("&nbsp;&nbsp;&nbsp;&nbsp;<a name=\"%d\">%s</a>" %
+                                  (i, verse_text.replace("\xb6", "")))
+                else:
+                    verses[-1] += "&nbsp;<a name=\"%d\">%s</a>" % (i, verse_text)
             if chapter == BOOK_LENGTHS[book - 1] and self.Bible[book][0]:
                 verses[-1] += "<hr><div align=\"center\"><i>%s</i></div>" % \
                               self.Bible[book][0].replace("]", "<i>").replace("[", "</i>")

@@ -24,6 +24,7 @@ class MenuBar(wx.MenuBar):
         super(MenuBar, self).__init__()
         self._frame = frame
         self.bookmarks = frame._app.config.ReadList("Bookmarks")
+        self.paragraph_breaks = frame._app.config.ReadBool("Main/ParagraphBreaks")
 
         self.menu_file = wx.Menu()
         self.menu_file.Append(wx.ID_PRINT_SETUP, _("Page Set&up..."),
@@ -62,6 +63,11 @@ class MenuBar(wx.MenuBar):
                               _("Goes to the next chapter"))
         frame.Bind(wx.EVT_MENU, self.OnForward, id=wx.ID_FORWARD)
         self.menu_view.AppendSeparator()
+        self.paragraph_breaks_item = self.menu_view.AppendCheckItem(wx.ID_ANY, _("Show &Paragraph Breaks"),
+                                                                    _("Toggles between breaking on paragraphs or verses"))
+        self.paragraph_breaks_item.Check(self.paragraph_breaks)
+        frame.Bind(wx.EVT_MENU, self.OnParagraphBreaks, self.paragraph_breaks_item)
+        self.menu_view.AppendSeparator()
         self.menu_view.Append(wx.ID_ZOOM_IN, _("Zoom &In\tCtrl++"), _("Increases the text size"))
         self.menu_view.Enable(wx.ID_ZOOM_IN, frame.zoom_level < 7)
         frame.Bind(wx.EVT_MENU, self.OnZoomIn, id=wx.ID_ZOOM_IN)
@@ -82,8 +88,7 @@ class MenuBar(wx.MenuBar):
                                                                _("&Search Pane\tCtrl+Shift+S"))
         frame.Bind(wx.EVT_MENU, self.OnSearchPane, self.search_pane_item)
         self.multiverse_pane_item = self.menu_view.AppendCheckItem(wx.ID_ANY,
-                                                                   _("&Multi-Verse Retrieval\t"
-                                                                     "Ctrl+Shift+M"))
+                                                                   _("&Multi-Verse Retrieval\tCtrl+Shift+M"))
         frame.Bind(wx.EVT_MENU, self.OnMultiVersePane, self.multiverse_pane_item)
         self.Append(self.menu_view, _("&View"))
 
@@ -162,6 +167,10 @@ class MenuBar(wx.MenuBar):
             return
         book, chapter, verse = refalize(self._frame.verse_history[self._frame.history_item + 1])
         self._frame.load_chapter(book, chapter, verse, False)
+
+    def OnParagraphBreaks(self, event):
+        self.paragraph_breaks = not self.paragraph_breaks
+        self._frame.load_chapter(*self._frame.reference, edit_history=False)
 
     def OnZoomIn(self, event):
         self._frame.set_zoom(self._frame.zoom_level + 1)

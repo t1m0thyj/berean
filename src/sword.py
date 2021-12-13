@@ -45,26 +45,26 @@ def _convert_book(args):
     import_path, book_num = args
     sword_bible = Bible(import_path)
     book_obj = [str(sword_bible[book_num][0]) or None]
-    for c in range(1, len(BOOK_LENGTHS) + 1):
+    for c in range(1, BOOK_LENGTHS[book_num - 1] + 1):
         if c >= len(sword_bible[book_num]):
             book_obj.append(None)
         else:
             book_obj.append([str(sword_bible[book_num][c][0]) or None])
             form_feed = False
-            for v in range(1, len(CHAPTER_LENGTHS[book_num - 1]) + 1):
-                if v >= len(sword_bible[book_num][c][v]):
+            for v in range(1, CHAPTER_LENGTHS[book_num - 1][c - 1] + 1):
+                if v >= len(sword_bible[book_num][c]):
                     book_obj[-1].append(None)
                 else:
                     verse_text = str(sword_bible[book_num][c][v])
                     if form_feed:
                         verse_text = "\xb6 " + verse_text
                         form_feed = False
-                    if verse_text.endswith(form_feed):
+                    if verse_text.endswith("\x0c"):
                         verse_text = verse_text[:-1]
                         form_feed = True
                     book_obj[-1].append(verse_text.strip())
     try:
-        book_num = BOOK_NAMES.index(sword_bible[book_num].name)
+        book_num = BOOK_NAMES.index(sword_bible[book_num].name) + 1
     except ValueError:
         return
     del sword_bible
@@ -170,7 +170,7 @@ class VerseParser(HTMLParser):
         self._tags.append(tag if attrs.get("type") is None else f"{tag}:{attrs['type']}")
         if tag == "milestone" and "marker" in attrs:
             self._output = ("" if self._output is None else f"{self._output} ") + attrs["marker"] + " "
-        elif tag == "milestone" and attrs.get("type") == "line":
+        elif tag == "milestone" and attrs.get("type") == "line" and self._output is not None:
             self._output += "\x0c"
 
     def handle_endtag(self, tag):

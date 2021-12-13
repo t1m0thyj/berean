@@ -37,8 +37,14 @@ def index_version(version, Bible, index_dir):
     index = {}
     for b in range(1, len(Bible)):
         dialog.Update(b - 1, _("Processing %s...") % BOOK_NAMES[b - 1])
+        if not Bible[b]:
+            continue
         for c in range(1, len(Bible[b])):
+            if not Bible[b][c]:
+                continue
             for v in range(1, len(Bible[b][c])):
+                if not Bible[b][c][v]:
+                    continue
                 verse = re.sub(r"[^\w\s'\-]", r"", Bible[b][c][v].replace("--", " "),
                                flags=re.UNICODE)
                 for word in set(verse.split()):  # Remove duplicates

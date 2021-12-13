@@ -53,6 +53,7 @@ class FileConfig(wx.FileConfig):
         self.Write("LastVerse", frame.toolbar.verse_entry.GetValue())
         self.WriteBool("AutocompBooks", frame.toolbar.autocomp_books)
         self.WriteInt("ActiveVersionTab", frame.notebook.GetSelection())
+        self.WriteBool("ParagraphBreaks", frame.menubar.paragraph_breaks)
         self.WriteList("../VersionList", frame.version_list)
         self.WriteList("../Bookmarks", frame.menubar.bookmarks)
         self.WriteList("../VerseHistory", frame.toolbar.verse_entry.GetStrings())
