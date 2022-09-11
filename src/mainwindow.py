@@ -50,7 +50,7 @@ class MainWindow(wx.Frame):
         self.old_versions = []
         self.printing = html2.PrintingSystem(self)
 
-        extra_flags = aui.AUI_MGR_LIVE_RESIZE
+        extra_flags = aui.AUI_MGR_DEFAULT | aui.AUI_MGR_LIVE_RESIZE
         self.aui = aui.AuiManager(self, flags=extra_flags)
         self.menubar = menu.MenuBar(self)
         self.SetMenuBar(self.menubar)
