@@ -38,7 +38,7 @@ def get_master_repo_list():
     config = configparser.ConfigParser(strict=False)
     with urllib.request.urlopen("https://crosswire.org/ftpmirror/pub/sword/masterRepoList.conf") as fileobj:
         config.read_string(fileobj.read().decode())
-    return [v.split("=")[-1] for k, v in config.items("Repos")]
+    return [v.split("=")[-1] for k, v in config.items("Repos") if v.startswith("FTPSource=")]
 
 
 def _convert_book(args):

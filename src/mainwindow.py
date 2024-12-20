@@ -234,7 +234,7 @@ class MainWindow(wx.Frame):
         x, y, width, height = self.statusbar.GetFieldRect(2)
         if 'gtk3' in wx.PlatformInfo:
             height -= 16
-        self.zoombar.SetRect(wx.Rect(x, (y + height - 19) / 2 - self.zoombar.GetToolSeparation(),
+        self.zoombar.SetRect(wx.Rect(x, (y + height - 19) // 2 - self.zoombar.GetToolSeparation(),
                                      self.zoombar.width, -1))
         if self.HasCapture():
             self.rect = wx.Rect(self.GetPosition(), self.GetSize())
