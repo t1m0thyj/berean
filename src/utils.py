@@ -14,10 +14,10 @@ _ = wx.GetTranslation
 def download_version(version_data, repo, out_dir):
     version_name = version_data["abbreviation"]
     dialog = wx.ProgressDialog(_("Importing %s") % version_name, _("Downloading..."), 100)
-    temp_dir = repo.download_module(version_data, lambda percent: dialog.Update(percent * 30))
-    dialog.Update(30)
+    temp_dir = repo.download_module(version_data, lambda percent: dialog.Update(int(percent * 74)))
+    dialog.Update(74)
     sword.convert_bible(temp_dir, os.path.join(out_dir, version_name + ".bbl"),
-                        lambda idx: dialog.Update(idx + 31, (_("Processing %s...") % BOOK_NAMES[idx - 1])) if idx <= len(BOOK_NAMES) else _("Saving Bible..."))
+                        lambda idx: dialog.Update(idx // 3 + 75, (_("Processing %s...") % BOOK_NAMES[idx - 1])) if idx <= len(BOOK_NAMES) else _("Saving Bible..."))
     shutil.rmtree(temp_dir)
     dialog.Update(100)
     dialog.Destroy()
